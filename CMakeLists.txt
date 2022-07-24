@@ -7,5 +7,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR} ${CMAKE_PREFIX_PATH})
 
 add_subdirectory (src)
-add_subdirectory (examples)
-add_subdirectory (tests)
+
+if(BUILD_TESTS)
+    add_subdirectory (tests)
+endif()
+
+if(BUILD_EXAMPLES)
+    add_subdirectory (examples)
+endif()
