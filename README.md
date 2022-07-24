@@ -8,3 +8,9 @@ conan install .. -s build_type=Release -o build_testing=True -o build_examples=T
 cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=True -DBUILD_EXAMPLES=True
 cmake --build .
 ```
+
+## Test
+```
+cd build/tests
+ctest .
+```
