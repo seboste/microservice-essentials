@@ -6,9 +6,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 set(CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR} ${CMAKE_PREFIX_PATH})
 
+option(BUILD_TESTING "build the tests for microservice-essentials lib" OFF)
+option(BUILD_EXAMPLES "build an example microservice using the microservice-essentials" OFF)
+
 add_subdirectory (src)
 
-if(BUILD_TESTS)
+if(BUILD_TESTING)
     add_subdirectory (tests)
 endif()
 

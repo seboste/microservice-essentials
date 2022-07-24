@@ -14,21 +14,21 @@ class MicroserviceEssentials(ConanFile):
         "revision": "auto"
     }
     options = {
-        "build_tests": [True, False],
+        "build_testing": [True, False],
         "build_examples": [True, False]        
     }
     default_options = {
-        "build_tests": False,
+        "build_testing": False,
         "build_examples": False
     }
 
     def requirements(self):
-        if self.options.build_tests:
+        if self.options.build_testing:
             self.requires("catch2/2.13.3")
 
     def build(self):
         cmake = CMake(self)
-        cmake.definitions['BUILD_TESTS'] = self.options.build_tests
+        cmake.definitions['BUILD_TESTING'] = self.options.build_testing
         cmake.definitions['BUILD_EXAMPLES'] = self.options.build_examples
         cmake.configure()
         cmake.build()
