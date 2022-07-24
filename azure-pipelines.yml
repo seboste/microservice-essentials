@@ -11,6 +11,5 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
-- script: |
-    make
-  displayName: 'make'
+- task: CMake@1
+  
