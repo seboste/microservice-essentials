@@ -1,3 +1,6 @@
-find_package(Catch2 3 REQUIRED)
-add_executable(tests microservice-essentials/context_test.cpp)
-target_link_libraries(tests PRIVATE Catch2::Catch2WithMain microservice-essentials)
+find_package(Catch2 CONFIG REQUIRED)
+add_executable(tests 
+    main.cpp
+    microservice-essentials/context_test.cpp
+    )
+target_link_libraries(tests PRIVATE Catch2::Catch2 microservice-essentials)
