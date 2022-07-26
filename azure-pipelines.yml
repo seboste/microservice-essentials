@@ -11,6 +11,7 @@ pool:
     vmImage: ubuntu-latest
   
 steps:
+  - bash: pip install conan
   - task: ArtifactoryConan@1
     inputs:
       conanCommand: 'Install'
