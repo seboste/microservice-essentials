@@ -5,12 +5,32 @@
 # https://docs.microsoft.com/azure/devops/pipelines/apps/c-cpp/gcc
 
 trigger:
-- main
-- 6-setup-azure-pipeline
-
-pool:
-  vmImage: ubuntu-latest
-
-steps:
-- task: CMake@1
+  - main
+  
+  pool:
+    vmImage: ubuntu-latest
+  
+  steps:
+  - task: ArtifactoryConan@1
+    inputs:
+      conanCommand: 'Install'
+      pathOrReference: '..'
+      extraArguments: '-s build_type=Release -o build_testing=True -o build_examples=True'
+      buildName: '$(Build.DefinitionName)'
+      buildNumber: '$(Build.BuildNumber)'
+      workingDirectory: 'build'
+  - task: CMake@1
+    inputs:
+      cmakeArgs: '.. -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=True -DBUILD_EXAMPLES=True'
+      workingDirectory: 'build'
+  - task: CMake@1
+    inputs:
+      cmakeArgs: '--build .'
+      workingDirectory: 'build'
+  - task: Bash@3
+    inputs:
+      targetType: 'inline'
+      script: |
+        ctest .
+      workingDirectory: 'build/tests'
   
