@@ -7,10 +7,10 @@
 trigger:
   - main
   
-  pool:
+pool:
     vmImage: ubuntu-latest
   
-  steps:
+steps:
   - task: ArtifactoryConan@1
     inputs:
       conanCommand: 'Install'
