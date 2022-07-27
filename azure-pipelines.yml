@@ -37,6 +37,19 @@ steps:
     inputs:
       targetType: 'inline'
       script: |
-        ctest .
+        ctest --version
+        ctest --output-junit testResult.xml
       workingDirectory: 'build/tests'
+  - task: PublishTestResults@2
+    displayName: Publish Test Results
+    inputs:
+      testResultsFormat: 'JUnit' # Options: JUnit, NUnit, VSTest, xUnit, cTest
+      testResultsFiles: 'build/tests/testResult.xml' 
+      #searchFolder: '$(System.DefaultWorkingDirectory)' # Optional
+      #mergeTestResults: false # Optional
+      #failTaskOnFailedTests: false # Optional
+      #testRunTitle: # Optional
+      #buildPlatform: # Optional
+      #buildConfiguration: # Optional
+      #publishRunAttachments: true # Optional
   
