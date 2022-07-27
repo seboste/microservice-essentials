@@ -12,7 +12,9 @@ pool:
   
 steps:
   - bash: pip install conan
+    displayName: Install Conan
   - task: ArtifactoryConan@1
+    displayName: Conan Install Dependencies
     inputs:
       conanCommand: 'Install'
       pathOrReference: '..'
@@ -21,14 +23,17 @@ steps:
       buildNumber: '$(Build.BuildNumber)'
       workingDirectory: 'build'
   - task: CMake@1
+    displayName: CMake Configure
     inputs:
       cmakeArgs: '.. -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=True -DBUILD_EXAMPLES=True'
       workingDirectory: 'build'
   - task: CMake@1
+    displayName: CMake Build
     inputs:
       cmakeArgs: '--build .'
       workingDirectory: 'build'
   - task: Bash@3
+    displayName: Test
     inputs:
       targetType: 'inline'
       script: |
