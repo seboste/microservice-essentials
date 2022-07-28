@@ -20,8 +20,13 @@ pool:
     vmImage: $(imageName)
   
 steps:
-  - bash: pip install conan
+  - task: Bash@3
     displayName: Install Conan
+    inputs:
+      targetType: 'inline'
+      script: |
+        brew update |
+        brew install conan  
   - task: ArtifactoryConan@1
     displayName: Conan Install Dependencies
     inputs:
