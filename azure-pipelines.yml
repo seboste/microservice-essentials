@@ -21,12 +21,19 @@ pool:
   
 steps:
   - task: Bash@3
-    displayName: Install Conan
+    displayName: Install Conan Mac
+    condition: eq(variables['Agent.JobName'], 'mac'))
     inputs:
       targetType: 'inline'
       script: |
         brew update |
-        brew install conan  
+        brew install conan
+  - task: Bash@3
+    displayName: Install Conan
+    condition: neq(variables['Agent.JobName'], 'mac'))
+    inputs:
+      targetType: 'inline'
+      script: pip install conan
   - task: ArtifactoryConan@1
     displayName: Conan Install Dependencies
     inputs:
