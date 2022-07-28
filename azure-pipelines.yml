@@ -22,7 +22,7 @@ pool:
 steps:
   - task: Bash@3
     displayName: Install Conan Mac
-    condition: eq(variables['Agent.JobName'], 'mac'))
+    condition: and(succeeded(), eq(variables['Agent.JobName'], 'mac'))
     inputs:
       targetType: 'inline'
       script: |
@@ -30,7 +30,7 @@ steps:
         brew install conan
   - task: Bash@3
     displayName: Install Conan
-    condition: neq(variables['Agent.JobName'], 'mac'))
+    condition: and(succeeded(), ne(variables['Agent.JobName'], 'mac'))
     inputs:
       targetType: 'inline'
       script: pip install conan
