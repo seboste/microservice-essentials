@@ -6,9 +6,18 @@
 
 trigger:
   - main
+
+strategy:
+  matrix:
+    linux:
+      imageName: 'ubuntu-latest'
+    mac:
+      imageName: 'macOS-latest'
+#    windows:
+#      imageName: 'windows-latest'
   
 pool:
-    vmImage: ubuntu-latest
+    vmImage: $(imageName)
   
 steps:
   - bash: pip install conan
