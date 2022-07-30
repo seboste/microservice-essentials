@@ -50,8 +50,15 @@ steps:
       workingDirectory: 'build'
   - task: CMake@1
     displayName: CMake Build
+    condition: and(succeeded(), ne(variables['Agent.JobName'], 'Job windows'))
     inputs:
       cmakeArgs: '--build .'
+      workingDirectory: 'build'
+  - task: CMake@1
+    displayName: CMake Build Windows
+    condition: and(succeeded(), eq(variables['Agent.JobName'], 'Job windows'))
+    inputs:
+      cmakeArgs: '--build . --config Release'
       workingDirectory: 'build'
   - task: Bash@3
     displayName: Test
