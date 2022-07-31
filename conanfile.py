@@ -24,7 +24,7 @@ class MicroserviceEssentials(ConanFile):
 
     def requirements(self):
         if self.options.build_testing:
-            self.requires("catch2/2.13.3")
+            self.requires("catch2/2.13.9")
 
     def build(self):
         cmake = CMake(self)

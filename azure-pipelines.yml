@@ -5,11 +5,69 @@
 # https://docs.microsoft.com/azure/devops/pipelines/apps/c-cpp/gcc
 
 trigger:
-- main
+  - main
 
-pool:
-  vmImage: ubuntu-latest
+pr:
+  - main
 
-steps:
-- task: CMake@1
+strategy:
+  matrix:
+    linux:
+      imageName: 'ubuntu-latest'
+      extraBuildArguments: ''
+      conanInstallCommand: 'pip install conan'
+    mac:
+      imageName: 'macOS-latest'
+      extraBuildArguments: ''
+      conanInstallCommand: 'brew update && brew install conan'
+    windows:
+      imageName: 'windows-latest'
+      extraBuildArguments: '--config Release'
+      conanInstallCommand: 'pip install conan'
   
+pool:
+    vmImage: $(imageName)
+  
+steps:
+  - task: Bash@3
+    displayName: Install Conan
+    inputs:
+      targetType: 'inline'
+      script: '$(conanInstallCommand)'
+  - task: ArtifactoryConan@1
+    displayName: Conan Install Dependencies
+    inputs:
+      conanCommand: 'Install'
+      pathOrReference: '..'
+      extraArguments: '-s build_type=Release -o build_testing=True -o build_examples=True'
+      buildName: '$(Build.DefinitionName)'
+      buildNumber: '$(Build.BuildNumber)'
+      workingDirectory: 'build'
+  - task: CMake@1
+    displayName: CMake Configure
+    inputs:
+      cmakeArgs: '.. -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=True -DBUILD_EXAMPLES=True'
+      workingDirectory: 'build'
+  - task: CMake@1
+    displayName: CMake Build
+    inputs:
+      cmakeArgs: '--build . $(extraBuildArguments)'
+      workingDirectory: 'build'
+  - task: Bash@3
+    displayName: Test
+    inputs:
+      targetType: 'inline'
+      script: |
+        ctest --output-junit testResult.xml
+      workingDirectory: 'build/tests'
+  - task: PublishTestResults@2
+    displayName: Publish Test Results
+    inputs:
+      testResultsFormat: 'JUnit'
+      testResultsFiles: 'build/tests/testResult.xml'  
+  - task: ArtifactoryConan@1
+    displayName: Create Conan Package
+    inputs:
+      conanCommand: 'Create'
+      createPath: '.'
+      createReference: 'seboste/test'      
