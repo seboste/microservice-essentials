@@ -11,29 +11,26 @@ strategy:
   matrix:
     linux:
       imageName: 'ubuntu-latest'
+      extraBuildArguments: ''
+      conanInstallCommand: 'pip install conan'
     mac:
       imageName: 'macOS-latest'
+      extraBuildArguments: ''
+      conanInstallCommand: 'brew update && brew install conan'
     windows:
       imageName: 'windows-latest'
+      extraBuildArguments: '--config Release'
+      conanInstallCommand: 'pip install conan'
   
 pool:
     vmImage: $(imageName)
   
 steps:
   - task: Bash@3
-    displayName: Install Conan Mac
-    condition: and(succeeded(), eq(variables['Agent.JobName'], 'Job mac'))
-    inputs:
-      targetType: 'inline'
-      script: |
-        brew update |
-        brew install conan
-  - task: Bash@3
     displayName: Install Conan
-    condition: and(succeeded(), ne(variables['Agent.JobName'], 'Job mac'))
     inputs:
       targetType: 'inline'
-      script: pip install conan
+      script: '${conanInstallCommand}'  
   - task: ArtifactoryConan@1
     displayName: Conan Install Dependencies
     inputs:
@@ -50,16 +47,9 @@ steps:
       workingDirectory: 'build'
   - task: CMake@1
     displayName: CMake Build
-    condition: and(succeeded(), ne(variables['Agent.JobName'], 'Job windows'))
     inputs:
       cmakeArgs: '--build .'
-      workingDirectory: 'build'
-  - task: CMake@1
-    displayName: CMake Build Windows
-    condition: and(succeeded(), eq(variables['Agent.JobName'], 'Job windows'))
-    inputs:
-      cmakeArgs: '--build . --config Release'
-      workingDirectory: 'build'
+      workingDirectory: 'build ${extraBuildArguments}'
   - task: Bash@3
     displayName: Test
     inputs:
@@ -79,4 +69,3 @@ steps:
       pathOrReference: '.'
       #extraArguments:      
       workingDirectory: ''
-      
