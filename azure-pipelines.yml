@@ -69,6 +69,5 @@ steps:
     displayName: Create Conan Package
     inputs:
       conanCommand: 'Create'
-      pathOrReference: '.'
-      extraArguments: '.'
-      workingDirectory: ''
+      createPath: '.'
+      createReference: 'seboste/test'      
