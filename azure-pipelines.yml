@@ -30,7 +30,7 @@ steps:
     displayName: Install Conan
     inputs:
       targetType: 'inline'
-      script: '${conanInstallCommand}'  
+      script: '$(conanInstallCommand)'
   - task: ArtifactoryConan@1
     displayName: Conan Install Dependencies
     inputs:
@@ -49,7 +49,7 @@ steps:
     displayName: CMake Build
     inputs:
       cmakeArgs: '--build .'
-      workingDirectory: 'build ${extraBuildArguments}'
+      workingDirectory: 'build $(extraBuildArguments)'
   - task: Bash@3
     displayName: Test
     inputs:
