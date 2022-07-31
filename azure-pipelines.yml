@@ -51,8 +51,8 @@ steps:
   - task: CMake@1
     displayName: CMake Build
     inputs:
-      cmakeArgs: '--build .'
-      workingDirectory: 'build $(extraBuildArguments)'
+      cmakeArgs: '--build . $(extraBuildArguments)'
+      workingDirectory: 'build'
   - task: Bash@3
     displayName: Test
     inputs:
@@ -70,5 +70,5 @@ steps:
     inputs:
       conanCommand: 'Create'
       pathOrReference: '.'
-      #extraArguments:      
+      extraArguments: '.'
       workingDirectory: ''
