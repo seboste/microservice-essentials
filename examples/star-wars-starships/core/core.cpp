@@ -1,6 +1,7 @@
 #include "core.h"
 #include <algorithm>
 #include <stdexcept>
+#include <iterator>
 
 Core::Core(const StarWarsClient& starwarsClient, StatusDB& statusDB)
     : _starwarsClient(starwarsClient)
