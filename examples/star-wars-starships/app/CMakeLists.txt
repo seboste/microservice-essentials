@@ -4,7 +4,9 @@ add_executable (starships
 
 target_link_libraries(starships 
     PUBLIC
-        core        
+        core
+        in-memory-status-repo
+        http-starwars-client 
         microservice-essentials
     )
     
