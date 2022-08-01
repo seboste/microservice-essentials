@@ -1,4 +1,4 @@
-#pragma
+#pragma once
 
 #include <ports/model.h>
 #include <string>

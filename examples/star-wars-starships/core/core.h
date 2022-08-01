@@ -1,12 +1,12 @@
 #pragma once
 
-#include <ports/service.h>
+#include <ports/api.h>
 #include <ports/starwars-client.h>
 #include <ports/status-repo.h>
 
-class Core : public Service
+class Core : public Api
 {
-public:
+public:    
     Core(const StarWarsClient& starwarsClient, StatusRepo& statusRepo);
     virtual ~Core() = default;
 

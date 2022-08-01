@@ -5,11 +5,11 @@
 #include <vector>
 
 
-class Service
+class Api
 {
 public:
-    Service() = default;
-    virtual ~Service() = default;
+    Api() = default;
+    virtual ~Api() = default;
 
     virtual std::vector<Starship> ListStarShips() const = 0;
     virtual Starship GetStarShip(const std::string& Id) const = 0;

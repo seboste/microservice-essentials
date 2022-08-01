@@ -2,7 +2,8 @@ add_library(ports INTERFACE)
 
 target_sources(ports
     INTERFACE
-        service.h
+        api.h
+        model.h
         starwars-client.h
         status-repo.h
     )
