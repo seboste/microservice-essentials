@@ -4,6 +4,7 @@ target_sources(ports
     INTERFACE
         service.h
         starwars-client.h
+        status-repo.h
     )
 
 target_include_directories(ports INTERFACE ${STARSHIP_EXAMPLE_DIR})

@@ -1,58 +1,50 @@
 #include "core.h"
 #include <algorithm>
+#include <stdexcept>
 
-namespace
-{
-
-std::string GetDescription(const StarWarsClient::Starship& clientStarShip)
-{    
-    return std::string("A ") 
-        + clientStarShip.Model + " made by"
-        + clientStarShip.Manufacturer;
-}
-
-std::vector<int> getEpisodes(const std::vector<std::string>& filmIds, const StarWarsClient& swClient)
-{    
-    std::vector<int> episodes;
-    std::transform(begin(filmIds), end(filmIds), std::back_inserter(episodes),
-        [&swClient](const std::string& id)->int { return swClient.GetFilm(id).Episode; }
-    );
-    return episodes;
-}
-
-} //end anon NS
-
-Core::Core(const StarWarsClient& starwarsClient)
+Core::Core(const StarWarsClient& starwarsClient, StatusRepo& statusRepo)
     : _starwarsClient(starwarsClient)
+    , _statusRepo(statusRepo)
 {
 }
 
- std::vector<Core::Starship> Core::ListStarShips(SortBy sorter) const
+std::vector<Starship> Core::ListStarShips() const
 {
-    std::vector<Service::Starship> starShips;
-
-    for(const StarWarsClient::Starship& clientStarShip : _starwarsClient.ListStarShips())
-    {
-        Core::Starship starShip
+    std::vector<Starship> starships;
+    std::vector<StarshipProperties> properties = _starwarsClient.ListStarShipProperties();
+    std::transform(begin(properties), end(properties), std::back_inserter(starships),
+        [&](const StarshipProperties& properties) 
         {
-            clientStarShip.Name,
-            GetDescription(clientStarShip),
-            clientStarShip.Length,
-            clientStarShip.HyperdriveRating,
-            clientStarShip.MaxAtmospheringSpeed,
-            clientStarShip.Crew,
-            clientStarShip.Passengers,
-            clientStarShip.CargoCapacity,
-            getEpisodes(clientStarShip.FilmIds, _starwarsClient)        
-        };
+            return Starship { 
+                properties, 
+                _statusRepo.GetStatus(properties.Id).value_or(StarshipStatus::Unknown)
+            };
+        }
+    );
+    return starships;
+}
 
-        //TODO: validation        
+Starship Core::GetStarShip(const std::string& Id) const
+{
+    try
+    {
+        return Starship { 
+                    _starwarsClient.GetStarShipProperties(Id).value(),
+                    _statusRepo.GetStatus(Id).value_or(StarshipStatus::Unknown)
+                };
+    }
+    catch(const std::bad_optional_access& ex) //convert to out of range => 404
+    {
+        throw std::out_of_range("invalid ship id");
+    }
+}
 
-        starShips.emplace_back(starShip);
+void Core::UpdateStatus(const std::string& StarShipId, StarshipStatus status)
+{
+    if(!_starwarsClient.GetStarShipProperties(StarShipId).has_value())
+    {
+        throw std::out_of_range("invalid ship id");
     }
 
-    return starShips;
+    _statusRepo.SetStatus(StarShipId, status);
 }
-
-
-
