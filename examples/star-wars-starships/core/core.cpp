@@ -2,9 +2,9 @@
 #include <algorithm>
 #include <stdexcept>
 
-Core::Core(const StarWarsClient& starwarsClient, StatusRepo& statusRepo)
+Core::Core(const StarWarsClient& starwarsClient, StatusDB& statusDB)
     : _starwarsClient(starwarsClient)
-    , _statusRepo(statusRepo)
+    , _statusDB(statusDB)
 {
 }
 
@@ -17,7 +17,7 @@ std::vector<Starship> Core::ListStarShips() const
         {
             return Starship { 
                 properties, 
-                _statusRepo.GetStatus(properties.Id).value_or(StarshipStatus::Unknown)
+                _statusDB.GetStatus(properties.Id).value_or(StarshipStatus::Unknown)
             };
         }
     );
@@ -30,7 +30,7 @@ Starship Core::GetStarShip(const std::string& Id) const
     {
         return Starship { 
                     _starwarsClient.GetStarShipProperties(Id).value(),
-                    _statusRepo.GetStatus(Id).value_or(StarshipStatus::Unknown)
+                    _statusDB.GetStatus(Id).value_or(StarshipStatus::Unknown)
                 };
     }
     catch(const std::bad_optional_access& ex) //convert to out of range => 404
@@ -46,5 +46,5 @@ void Core::UpdateStatus(const std::string& StarShipId, StarshipStatus status)
         throw std::out_of_range("invalid ship id");
     }
 
-    _statusRepo.SetStatus(StarShipId, status);
+    _statusDB.SetStatus(StarShipId, status);
 }

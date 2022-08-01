@@ -2,12 +2,12 @@
 
 #include <ports/api.h>
 #include <ports/starwars-client.h>
-#include <ports/status-repo.h>
+#include <ports/status-db.h>
 
 class Core : public Api
 {
 public:    
-    Core(const StarWarsClient& starwarsClient, StatusRepo& statusRepo);
+    Core(const StarWarsClient& starwarsClient, StatusDB& statusDB);
     virtual ~Core() = default;
 
     virtual std::vector<Starship> ListStarShips() const override;
@@ -16,5 +16,5 @@ public:
     
 private:
     const StarWarsClient& _starwarsClient;
-    StatusRepo& _statusRepo;
+    StatusDB& _statusDB;
 };
