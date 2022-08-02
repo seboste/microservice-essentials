@@ -1,7 +1,69 @@
 #include "http-handler.h"
 #include <httplib/httplib.h>
+#include <nlohmann/json.hpp>
 #include <functional>
 #include <iostream>
+#include <regex>
+
+
+namespace {
+
+using json = nlohmann::json;
+
+
+std::string to_string(StarshipStatus status)
+{
+    switch(status)
+    {
+        case StarshipStatus::Unknown: return "Unknown";
+        case StarshipStatus::UnderConstruction: return "UnderConstruction";
+        case StarshipStatus::OnStandby: return "OnStandby";
+        case StarshipStatus::InAction: return "InAction";
+        case StarshipStatus::Damaged: return "Damaged";
+        case StarshipStatus::Destroyed: return "Destroyed";
+    }
+    throw std::logic_error("invalid status: " + std::to_string(static_cast<int>(status)));
+}
+
+json to_json(const Starship& starship)
+{
+    return json { 
+        { "properties", 
+            {
+                { "id", starship.Properties.Id },
+                { "name", starship.Properties.Name },
+                { "description", starship.Properties.Description }
+            }
+        },
+        {
+            "status", to_string(starship.Status)
+        }
+    };
+}
+
+json to_json(const std::vector<Starship>& starships)
+{
+    json jsonStarShips = json::array();
+    for(const Starship& starship : starships)
+    {
+        jsonStarShips.emplace_back(to_json(starship));
+    }
+    return jsonStarShips;
+}
+
+std::string extractId(const std::string& path)
+{
+    std::smatch ip_result;
+    std::regex_match(path, ip_result, std::regex("/(.*)/(.*)"));
+    if(ip_result.size() != 3)
+    {
+        throw std::invalid_argument("invalid URL");
+    }
+    
+    return ip_result[2];    
+}
+
+}
 
 HttpHandler::HttpHandler(Api& api, const std::string& host, int port)
     : _api(api)
@@ -10,7 +72,7 @@ HttpHandler::HttpHandler(Api& api, const std::string& host, int port)
     , _port(port)
 {    
     _svr->Get("/StarShips", std::bind(&HttpHandler::listStarShips, this, std::placeholders::_1, std::placeholders::_2));
-    _svr->Get("/StarShip", std::bind(&HttpHandler::getStarShip, this, std::placeholders::_1, std::placeholders::_2));
+    _svr->Get("/StarShip/(.*)", std::bind(&HttpHandler::getStarShip, this, std::placeholders::_1, std::placeholders::_2));
     _svr->Put("/StarShipStatus", httplib::Server::Handler(std::bind(&HttpHandler::updateStatus, this, std::placeholders::_1, std::placeholders::_2)));
 }
 
@@ -24,14 +86,19 @@ void HttpHandler::Handle()
 }
 
 void HttpHandler::listStarShips(const httplib::Request& request, httplib::Response& response)
-{
-    std::cout << "listStarShips" << std::endl;
-    std::vector<Starship> starships = _api.ListStarShips();    
+{   
+    response.set_content(
+            to_json(_api.ListStarShips()).dump(),
+            "text/json"
+        );
 }
 
 void HttpHandler::getStarShip(const httplib::Request& request, httplib::Response& response)
 {
-    std::cout << "getStarShip" << std::endl;
+    response.set_content(
+            to_json(_api.GetStarShip(extractId(request.path))).dump(),
+            "text/json"
+        );
 }
 
 void HttpHandler::updateStatus(const httplib::Request& request, httplib::Response& response)
