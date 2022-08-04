@@ -1,5 +1,5 @@
 enable_testing()
-find_package(Catch2 CONFIG REQUIRED)
+find_package(Catch2 3 CONFIG REQUIRED)
 add_executable(tests    
     microservice-essentials/context_test.cpp
     )
