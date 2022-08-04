@@ -6,7 +6,7 @@ class MicroserviceEssentials(ConanFile):
     license = "MIT"
     author = "Sebastian Steger (Sebastian.Steger@gmail.com)"
     description = """microservice-essentials is a portable, independent C++ library that takes care of typical recurring concerns that occur in microservice development."""
-    settings = "os", "compiler", "build_type", "arch"    
+    settings = "os", "compiler", "build_type", "arch", "cppstd"    
     generators = "cmake_find_package_multi", "cmake"
     scm = {
         "type": "git",        
