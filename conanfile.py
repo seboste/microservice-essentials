@@ -7,7 +7,7 @@ class MicroserviceEssentials(ConanFile):
     author = "Sebastian Steger (Sebastian.Steger@gmail.com)"
     description = """microservice-essentials is a portable, independent C++ library that takes care of typical recurring concerns that occur in microservice development."""
     settings = "os", "compiler", "build_type", "arch"    
-    generators = "cmake_find_package_multi"
+    generators = "cmake_find_package_multi", "cmake"
     scm = {
         "type": "git",        
         "url": "https://github.com/seboste/microservice-essentials.git",
@@ -28,7 +28,7 @@ class MicroserviceEssentials(ConanFile):
             self.requires("nlohmann_json/3.11.1")
             self.requires("openssl/3.0.5")
         if self.options.build_testing:
-            self.requires("catch2/2.13.9")
+            self.requires("catch2/3.1.0")
 
     def build(self):
         cmake = CMake(self)
