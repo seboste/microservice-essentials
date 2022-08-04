@@ -10,6 +10,8 @@ std::string GetDescription(const std::string& model, const std::string& manufact
         + manufacturer;
 }
 
+const std::vector<StarshipProperties> starships = { { "0", "death star", "this is a death star"}, { "1", "millenium falcon", "this is the millenium falcon"} };
+
 } //end anon NS
 
 
@@ -21,10 +23,10 @@ HttpStarWarsClient::HttpStarWarsClient(const std::string& URL)
 
 std::vector<StarshipProperties> HttpStarWarsClient::ListStarShipProperties() const
 {
-    return {};
+    return starships;
 }
 
 std::optional<StarshipProperties> HttpStarWarsClient::GetStarShipProperties(const std::string& starshipId) const
-{
-    return {};
+{    
+    return starships[std::atoi(starshipId.c_str())];
 }
