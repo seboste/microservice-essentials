@@ -2,6 +2,7 @@ add_library(http-handler)
 
 find_package(httplib CONFIG)
 find_package(nlohmann_json CONFIG)
+find_package(OpenSSL CONFIG)
 
 target_sources(http-handler
     PUBLIC
@@ -16,4 +17,5 @@ target_link_libraries(http-handler
     PRIVATE 
         httplib::httplib 
         nlohmann_json::nlohmann_json
+        OpenSSL::OpenSSL
     )

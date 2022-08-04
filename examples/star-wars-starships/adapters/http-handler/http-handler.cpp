@@ -1,4 +1,5 @@
 #include "http-handler.h"
+#define CPPHTTPLIB_OPENSSL_SUPPORT //be consistent with other projects to prevent seg fault
 #include <httplib/httplib.h>
 #include <nlohmann/json.hpp>
 #include <functional>
@@ -75,7 +76,7 @@ std::string extractId(const std::string& path)
     std::smatch ip_result;
     std::regex_match(path, ip_result, std::regex("/(.*)/(.*)"));
     if(ip_result.size() != 3)
-    {
+    {        
         throw std::invalid_argument("invalid URL");
     }
     
