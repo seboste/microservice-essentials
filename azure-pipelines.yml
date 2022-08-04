@@ -34,9 +34,9 @@ steps:
     inputs:
       targetType: 'inline'
       script: |
-          '$(conanInstallCommand)
+          $(conanInstallCommand)
           conan profile new default --detect
-          conan profile update settings.compiler.libcxx=libstdc++11 default'
+          conan profile update settings.compiler.libcxx=libstdc++11 default
   - task: ArtifactoryConan@1
     displayName: Conan Install Dependencies
     inputs:
