@@ -35,11 +35,18 @@ steps:
       targetType: 'inline'
       script: '$(conanInstallCommand)'
   - task: ArtifactoryConan@1
+    displayName: Update Conan Profile
+    inputs:
+      conanCommand: 'Custom'
+      customArguments: 'profile update settings.compiler.libcxx=libstdc++11 default'
+      buildName: '$(Build.DefinitionName)'
+      buildNumber: '$(Build.BuildNumber)'
+  - task: ArtifactoryConan@1
     displayName: Conan Install Dependencies
     inputs:
       conanCommand: 'Install'
       pathOrReference: '..'
-      extraArguments: '-s build_type=Release -s cppstd=17 -o build_testing=True -o build_examples=True --build missing --build catch2'
+      extraArguments: '-s build_type=Release -s cppstd=17 -o build_testing=True -o build_examples=True --build missing'
       buildName: '$(Build.DefinitionName)'
       buildNumber: '$(Build.BuildNumber)'
       workingDirectory: 'build'
