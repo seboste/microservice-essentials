@@ -1,17 +1,19 @@
 #pragma once
 
 #include <ports/starwars-client.h>
-#include <string>
+#include <memory>
+
+namespace httplib { class Client; }
 
 class HttpStarWarsClient : public StarWarsClient
 {
 public:
-    HttpStarWarsClient(const std::string& URL);
-    virtual ~HttpStarWarsClient() = default;
+    HttpStarWarsClient(const std::string& url = "https://swapi.dev");
+    virtual ~HttpStarWarsClient();
 
     virtual std::vector<StarshipProperties> ListStarShipProperties() const override;
     virtual std::optional<StarshipProperties> GetStarShipProperties(const std::string& starshipId) const override;
 
-private:
-    std::string _url;
+private:    
+    std::unique_ptr<httplib::Client> _cli;    
 };

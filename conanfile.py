@@ -25,7 +25,8 @@ class MicroserviceEssentials(ConanFile):
     def requirements(self):
         if self.options.build_examples:
             self.requires("cpp-httplib/0.11.0")
-            self.requires("nlohmann_json/3.11.1");
+            self.requires("nlohmann_json/3.11.1")
+            self.requires("openssl/3.0.5")
         if self.options.build_testing:
             self.requires("catch2/2.13.9")
 
