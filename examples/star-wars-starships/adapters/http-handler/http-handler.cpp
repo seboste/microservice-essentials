@@ -10,7 +10,6 @@ namespace {
 
 using json = nlohmann::json;
 
-
 std::string to_string(StarshipStatus status)
 {
     switch(status)
@@ -23,6 +22,26 @@ std::string to_string(StarshipStatus status)
         case StarshipStatus::Destroyed: return "Destroyed";
     }
     throw std::logic_error("invalid status: " + std::to_string(static_cast<int>(status)));
+}
+
+StarshipStatus from_string(const std::string& statusString)
+{
+    static const std::unordered_map<std::string, StarshipStatus> lookupMap =
+    {
+        { "Unknown" , StarshipStatus::Unknown },
+        { "UnderConstruction" , StarshipStatus::UnderConstruction },
+        { "OnStandby" , StarshipStatus::OnStandby },
+        { "InAction" , StarshipStatus::InAction },
+        { "Damaged" , StarshipStatus::Damaged },
+        { "Destroyed" , StarshipStatus::Destroyed },
+    };
+
+    const auto cit = lookupMap.find(statusString);
+    if(cit == lookupMap.end())
+    {
+        throw std::logic_error("invalid status: " + statusString);
+    }
+    return cit->second;    
 }
 
 json to_json(const Starship& starship)
@@ -73,7 +92,7 @@ HttpHandler::HttpHandler(Api& api, const std::string& host, int port)
 {    
     _svr->Get("/StarShips", std::bind(&HttpHandler::listStarShips, this, std::placeholders::_1, std::placeholders::_2));
     _svr->Get("/StarShip/(.*)", std::bind(&HttpHandler::getStarShip, this, std::placeholders::_1, std::placeholders::_2));
-    _svr->Put("/StarShipStatus", httplib::Server::Handler(std::bind(&HttpHandler::updateStatus, this, std::placeholders::_1, std::placeholders::_2)));
+    _svr->Put("/StarShipStatus/(.*)", httplib::Server::Handler(std::bind(&HttpHandler::updateStatus, this, std::placeholders::_1, std::placeholders::_2)));
 }
 
 HttpHandler::~HttpHandler()
@@ -91,6 +110,7 @@ void HttpHandler::listStarShips(const httplib::Request& request, httplib::Respon
             to_json(_api.ListStarShips()).dump(),
             "text/json"
         );
+    response.status = 200;
 }
 
 void HttpHandler::getStarShip(const httplib::Request& request, httplib::Response& response)
@@ -99,9 +119,14 @@ void HttpHandler::getStarShip(const httplib::Request& request, httplib::Response
             to_json(_api.GetStarShip(extractId(request.path))).dump(),
             "text/json"
         );
+    response.status = 200;
 }
 
 void HttpHandler::updateStatus(const httplib::Request& request, httplib::Response& response)
 {
-    std::cout << "updateStatus" << std::endl;
+    _api.UpdateStatus(
+        extractId(request.path),
+        from_string(json::parse(request.body).at("status"))
+        );
+    response.status = 200;
 }
