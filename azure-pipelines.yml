@@ -16,14 +16,14 @@ strategy:
       imageName: 'ubuntu-latest'
       extraBuildArguments: ''
       conanInstallCommand: 'pip install conan'
-#    mac:
-#      imageName: 'macOS-latest'
-#      extraBuildArguments: ''
-#      conanInstallCommand: 'brew update && brew install conan'
-#    windows:
-#      imageName: 'windows-latest'
-#      extraBuildArguments: '--config Release'
-#      conanInstallCommand: 'pip install conan'
+    mac:
+      imageName: 'macOS-latest'
+      extraBuildArguments: ''
+      conanInstallCommand: 'brew update && brew install conan'
+    windows:
+      imageName: 'windows-latest'
+      extraBuildArguments: '--config Release'
+      conanInstallCommand: 'pip install conan'
   
 pool:
     vmImage: $(imageName)
@@ -33,15 +33,7 @@ steps:
     displayName: Install Conan
     inputs:
       targetType: 'inline'
-      script: |
-          $(conanInstallCommand)
-          echo 'completed installation'
-          conan profile new default --detect || True
-          echo 'completed profile creation'
-          cat ~/.conan/profiles/default
-          conan profile update settings.compiler.libcxx=libstdc++11 default          
-          echo 'updated profile'
-          cat ~/.conan/profiles/default          
+      script: '$(conanInstallCommand)'          
   - task: ArtifactoryConan@1
     displayName: Conan Install Dependencies
     inputs:
