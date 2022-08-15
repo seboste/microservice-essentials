@@ -1,4 +1,7 @@
 cmake_minimum_required (VERSION 3.16.3)
+
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+
 project (microservice-essentials VERSION 0.0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -11,7 +14,7 @@ option(BUILD_EXAMPLES "build an example microservice using the microservice-esse
 
 add_subdirectory (src)
 
-if(BUILD_TESTING)
+if(BUILD_TESTING)    
     add_subdirectory (tests)
 endif()
 
