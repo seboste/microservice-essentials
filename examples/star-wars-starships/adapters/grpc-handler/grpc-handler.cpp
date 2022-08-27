@@ -1,10 +1,67 @@
 #include "grpc-handler.h"
-#include <functional>
-#include <iostream>
-#include <regex>
+#include <generated/api.grpc.pb.h>
+#include <grpcpp/grpcpp.h>
+
+using namespace grpc;
+
+namespace {
+class ServiceImpl : public StarShips::StarShipService::Service
+{
+public:
+    ServiceImpl(Api& api)
+        : _api(api)
+    {
+    }
+
+    virtual Status ListStarShips(::grpc::ServerContext* context, const ::StarShips::ListStarShipsRequest* request, ::StarShips::ListStarShipsResponse* response)
+    {
+        std::cout << "ListStarShips" << std::endl;
+        return Status::OK;
+    }
+    virtual Status GetStarShip(::grpc::ServerContext* context, const ::StarShips::GetStarShipRequest* request, ::StarShips::GetStarShipResponse* response)
+    {
+        std::cout << "GetStarShip" << std::endl;
+        return Status::OK;
+    }
+    virtual Status UpdateStatus(::grpc::ServerContext* context, const ::StarShips::UpdateStatusRequest* request, ::StarShips::UpdateStatusResponse* response)
+    {
+        std::cout << "UpdateStatus" << std::endl;
+        return Status::OK;
+    }
+private:
+    Api& _api;
+};
+
+}
+
+GrpcHandler::GrpcHandler(Api& api, const std::string& host, int port)
+    : _api(api)
+    , _host(host)
+    , _port(port)
+{
+}
+
+GrpcHandler::~GrpcHandler()
+{
+}
+
+void GrpcHandler::Handle()
+{
+    std::string server_address("0.0.0.0:50051");
+    ServiceImpl service(_api);
+
+    ServerBuilder builder;
+    builder.AddListeningPort(server_address, InsecureServerCredentials());
+    builder.RegisterService(&service);
+    std::unique_ptr<Server> server(builder.BuildAndStart());
+    std::cout << "Server listening on " << server_address << std::endl;
+    server->Wait();
+}
 
 #if 0
-
+void listStarShips(const httplib::Request& request, httplib::Response& response);
+    void getStarShip(const httplib::Request& request, httplib::Response& response);
+    void updateStatus(const httplib::Request& request, httplib::Response& response);
 namespace {
 
 using json = nlohmann::json;

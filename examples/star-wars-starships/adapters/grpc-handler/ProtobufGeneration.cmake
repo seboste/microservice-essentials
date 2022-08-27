@@ -38,7 +38,7 @@ function(protobuf_gen)
     set(OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
     file(MAKE_DIRECTORY ${OUTPUT_DIR})
 
-    set(OUTPUT "${OUTPUT_DIR}/${INPUT_NAME}.pb.cc" "${OUTPUT_DIR}/${INPUT_NAME}.pb.h" "${OUTPUT_DIR}/${INPUT_NAME}.grpc.pb.cc" "${OUTPUT_DIR}/${INPUT_NAME}.grpc.pb.h")
+    set(OUTPUT "generated/${INPUT_NAME}.pb.cc" "generated/${INPUT_NAME}.pb.h" "generated/${INPUT_NAME}.grpc.pb.cc" "generated/${INPUT_NAME}.grpc.pb.h")
 
     add_custom_command(
         OUTPUT ${OUTPUT}
@@ -58,7 +58,9 @@ function(target_protos)
 
     foreach(protoFile IN LISTS ARGN)
         protobuf_gen(INPUT ${protoFile} OUTPUT generatedSrc)    
-        target_sources(${TARGET} PRIVATE ${generatedSrc})    
+        target_sources(${TARGET} PRIVATE ${generatedSrc})        
     endforeach()
+
+    target_include_directories(${TARGET} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 endfunction(target_protos)
