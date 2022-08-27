@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+enum StarshipStatus
+{
+    STARSHIP_STATUS_UNKNOWN = 0;
+    STARSHIP_STATUS_UNDER_CONSTRUCTION = 1;
+    STARSHIP_STATUS_ON_STANDBY = 2;
+    STARSHIP_STATUS_IN_ACTION = 3;
+    STARSHIP_STATUS_DAMAGED = 4;
+    STARSHIP_STATUS_DESTROYED = 5;
+}
+
+message StarShip
+{
+    message Properties
+    {
+        string id = 1;
+        string name = 2;
+        string description = 3;
+    }
+
+    Properties properties = 1;
+    StarshipStatus status = 2;
+}
+
+message ListStarShipsRequest
+{
+}
+
+message ListStarShipsResponse
+{
+    repeated StarShip starships = 1;
+}
+
+message GetStarShipRequest
+{
+    string id = 1;
+}
+
+message GetStarShipResponse
+{
+    StarShip starships = 1;
+}
+
+message UpdateStatusRequest
+{
+    string id = 1;
+    StarshipStatus status = 2;
+}
+
+message UpdateStatusResponse
+{
+}
+
+service StarShipService
+{
+    rpc ListStarShips(ListStarShipsRequest) returns (ListStarShipsResponse);
+    rpc GetStarShip(GetStarShipRequest) returns (GetStarShipResponse);
+    rpc UpdateStatus(UpdateStatusRequest) returns (UpdateStatusResponse);
+}
