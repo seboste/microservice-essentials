@@ -5,6 +5,47 @@
 using namespace grpc;
 
 namespace {
+
+StarShips::StarshipStatus to_protobuf(StarshipStatus status)
+{
+   switch(status)
+    {
+        case StarshipStatus::Unknown: return StarShips::StarshipStatus::STARSHIP_STATUS_UNKNOWN;
+        case StarshipStatus::UnderConstruction: return StarShips::StarshipStatus::STARSHIP_STATUS_UNDER_CONSTRUCTION;
+        case StarshipStatus::OnStandby: return StarShips::StarshipStatus::STARSHIP_STATUS_ON_STANDBY;
+        case StarshipStatus::InAction: return StarShips::StarshipStatus::STARSHIP_STATUS_IN_ACTION;
+        case StarshipStatus::Damaged: return StarShips::StarshipStatus::STARSHIP_STATUS_DAMAGED;
+        case StarshipStatus::Destroyed: return StarShips::StarshipStatus::STARSHIP_STATUS_DESTROYED;
+    }
+    throw std::logic_error("invalid status: " + std::to_string(static_cast<int>(status)));
+}
+
+StarshipStatus from_protobuf(StarShips::StarshipStatus status)
+{
+    switch(status)
+    {
+        case StarShips::StarshipStatus::STARSHIP_STATUS_UNKNOWN: return StarshipStatus::Unknown;
+        case StarShips::StarshipStatus::STARSHIP_STATUS_UNDER_CONSTRUCTION: return StarshipStatus::UnderConstruction;
+        case StarShips::StarshipStatus::STARSHIP_STATUS_ON_STANDBY: return StarshipStatus::OnStandby;
+        case StarShips::StarshipStatus::STARSHIP_STATUS_IN_ACTION: return StarshipStatus::InAction;
+        case StarShips::StarshipStatus::STARSHIP_STATUS_DAMAGED: return StarshipStatus::Damaged;
+        case StarShips::StarshipStatus::STARSHIP_STATUS_DESTROYED: return StarshipStatus::Destroyed;
+    }
+    throw std::logic_error("invalid status: " + std::to_string(static_cast<int>(status)));
+}
+void to_protobuf(const StarshipProperties& properties, StarShips::StarShip_Properties& protobuf_properties)
+{
+    protobuf_properties.set_id(properties.Id);
+    protobuf_properties.set_name(properties.Name);
+    protobuf_properties.set_description(properties.Description);
+}
+
+void to_protobuf(const Starship& starship, StarShips::StarShip& protobuf_starship)
+{    
+    to_protobuf(starship.Properties, *protobuf_starship.mutable_properties());    
+    protobuf_starship.set_status(to_protobuf(starship.Status));
+}
+
 class ServiceImpl : public StarShips::StarShipService::Service
 {
 public:
@@ -15,17 +56,23 @@ public:
 
     virtual Status ListStarShips(::grpc::ServerContext* context, const ::StarShips::ListStarShipsRequest* request, ::StarShips::ListStarShipsResponse* response)
     {
-        std::cout << "ListStarShips" << std::endl;
+        for(const ::Starship& starship : _api.ListStarShips())
+        {            
+            to_protobuf(starship, *response->add_starships());            
+        }
         return Status::OK;
     }
     virtual Status GetStarShip(::grpc::ServerContext* context, const ::StarShips::GetStarShipRequest* request, ::StarShips::GetStarShipResponse* response)
     {
-        std::cout << "GetStarShip" << std::endl;
+        to_protobuf(
+            _api.GetStarShip(request->id()),
+            *response->mutable_starships()
+        );
         return Status::OK;
     }
     virtual Status UpdateStatus(::grpc::ServerContext* context, const ::StarShips::UpdateStatusRequest* request, ::StarShips::UpdateStatusResponse* response)
     {
-        std::cout << "UpdateStatus" << std::endl;
+        _api.UpdateStatus(request->id(), from_protobuf(request->status()) );
         return Status::OK;
     }
 private:
@@ -47,144 +94,13 @@ GrpcHandler::~GrpcHandler()
 
 void GrpcHandler::Handle()
 {
-    std::string server_address("0.0.0.0:50051");
+    const std::string server_address(_host + ":" + std::to_string(_port));
     ServiceImpl service(_api);
 
     ServerBuilder builder;
     builder.AddListeningPort(server_address, InsecureServerCredentials());
     builder.RegisterService(&service);
-    std::unique_ptr<Server> server(builder.BuildAndStart());
-    std::cout << "Server listening on " << server_address << std::endl;
-    server->Wait();
-}
-
-#if 0
-void listStarShips(const httplib::Request& request, httplib::Response& response);
-    void getStarShip(const httplib::Request& request, httplib::Response& response);
-    void updateStatus(const httplib::Request& request, httplib::Response& response);
-namespace {
-
-using json = nlohmann::json;
-
-std::string to_string(StarshipStatus status)
-{
-    switch(status)
-    {
-        case StarshipStatus::Unknown: return "Unknown";
-        case StarshipStatus::UnderConstruction: return "UnderConstruction";
-        case StarshipStatus::OnStandby: return "OnStandby";
-        case StarshipStatus::InAction: return "InAction";
-        case StarshipStatus::Damaged: return "Damaged";
-        case StarshipStatus::Destroyed: return "Destroyed";
-    }
-    throw std::logic_error("invalid status: " + std::to_string(static_cast<int>(status)));
-}
-
-StarshipStatus from_string(const std::string& statusString)
-{
-    static const std::unordered_map<std::string, StarshipStatus> lookupMap =
-    {
-        { "Unknown" , StarshipStatus::Unknown },
-        { "UnderConstruction" , StarshipStatus::UnderConstruction },
-        { "OnStandby" , StarshipStatus::OnStandby },
-        { "InAction" , StarshipStatus::InAction },
-        { "Damaged" , StarshipStatus::Damaged },
-        { "Destroyed" , StarshipStatus::Destroyed },
-    };
-
-    const auto cit = lookupMap.find(statusString);
-    if(cit == lookupMap.end())
-    {
-        throw std::logic_error("invalid status: " + statusString);
-    }
-    return cit->second;    
-}
-
-json to_json(const Starship& starship)
-{
-    return json { 
-        { "properties", 
-            {
-                { "id", starship.Properties.Id },
-                { "name", starship.Properties.Name },
-                { "description", starship.Properties.Description }
-            }
-        },
-        {
-            "status", to_string(starship.Status)
-        }
-    };
-}
-
-json to_json(const std::vector<Starship>& starships)
-{
-    json jsonStarShips = json::array();
-    for(const Starship& starship : starships)
-    {
-        jsonStarShips.emplace_back(to_json(starship));
-    }
-    return jsonStarShips;
-}
-
-std::string extractId(const std::string& path)
-{
-    std::smatch ip_result;
-    std::regex_match(path, ip_result, std::regex("/(.*)/(.*)"));
-    if(ip_result.size() != 3)
-    {        
-        throw std::invalid_argument("invalid URL");
-    }
+    std::unique_ptr<grpc::Server> server(builder.BuildAndStart());    
     
-    return ip_result[2];    
+    server->Wait();    
 }
-
-}
-
-HttpHandler::HttpHandler(Api& api, const std::string& host, int port)
-    : _api(api)
-    , _svr(std::make_unique<httplib::Server>())
-    , _host(host)
-    , _port(port)
-{    
-    _svr->Get("/StarShips", std::bind(&HttpHandler::listStarShips, this, std::placeholders::_1, std::placeholders::_2));
-    _svr->Get("/StarShip/(.*)", std::bind(&HttpHandler::getStarShip, this, std::placeholders::_1, std::placeholders::_2));
-    _svr->Put("/StarShipStatus/(.*)", httplib::Server::Handler(std::bind(&HttpHandler::updateStatus, this, std::placeholders::_1, std::placeholders::_2)));
-}
-
-HttpHandler::~HttpHandler()
-{
-}
-
-void HttpHandler::Handle()
-{
-    _svr->listen(_host, _port);
-}
-
-void HttpHandler::listStarShips(const httplib::Request& request, httplib::Response& response)
-{   
-    response.set_content(
-            to_json(_api.ListStarShips()).dump(),
-            "text/json"
-        );
-    response.status = 200;
-}
-
-void HttpHandler::getStarShip(const httplib::Request& request, httplib::Response& response)
-{
-    response.set_content(
-            to_json(_api.GetStarShip(extractId(request.path))).dump(),
-            "text/json"
-        );
-    response.status = 200;
-}
-
-void HttpHandler::updateStatus(const httplib::Request& request, httplib::Response& response)
-{
-    _api.UpdateStatus(
-        extractId(request.path),
-        from_string(json::parse(request.body).at("status"))
-        );
-    response.status = 200;
-}
-
-#endif
