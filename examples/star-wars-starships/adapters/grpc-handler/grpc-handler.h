@@ -11,8 +11,7 @@ public:
     virtual ~GrpcHandler();
 
     void Handle();    
-private:    
-    Api& _api;
-    const std::string _host;
-    const int _port;
+private:
+    class Impl;
+    std::unique_ptr<Impl> _impl;    
 };

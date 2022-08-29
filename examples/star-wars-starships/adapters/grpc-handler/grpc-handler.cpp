@@ -46,12 +46,23 @@ void to_protobuf(const Starship& starship, StarShips::StarShip& protobuf_starshi
     protobuf_starship.set_status(to_protobuf(starship.Status));
 }
 
-class ServiceImpl : public StarShips::StarShipService::Service
+} //end anon ns
+
+class GrpcHandler::Impl : public StarShips::StarShipService::Service
 {
 public:
-    ServiceImpl(Api& api)
+    Impl(Api& api, const std::string& host, int port)
         : _api(api)
     {
+        const std::string server_address(host + ":" + std::to_string(port));
+        _serverBuilder.AddListeningPort(server_address, InsecureServerCredentials());
+        _serverBuilder.RegisterService(this);
+    }
+
+    void Handle()
+    {
+        _server = _serverBuilder.BuildAndStart();
+        _server->Wait();
     }
 
     virtual Status ListStarShips(::grpc::ServerContext* context, const ::StarShips::ListStarShipsRequest* request, ::StarShips::ListStarShipsResponse* response)
@@ -77,14 +88,12 @@ public:
     }
 private:
     Api& _api;
+    std::unique_ptr<Server> _server;
+    ServerBuilder _serverBuilder;
 };
 
-}
-
 GrpcHandler::GrpcHandler(Api& api, const std::string& host, int port)
-    : _api(api)
-    , _host(host)
-    , _port(port)
+    : _impl(std::make_unique<Impl>(api, host, port))
 {
 }
 
@@ -94,13 +103,5 @@ GrpcHandler::~GrpcHandler()
 
 void GrpcHandler::Handle()
 {
-    const std::string server_address(_host + ":" + std::to_string(_port));
-    ServiceImpl service(_api);
-
-    ServerBuilder builder;
-    builder.AddListeningPort(server_address, InsecureServerCredentials());
-    builder.RegisterService(&service);
-    std::unique_ptr<grpc::Server> server(builder.BuildAndStart());    
-    
-    server->Wait();    
+    _impl->Handle();
 }
