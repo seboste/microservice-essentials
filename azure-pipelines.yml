@@ -46,6 +46,13 @@ steps:
       buildName: '$(Build.DefinitionName)'
       buildNumber: '$(Build.BuildNumber)'
       workingDirectory: 'build'
+  - task: Bash@3
+      displayName: Test
+      inputs:
+        targetType: 'inline'
+        script: |
+          cat conanbuildinfo.cmake
+        workingDirectory: 'build'      
   - task: CMake@1
     displayName: CMake Configure
     inputs:
