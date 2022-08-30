@@ -12,21 +12,21 @@ pr:
 
 strategy:
   matrix:
-    linux:
-      imageName: 'ubuntu-latest'
-      extraBuildArguments: ''
-      conanInstallCommand: 'pip install conan'
-      extraInstallArguments: '-s compiler.libcxx=libstdc++11'
+#    linux:
+#      imageName: 'ubuntu-latest'
+#      extraBuildArguments: ''
+#      conanInstallCommand: 'pip install conan'
+#      extraInstallArguments: '-s compiler.libcxx=libstdc++11'
     mac:
       imageName: 'macOS-latest'
       extraBuildArguments: ''
       conanInstallCommand: 'brew update && brew install conan'
       extraInstallArguments: ''
-    windows:
-      imageName: 'windows-latest'
-      extraBuildArguments: '--config Release'
-      conanInstallCommand: 'pip install conan'
-      extraInstallArguments: ''
+#    windows:
+#      imageName: 'windows-latest'
+#      extraBuildArguments: '--config Release'
+#      conanInstallCommand: 'pip install conan'
+#      extraInstallArguments: ''
   
 pool:
     vmImage: $(imageName)
