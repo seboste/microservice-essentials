@@ -12,6 +12,11 @@ if(${_BTYPE} MATCHES "Release|_RELEASE")
     message("build type matched")
 endif()
 
+if(APPLE)
+    find_library(LIBRARY_COREFOUNDATION CoreFoundation)
+    message("LIBRARY_COREFOUNDATION: ${LIBRARY_COREFOUNDATION}")
+endif()
+
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 
 project (microservice-essentials VERSION 0.0.1 LANGUAGES CXX)
