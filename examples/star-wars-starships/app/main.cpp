@@ -3,6 +3,7 @@
 #include <adapters/http-starwars-client/http-starwars-client.h>
 //#include <adapters/dummy-starwars-client/dummy-starwars-client.h>
 #include <adapters/http-handler/http-handler.h>
+#include <adapters/grpc-handler/grpc-handler.h>
 
 int main()
 {    
@@ -12,8 +13,9 @@ int main()
 
     Core core(client, db);
 
-    HttpHandler handler(core, "0.0.0.0", 8080);
-
+    //HttpHandler handler(core, "0.0.0.0", 8080);
+    GrpcHandler handler(core, "0.0.0.0", 50051);
+    
     handler.Handle();
 
     return 0;
