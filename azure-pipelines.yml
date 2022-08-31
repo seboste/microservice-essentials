@@ -15,16 +15,19 @@ strategy:
     linux:
       imageName: 'ubuntu-latest'
       extraBuildArguments: ''
+      extraConfigureArguments: '-DBUILD_EXAMPLES=True'
       conanInstallCommand: 'pip install conan'
-      extraInstallArguments: '-s compiler.libcxx=libstdc++11'
+      extraInstallArguments: '-s compiler.libcxx=libstdc++11 -o build_examples=True'
     mac:
       imageName: 'macOS-latest'
       extraBuildArguments: ''
+      extraConfigureArguments: ''
       conanInstallCommand: 'brew update && brew install conan'
       extraInstallArguments: ''
     windows:
       imageName: 'windows-latest'
       extraBuildArguments: '--config Release'
+      extraConfigureArguments: ''
       conanInstallCommand: 'pip install conan'
       extraInstallArguments: ''
   
@@ -42,14 +45,14 @@ steps:
     inputs:
       conanCommand: 'Install'
       pathOrReference: '..'
-      extraArguments: '-s build_type=Release -s cppstd=17 $(extraInstallArguments) -o build_testing=True -o build_examples=True --build missing'
+      extraArguments: '-s build_type=Release -s cppstd=17 -o build_testing=True $(extraInstallArguments) --build missing'
       buildName: '$(Build.DefinitionName)'
       buildNumber: '$(Build.BuildNumber)'
       workingDirectory: 'build'
   - task: CMake@1
     displayName: CMake Configure
     inputs:
-      cmakeArgs: '.. -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=True -DBUILD_EXAMPLES=True'
+      cmakeArgs: '.. -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=True $(extraConfigureArguments)'
       workingDirectory: 'build'
   - task: CMake@1
     displayName: CMake Build
