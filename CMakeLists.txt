@@ -1,22 +1,5 @@
 cmake_minimum_required (VERSION 3.16.3)
 
-if(CMAKE_BUILD_TYPE)
-set(_BTYPE ${CMAKE_BUILD_TYPE})
-elseif(NOT BUILD_TYPE STREQUAL "")
-set(_BTYPE ${BUILD_TYPE})
-endif()
-
-message("_BTYPE: ${_BTYPE}")
-
-if(${_BTYPE} MATCHES "Release|_RELEASE")
-    message("build type matched")
-endif()
-
-if(APPLE)
-    find_library(LIBRARY_COREFOUNDATION CoreFoundation)
-    message("LIBRARY_COREFOUNDATION: ${LIBRARY_COREFOUNDATION}")
-endif()
-
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 
 project (microservice-essentials VERSION 0.0.1 LANGUAGES CXX)
