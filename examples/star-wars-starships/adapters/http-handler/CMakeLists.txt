@@ -18,4 +18,5 @@ target_link_libraries(http-handler
         httplib::httplib 
         nlohmann_json::nlohmann_json
         OpenSSL::OpenSSL
+        microservice-essentials
     )

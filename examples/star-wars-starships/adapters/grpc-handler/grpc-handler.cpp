@@ -1,6 +1,7 @@
 #include "grpc-handler.h"
 #include <generated/api.grpc.pb.h>
 #include <grpcpp/grpcpp.h>
+#include <microservice-essentials/handler.h>
 
 using namespace grpc;
 
@@ -48,7 +49,7 @@ void to_protobuf(const Starship& starship, StarShips::StarShip& protobuf_starshi
 
 } //end anon ns
 
-class GrpcHandler::Impl : public StarShips::StarShipService::Service
+class GrpcHandler::Impl : public StarShips::StarShipService::Service, mse::Handler
 {
 public:
     Impl(Api& api, const std::string& host, int port)
@@ -59,10 +60,15 @@ public:
         _serverBuilder.RegisterService(this);
     }
 
-    void Handle()
+    virtual void Handle() override
     {
         _server = _serverBuilder.BuildAndStart();
         _server->Wait();
+    }
+
+    virtual void Stop() override
+    {
+        _server->Shutdown();
     }
 
     virtual Status ListStarShips(::grpc::ServerContext* context, const ::StarShips::ListStarShipsRequest* request, ::StarShips::ListStarShipsResponse* response)

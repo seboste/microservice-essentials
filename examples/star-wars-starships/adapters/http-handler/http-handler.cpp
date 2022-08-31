@@ -105,6 +105,11 @@ void HttpHandler::Handle()
     _svr->listen(_host, _port);
 }
 
+void HttpHandler::Stop()
+{
+    _svr->stop();
+}
+
 void HttpHandler::listStarShips(const httplib::Request& request, httplib::Response& response)
 {   
     response.set_content(

@@ -4,6 +4,7 @@
 //#include <adapters/dummy-starwars-client/dummy-starwars-client.h>
 #include <adapters/http-handler/http-handler.h>
 #include <adapters/grpc-handler/grpc-handler.h>
+#include <microservice-essentials/cross-cutting-concerns/graceful-shutdown.h>
 
 int main()
 {    
@@ -15,6 +16,9 @@ int main()
 
     //HttpHandler handler(core, "0.0.0.0", 8080);
     GrpcHandler handler(core, "0.0.0.0", 50051);
+
+
+    mse::GracefulShutdownOnSignal gracefulShutdown(SIGTERM);
     
     handler.Handle();
 
