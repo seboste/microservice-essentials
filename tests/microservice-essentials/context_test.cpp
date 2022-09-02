@@ -4,6 +4,6 @@
 
 TEST_CASE( "Context", "[context]" ) 
 {
-    microservice_essentials::Context ctx;
+    mse::Context ctx;
     REQUIRE( 1 == 1 );
 }
