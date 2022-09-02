@@ -64,14 +64,14 @@ steps:
     inputs:
       targetType: 'inline'
       script: |
-        ctest --output-junit testResult.xml
+        ctest --output-junit testResult.xml --rerun-failed --output-on-failure
       workingDirectory: 'build/tests'
   - task: PublishTestResults@2
     condition: always()
     displayName: Publish Test Results
     inputs:
       testResultsFormat: 'JUnit'
-      testResultsFiles: 'build/tests/testResult.xml'  
+      testResultsFiles: 'build/tests/testResult.xml'
   - task: ArtifactoryConan@1
     displayName: Create Conan Package
     inputs:
