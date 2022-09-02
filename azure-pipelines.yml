@@ -67,6 +67,7 @@ steps:
         ctest --output-junit testResult.xml
       workingDirectory: 'build/tests'
   - task: PublishTestResults@2
+    condition: always()
     displayName: Publish Test Results
     inputs:
       testResultsFormat: 'JUnit'
