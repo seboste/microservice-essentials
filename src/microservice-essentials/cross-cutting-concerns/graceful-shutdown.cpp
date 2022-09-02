@@ -60,24 +60,29 @@ namespace
 
 GracefulShutdownOnSignal::GracefulShutdownOnSignal(int signal)
     : _signal(signal)
-{
+{    
     std::signal(signal, set_shotdown_requested);
     _shutdownOnSignal = std::async(&GracefulShutdownOnSignal::waitAndShutdown, this);
+
 }
 
 void GracefulShutdownOnSignal::waitAndShutdown()
 {
-    std::unique_lock<std::mutex> lk(_mutex);
-    _terminationRequested.wait(lk, [](){return bool(shutdown_requested); });
-
-    if(shutdown_requested)
+    using namespace std::chrono_literals;
+    std::unique_lock<std::mutex> lk(_mutex);    
+    while(_terminationRequested.wait_for(lk, 5ms) == std::cv_status::timeout)
     {
-        GracefulShutdown::GetInstance().Shutdown();
+        if(shutdown_requested)
+        {
+            GracefulShutdown::GetInstance().Shutdown();
+            shutdown_requested = false;
+        }        
     }
 }
 
 GracefulShutdownOnSignal::~GracefulShutdownOnSignal()
-{
-    _terminationRequested.notify_one();
-    signal(_signal, SIG_DFL);
+{    
+    std::signal(_signal, SIG_DFL);    
+    _terminationRequested.notify_all();
+    _shutdownOnSignal.wait();    
 }
