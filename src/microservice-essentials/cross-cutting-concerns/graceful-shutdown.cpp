@@ -59,27 +59,29 @@ void GracefulShutdownOnSignal::SetShutdownRequested(int)
 GracefulShutdownOnSignal::GracefulShutdownOnSignal(int signal)
     : _signal(signal)
 {    
-    //std::signal(signal, GracefulShutdownOnSignal::SetShutdownRequested);
+    std::signal(signal, GracefulShutdownOnSignal::SetShutdownRequested);
     _shutdownOnSignal = std::async(&GracefulShutdownOnSignal::waitAndShutdown, this);
+    
+    using namespace std::chrono_literals;
+    std::this_thread::sleep_for(5ms);
 }
 
 void GracefulShutdownOnSignal::waitAndShutdown()
 {
-    using namespace std::chrono_literals;
-    std::unique_lock<std::mutex> lk(_mutex);    
-    while(_terminationRequested.wait_for(lk, 5ms) == std::cv_status::timeout)
+    using namespace std::chrono_literals;    
+    while(_requestTermination == false)
     {
         if(shutdown_requested)
         {
             GracefulShutdown::GetInstance().Shutdown();
             shutdown_requested = false;
-        }        
+        }
+        std::this_thread::sleep_for(5ms);
     }
 }
 
 GracefulShutdownOnSignal::~GracefulShutdownOnSignal()
 {    
-    //std::signal(_signal, SIG_DFL);
-    _terminationRequested.notify_all();
-    _shutdownOnSignal.wait();    
+    std::signal(_signal, SIG_DFL);
+    _requestTermination = true;    
 }

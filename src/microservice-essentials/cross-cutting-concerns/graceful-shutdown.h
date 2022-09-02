@@ -4,7 +4,6 @@
 #include <functional>
 #include <future>
 #include <unordered_map>
-#include <condition_variable>
 
 namespace mse
 {
@@ -43,8 +42,7 @@ class GracefulShutdownOnSignal
         void waitAndShutdown();
 
         int _signal = SIGTERM;
-        std::mutex _mutex;
-        std::condition_variable _terminationRequested;
+        std::atomic<bool> _requestTermination = false;        
         std::future<void> _shutdownOnSignal;
 };
 
