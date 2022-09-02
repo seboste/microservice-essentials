@@ -38,6 +38,7 @@ class GracefulShutdownOnSignal
         GracefulShutdownOnSignal(int signal = SIGTERM);
         virtual  ~GracefulShutdownOnSignal();
 
+        static void SetShutdownRequested(int); //shouldn't be called accessible for testing purposes
     private:
         void waitAndShutdown();
 

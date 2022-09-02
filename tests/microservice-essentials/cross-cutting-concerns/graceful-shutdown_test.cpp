@@ -57,7 +57,8 @@ SCENARIO( "Graceful Shutdown Registration & Callback Invocation", "[graceful-shu
                 
                 WHEN("the sigterm signal is raised")
                 {                    
-                    std::raise(SIGTERM);
+                    //std::raise(SIGTERM);
+                    mse::GracefulShutdownOnSignal::SetShutdownRequested(1);
                     THEN("the callback is called within 10ms")
                     {                        
                         std::this_thread::sleep_for(10ms);
@@ -67,9 +68,11 @@ SCENARIO( "Graceful Shutdown Registration & Callback Invocation", "[graceful-shu
 
                 WHEN("the sigterm signal is raised twice")
                 {                
-                    std::raise(SIGTERM);                    
+                    //std::raise(SIGTERM);
+                    mse::GracefulShutdownOnSignal::SetShutdownRequested(1);
                     std::this_thread::sleep_for(10ms);
-                    std::raise(SIGTERM);                    
+                    //std::raise(SIGTERM);
+                    mse::GracefulShutdownOnSignal::SetShutdownRequested(1);
 
                     THEN("the callback is called within 10ms")
                     {                        
@@ -81,7 +84,8 @@ SCENARIO( "Graceful Shutdown Registration & Callback Invocation", "[graceful-shu
 
             WHEN("the instance has been deleted and the sigterm signal is raised")
             {
-                std::raise(SIGTERM);
+                //std::raise(SIGTERM);
+                mse::GracefulShutdownOnSignal::SetShutdownRequested(1);
                 THEN("the callback is NOT called within 10ms")
                 {                    
                     std::this_thread::sleep_for(10ms);

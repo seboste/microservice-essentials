@@ -48,22 +48,19 @@ void GracefulShutdown::Shutdown()
 namespace
 {
     static std::atomic<bool> shutdown_requested = false;
+    static_assert( std::atomic<bool>::is_always_lock_free );
+}
 
-    void set_shotdown_requested(int)
-    {
-        shutdown_requested = true;
-    }
-  
-
-  static_assert( std::atomic<bool>::is_always_lock_free );
+void GracefulShutdownOnSignal::SetShutdownRequested(int)
+{
+    shutdown_requested = true;
 }
 
 GracefulShutdownOnSignal::GracefulShutdownOnSignal(int signal)
     : _signal(signal)
 {    
-    std::signal(signal, set_shotdown_requested);
+    //std::signal(signal, GracefulShutdownOnSignal::SetShutdownRequested);
     _shutdownOnSignal = std::async(&GracefulShutdownOnSignal::waitAndShutdown, this);
-
 }
 
 void GracefulShutdownOnSignal::waitAndShutdown()
@@ -82,7 +79,7 @@ void GracefulShutdownOnSignal::waitAndShutdown()
 
 GracefulShutdownOnSignal::~GracefulShutdownOnSignal()
 {    
-    std::signal(_signal, SIG_DFL);    
+    //std::signal(_signal, SIG_DFL);
     _terminationRequested.notify_all();
     _shutdownOnSignal.wait();    
 }
