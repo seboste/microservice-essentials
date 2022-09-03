@@ -4,9 +4,9 @@
 using namespace std::chrono_literals;
 
 SCENARIO( "Graceful Shutdown Registration & Callback Invocation", "[graceful-shutdown]" )
-{ 
+{    
     GIVEN("Graceful Shutdown with one callback registered")
-    {
+    {        
         std::atomic<int> cbCallCount = 0;
         mse::GracefulShutdown::GetInstance().Register("test_cb", [&](){ cbCallCount++; } );
         
@@ -51,46 +51,32 @@ SCENARIO( "Graceful Shutdown Registration & Callback Invocation", "[graceful-shu
         }
 
         AND_GIVEN("a GracefulShutdownOnSignal instance connected to the SIGTERM signal")
-        {
+        {                           
+            mse::GracefulShutdownOnSignal gracefulShutdown;
+            
+            WHEN("the sigterm signal is raised")
+            {                    
+                std::raise(SIGTERM);                    
+                THEN("the callback is called within 10ms")
+                {                        
+                    std::this_thread::sleep_for(10ms);
+                    REQUIRE(cbCallCount == 1);
+                }
+            }            
+
+            WHEN("the sigterm signal is raised twice")
             {                
-                mse::GracefulShutdownOnSignal gracefulShutdown;
-                
-                WHEN("the sigterm signal is raised")
-                {                    
-                    //std::raise(SIGTERM);
-                    mse::GracefulShutdownOnSignal::SetShutdownRequested(1);
-                    THEN("the callback is called within 10ms")
-                    {                        
-                        std::this_thread::sleep_for(10ms);
-                        REQUIRE(cbCallCount == 1);
-                    }
-                }
+                std::raise(SIGTERM);                    
+                std::this_thread::sleep_for(10ms);
+                std::raise(SIGTERM);                    
 
-                WHEN("the sigterm signal is raised twice")
-                {                
-                    std::raise(SIGTERM);                    
+                THEN("the callback is called within 10ms")
+                {                        
                     std::this_thread::sleep_for(10ms);
-                    std::raise(SIGTERM);                    
-
-                    THEN("the callback is called within 10ms")
-                    {                        
-                        std::this_thread::sleep_for(10ms);
-                        REQUIRE(cbCallCount == 2);
-                    }
-                }
-            }
-
-            WHEN("the instance has been deleted and the sigterm signal is raised")
-            {
-                std::raise(SIGTERM);                
-                THEN("the callback is NOT called within 10ms")
-                {                    
-                    std::this_thread::sleep_for(10ms);
-                    REQUIRE(cbCallCount == 0);
+                    REQUIRE(cbCallCount == 2);
                 }
             }
         }
-
         mse::GracefulShutdown::GetInstance().UnRegister("test_cb");
     }   
 }
