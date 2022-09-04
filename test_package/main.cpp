@@ -3,7 +3,7 @@
 
 int main()
 {
-    microservice_essentials::Context ctx;
+    mse::Context ctx;
     std::cout << "context created" << std::endl;
     return 0;    
 }
