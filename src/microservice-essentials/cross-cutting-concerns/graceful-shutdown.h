@@ -1,8 +1,8 @@
 #pragma once
 
-#include <csignal>
+#include <microservice-essentials/utilities/signal-handler.h>
+#include <atomic>
 #include <functional>
-#include <future>
 #include <unordered_map>
 
 namespace mse
@@ -31,19 +31,15 @@ class GracefulShutdown
 
 
 //should be instantiated AFTER all callbacks have been registered to the GracefulShutdown
-class GracefulShutdownOnSignal 
+class GracefulShutdownOnSignal
 {
     public:
-        GracefulShutdownOnSignal(int signal = SIGTERM);
-        virtual  ~GracefulShutdownOnSignal();
-
-        static void SetShutdownRequested(int); //shouldn't be called accessible for testing purposes
+        GracefulShutdownOnSignal(Signal signal = Signal::SIG_TERM)
+            : _signalHandler(signal, [](){ GracefulShutdown::GetInstance().Shutdown(); })
+        {}
+        virtual  ~GracefulShutdownOnSignal() {}        
     private:
-        void waitAndShutdown();
-
-        int _signal = SIGTERM;
-        std::atomic<bool> _requestTermination = false;        
-        std::future<void> _shutdownOnSignal;
+        SignalHandler _signalHandler;
 };
 
 

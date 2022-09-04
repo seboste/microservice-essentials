@@ -18,7 +18,7 @@ int main()
     GrpcHandler handler(core, "0.0.0.0", 50051);
 
 
-    mse::GracefulShutdownOnSignal gracefulShutdown(SIGTERM);
+    mse::GracefulShutdownOnSignal gracefulShutdown(mse::Signal::SIG_TERM);
     
     handler.Handle();
 

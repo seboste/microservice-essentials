@@ -3,7 +3,7 @@
 
 using namespace std::chrono_literals;
 
-SCENARIO( "Graceful Shutdown Registration & Callback Invocation", "[graceful-shutdown]" )
+SCENARIO( "Graceful Shutdown Registration & Callback Invocation", "[cross-cutting-concerns][graceful-shutdown]" )
 {    
     GIVEN("Graceful Shutdown with one callback registered")
     {        
@@ -63,19 +63,6 @@ SCENARIO( "Graceful Shutdown Registration & Callback Invocation", "[graceful-shu
                     REQUIRE(cbCallCount == 1);
                 }
             }            
-
-            WHEN("the sigterm signal is raised twice")
-            {                
-                std::raise(SIGTERM);                    
-                std::this_thread::sleep_for(10ms);
-                std::raise(SIGTERM);                    
-
-                THEN("the callback is called within 10ms")
-                {                        
-                    std::this_thread::sleep_for(10ms);
-                    REQUIRE(cbCallCount == 2);
-                }
-            }
         }
         mse::GracefulShutdown::GetInstance().UnRegister("test_cb");
     }   
