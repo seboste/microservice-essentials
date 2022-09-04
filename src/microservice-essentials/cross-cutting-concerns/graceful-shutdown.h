@@ -34,7 +34,7 @@ class GracefulShutdown
 class GracefulShutdownOnSignal
 {
     public:
-        GracefulShutdownOnSignal(Signal signal = Signal::SIG_TERM)
+        GracefulShutdownOnSignal(Signal signal = Signal::SIG_SHUTDOWN)
             : _signalHandler(signal, [](){ GracefulShutdown::GetInstance().Shutdown(); })
         {}
         virtual  ~GracefulShutdownOnSignal() {}        

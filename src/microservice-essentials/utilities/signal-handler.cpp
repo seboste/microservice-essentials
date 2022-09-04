@@ -27,12 +27,14 @@ signal_callback_ptr getCallback(Signal signal)
 {
     switch(signal)
     {
-        case Signal::SIG_INT:   return SignalCallbackHolder<Signal::SIG_INT>::RaiseSignal;
-        case Signal::SIG_ILL:   return SignalCallbackHolder<Signal::SIG_ILL>::RaiseSignal;
+        case Signal::SIG_INT:   return SignalCallbackHolder<Signal::SIG_INT>::RaiseSignal;        
         case Signal::SIG_ABRT:  return SignalCallbackHolder<Signal::SIG_ABRT>::RaiseSignal;
         case Signal::SIG_FPE:   return SignalCallbackHolder<Signal::SIG_FPE>::RaiseSignal;
         case Signal::SIG_SEGV:  return SignalCallbackHolder<Signal::SIG_SEGV>::RaiseSignal;
+#ifndef _WIN32
+        case Signal::SIG_ILL:   return SignalCallbackHolder<Signal::SIG_ILL>::RaiseSignal;
         case Signal::SIG_TERM:  return SignalCallbackHolder<Signal::SIG_TERM>::RaiseSignal;
+#endif
         default: throw std::out_of_range("unknown signal");
     }
 }
@@ -42,11 +44,13 @@ std::atomic<bool>& getSignalRaised(Signal signal)
     switch(signal)
     {
         case Signal::SIG_INT:   return SignalCallbackHolder<Signal::SIG_INT>::signalRaised;
-        case Signal::SIG_ILL:   return SignalCallbackHolder<Signal::SIG_ILL>::signalRaised;
         case Signal::SIG_ABRT:  return SignalCallbackHolder<Signal::SIG_ABRT>::signalRaised;
         case Signal::SIG_FPE:   return SignalCallbackHolder<Signal::SIG_FPE>::signalRaised;
         case Signal::SIG_SEGV:  return SignalCallbackHolder<Signal::SIG_SEGV>::signalRaised;
+#ifndef _WIN32
+        case Signal::SIG_ILL:   return SignalCallbackHolder<Signal::SIG_ILL>::signalRaised;        
         case Signal::SIG_TERM:  return SignalCallbackHolder<Signal::SIG_TERM>::signalRaised;
+#endif
         default: throw std::out_of_range("unknown signal");
     }
 }
