@@ -23,7 +23,7 @@ SCENARIO( "Handler", "[handler][graceful-shutdown]" )
 
             WHEN("Shutdown is requested")
             {
-                mse::GracefulShutdown::GetInstance().Shutdown();
+                mse::GracefulShutdown::GetInstance().RequestShutdown();
                 THEN("Handler::Stop is being called")
                 {
                     REQUIRE(handler.stopCalled == true);
