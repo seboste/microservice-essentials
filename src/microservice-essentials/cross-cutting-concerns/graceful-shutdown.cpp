@@ -36,7 +36,7 @@ bool GracefulShutdown::IsShutdownRequested() const
     return _isShutdownRequested;
 }
 
-void GracefulShutdown::Shutdown()
+void GracefulShutdown::RequestShutdown()
 {
     _isShutdownRequested = true;
     for(auto cb : _callbacks)
