@@ -4,7 +4,7 @@
 using namespace std::chrono_literals;
 
 SCENARIO( "Graceful Shutdown Registration & Callback Invocation", "[cross-cutting-concerns][graceful-shutdown]" )
-{    
+{
     GIVEN("Graceful Shutdown with one callback registered")
     {        
         std::atomic<int> cbCallCount = 0;
@@ -49,21 +49,30 @@ SCENARIO( "Graceful Shutdown Registration & Callback Invocation", "[cross-cuttin
                 REQUIRE_THROWS_AS(mse::GracefulShutdown::GetInstance().Register("test_cb", [](){}), std::runtime_error );
             }
         }
-
-        AND_GIVEN("a GracefulShutdownOnSignal instance connected to the SIGTERM signal")
-        {                           
-            mse::GracefulShutdownOnSignal gracefulShutdown;
-            
-            WHEN("the sigterm signal is raised")
-            {                    
-                std::raise(SIGTERM);                    
-                THEN("the callback is called within 10ms")
-                {                        
-                    std::this_thread::sleep_for(10ms);
-                    REQUIRE(cbCallCount == 1);
-                }
-            }            
-        }
-        mse::GracefulShutdown::GetInstance().UnRegister("test_cb");
+        mse::GracefulShutdown::GetInstance().UnRegister("test_cb");   
     }   
 }
+
+SCENARIO( "Graceful Shutdown Registration & Callback Invocation", "[cross-cutting-concerns][graceful-shutdown][signal-handler]" )
+{
+    GIVEN("a GracefulShutdownOnSignal instance connected to the SHUTDOWN signal")
+    {
+        std::atomic<int> cbCallCount = 0;
+        mse::GracefulShutdown::GetInstance().Register("test_cb", [&](){ cbCallCount++; } );
+
+        mse::GracefulShutdownOnSignal gracefulShutdown;
+
+        
+        WHEN("the shutdown signal is raised")
+        {                    
+            std::raise(static_cast<int>(mse::Signal::SIG_SHUTDOWN));
+            THEN("the callback is called within 20ms")
+            {                        
+                std::this_thread::sleep_for(20ms);
+                REQUIRE(cbCallCount == 1);
+            }
+        }
+
+        mse::GracefulShutdown::GetInstance().UnRegister("test_cb");
+    }
+}    

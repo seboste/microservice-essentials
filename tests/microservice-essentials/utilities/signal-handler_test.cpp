@@ -8,41 +8,28 @@ SCENARIO( "Signal Handler", "[utilities][signal-handler]" )
     GIVEN("A Signal handler attached to SIG_INT handler")
     {   
         std::atomic<int> signalCount = 0;     
-        mse::SignalHandler signalHandler(mse::Signal::SIG_INT, [&](){ signalCount++; });        
+        mse::SignalHandler signalHandler(mse::Signal::SIG_INT, [&](){ signalCount++; });
         WHEN("SIGINT is raised")
         {
             std::raise(SIGINT);
-            THEN("the callback is called within 10ms")
+            THEN("the callback is called within 20ms")
             {
-                std::this_thread::sleep_for(10ms);
+                std::this_thread::sleep_for(20ms);
                 REQUIRE(signalCount == 1);
             }
         }
     }
-    GIVEN("A Signal handler attached to SIG_ABRT handler")
-    {   
-        std::atomic<int> signalCount = 0;     
-        mse::SignalHandler signalHandler(mse::Signal::SIG_ABRT, [&](){ signalCount++; });        
-        WHEN("SIGABRT is raised")
-        {
-            std::raise(SIGABRT);
-            THEN("the callback is called within 10ms")
-            {
-                std::this_thread::sleep_for(10ms);
-                REQUIRE(signalCount == 1);
-            }
-        }
-    }
+    
     GIVEN("A Signal handler attached to SIG_FPE handler")
     {   
         std::atomic<int> signalCount = 0;     
-        mse::SignalHandler signalHandler(mse::Signal::SIG_FPE, [&](){ signalCount++; });        
+        mse::SignalHandler signalHandler(mse::Signal::SIG_FPE, [&](){ signalCount++; });
         WHEN("SIGFPE is raised")
         {
             std::raise(SIGFPE);
-            THEN("the callback is called within 10ms")
+            THEN("the callback is called within 20ms")
             {
-                std::this_thread::sleep_for(10ms);
+                std::this_thread::sleep_for(20ms);
                 REQUIRE(signalCount == 1);
             }
         }
@@ -54,9 +41,23 @@ SCENARIO( "Signal Handler", "[utilities][signal-handler]" )
         WHEN("SIGSEGV is raised")
         {
             std::raise(SIGSEGV);
-            THEN("the callback is called within 10ms")
+            THEN("the callback is called within 20ms")
             {
-                std::this_thread::sleep_for(10ms);
+                std::this_thread::sleep_for(20ms);
+                REQUIRE(signalCount == 1);
+            }
+        }
+    }
+    GIVEN("A Signal handler attached to SIG_ABRT handler")
+    {   
+        std::atomic<int> signalCount = 0;     
+        mse::SignalHandler signalHandler(mse::Signal::SIG_ABRT, [&](){ signalCount++; });        
+        WHEN("SIGABRT is raised")
+        {
+            std::raise(SIGABRT);
+            THEN("the callback is called within 20ms")
+            {
+                std::this_thread::sleep_for(20ms);
                 REQUIRE(signalCount == 1);
             }
         }
@@ -69,9 +70,9 @@ SCENARIO( "Signal Handler", "[utilities][signal-handler]" )
         WHEN("SIGILL is raised")
         {
             std::raise(SIGILL);
-            THEN("the callback is called within 10ms")
+            THEN("the callback is called within 20ms")
             {
-                std::this_thread::sleep_for(10ms);
+                std::this_thread::sleep_for(20ms);
                 REQUIRE(signalCount == 1);
             }
         }
@@ -83,9 +84,9 @@ SCENARIO( "Signal Handler", "[utilities][signal-handler]" )
         WHEN("SIGTERM is raised")
         {
             std::raise(SIGTERM);
-            THEN("the callback is called within 10ms")
+            THEN("the callback is called within 20ms")
             {
-                std::this_thread::sleep_for(10ms);
+                std::this_thread::sleep_for(20ms);
                 REQUIRE(signalCount == 1);
             }
         }
@@ -104,22 +105,22 @@ SCENARIO( "Signal Handler", "[utilities][signal-handler]" )
 #else
             std::raise(SIGINT);
 #endif
-            THEN("the callback is called within 10ms")
+            THEN("the callback is called within 20ms")
             {
-                std::this_thread::sleep_for(10ms);
+                std::this_thread::sleep_for(20ms);
                 REQUIRE(sigShutdownCount == 1);
             }
         }
 
-        WHEN("Shutdown signal is raised twice with 10ms pause")        
+        WHEN("Shutdown signal is raised twice with 20ms pause")        
         {
             std::raise(static_cast<int>(mse::Signal::SIG_SHUTDOWN));
-            std::this_thread::sleep_for(10ms);
+            std::this_thread::sleep_for(20ms);
             std::raise(static_cast<int>(mse::Signal::SIG_SHUTDOWN));
 
-            THEN("the callback is called twice within 10ms")
+            THEN("the callback is called twice within 20ms")
             {
-                std::this_thread::sleep_for(10ms);
+                std::this_thread::sleep_for(20ms);
                 REQUIRE(sigShutdownCount == 2);
             }
         }
@@ -132,18 +133,18 @@ SCENARIO( "Signal Handler", "[utilities][signal-handler]" )
             WHEN("SIGTERM/SIGINT is raised")
             {
                 std::raise(static_cast<int>(mse::Signal::SIG_SHUTDOWN));
-                THEN("the callback is called within 10ms")
+                THEN("the callback is called within 20ms")
                 {
-                    std::this_thread::sleep_for(10ms);
+                    std::this_thread::sleep_for(20ms);
                     REQUIRE(sigShutdownCount == 1);
                 }
             }
             WHEN("SIGFPE is raised")
             {
                 std::raise(SIGFPE);
-                THEN("the callback is called within 10ms")
+                THEN("the callback is called within 20ms")
                 {
-                    std::this_thread::sleep_for(10ms);
+                    std::this_thread::sleep_for(20ms);
                     REQUIRE(sigFpeCount == 1);
                 }
             }
