@@ -1,18 +1,20 @@
 #pragma once
 
 #include <ports/api.h>
+#include <microservice-essentials/handler.h>
 #include <memory>
 #include <string>
 
 namespace httplib { class Server; class Request; class Response; }
 
-class HttpHandler
+class HttpHandler : public mse::Handler
 {
 public:
     HttpHandler(Api& api, const std::string& host, int port);
     virtual ~HttpHandler();
 
-    void Handle();    
+    virtual void Handle() override;
+    virtual void Stop() override;
 private:
 
     void listStarShips(const httplib::Request& request, httplib::Response& response);

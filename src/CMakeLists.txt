@@ -2,6 +2,10 @@ add_library(microservice-essentials)
 add_subdirectory (microservice-essentials)
 target_include_directories(microservice-essentials PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+target_link_libraries(microservice-essentials PRIVATE Threads::Threads)
+
 install(TARGETS microservice-essentials DESTINATION lib)
 
 #TODO: upgrade to cmake 3.23 and use FILE_SET 

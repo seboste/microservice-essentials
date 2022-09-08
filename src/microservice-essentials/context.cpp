@@ -1,6 +1,6 @@
 #include "context.h"
 
-using namespace microservice_essentials;
+using namespace mse;
 
 Context::Context()
 {

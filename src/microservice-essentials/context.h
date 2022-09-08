@@ -1,6 +1,6 @@
 #pragma once
 
-namespace microservice_essentials
+namespace mse
 {
 
 class Context

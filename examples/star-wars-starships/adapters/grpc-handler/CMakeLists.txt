@@ -17,5 +17,6 @@ target_link_libraries(grpc-handler
     PUBLIC 
         ports
     PRIVATE 
-        gRPC::gRPC        
+        gRPC::gRPC
+        microservice-essentials
     )
