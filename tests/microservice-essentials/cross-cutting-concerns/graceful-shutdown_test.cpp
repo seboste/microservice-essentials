@@ -12,7 +12,7 @@ SCENARIO( "Graceful Shutdown Registration & Callback Invocation", "[cross-cuttin
         
         WHEN("Shutdown is invoked")
         {
-            mse::GracefulShutdown::GetInstance().Shutdown();
+            mse::GracefulShutdown::GetInstance().RequestShutdown();
             THEN("the callback is called")
             {
                 REQUIRE(cbCallCount == 1);
@@ -23,7 +23,7 @@ SCENARIO( "Graceful Shutdown Registration & Callback Invocation", "[cross-cuttin
         {    
             bool hasBeenCalled2 = false;
             mse::GracefulShutdown::GetInstance().Register("test2_cb", [&](){ hasBeenCalled2 = true;} );
-            mse::GracefulShutdown::GetInstance().Shutdown();
+            mse::GracefulShutdown::GetInstance().RequestShutdown();
             THEN("both callbacks are called")
             {
                 REQUIRE(cbCallCount == 1);
@@ -35,7 +35,7 @@ SCENARIO( "Graceful Shutdown Registration & Callback Invocation", "[cross-cuttin
         WHEN("the callback is unregistered and shutdown is invoked")
         {
             mse::GracefulShutdown::GetInstance().UnRegister("test_cb");    
-            mse::GracefulShutdown::GetInstance().Shutdown();
+            mse::GracefulShutdown::GetInstance().RequestShutdown();
            THEN("the callback is not called anymore")
             {
                 REQUIRE(cbCallCount == 0);

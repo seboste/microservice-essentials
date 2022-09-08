@@ -8,7 +8,9 @@
 namespace mse
 {
 
-//type safe definition of all supported signals that can be handled
+/**
+    type safe definition of all supported signals that can be handled
+*/
 enum class Signal
 {
     SIG_INT = SIGINT, /* Interactive attention signal.  */    
@@ -24,6 +26,17 @@ enum class Signal
 #endif
 };
 
+/**
+    Upon receiving one of the above defined system signals, a callback is being invoked. After destruction, the default signal handler is set.
+
+    This class works around the restrictions imposed on signal handlers (e.g. only a very limited set of functions may even be called).
+    See https://en.cppreference.com/w/cpp/utility/program/signal for more detauls.
+
+    Note that not all signals may be available on all platforms.
+
+    Note that the current implementation polls for the signal roughly every 5ms. 
+    It is safe to assume that the callback is invoked within 20ms after the signal has raised.
+ */
 class SignalHandler 
 {
     public:
@@ -39,7 +52,5 @@ class SignalHandler
         std::atomic<bool> _requestDestruction = false;        
         std::future<void> _callOnSignal;
 };
-
-
 
 }

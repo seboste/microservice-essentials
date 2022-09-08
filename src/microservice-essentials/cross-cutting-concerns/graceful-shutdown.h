@@ -8,6 +8,11 @@
 namespace mse
 {
 
+/**
+    Singleton that calls registered named callbacks if a shutdown is requested.
+
+    Beware that requesting a shutdown must not occur before registering callbacks has been completed because this class is not thread-safe.
+ */
 class GracefulShutdown
 {
     public:
@@ -16,7 +21,7 @@ class GracefulShutdown
         void Register(const std::string& id, std::function<void(void)> shutdown_callback);
         void UnRegister(const std::string& id);        
 
-        void Shutdown();
+        void RequestShutdown();
         bool IsShutdownRequested() const;
         
     protected:
@@ -26,18 +31,22 @@ class GracefulShutdown
     private:
 
         std::unordered_map<std::string, std::function<void(void)>> _callbacks;                
-        std::atomic<bool> _isShutdownRequested = false; //use atomic because Shutdown() and IsShutdownRequested() may be called from different threads
+        std::atomic<bool> _isShutdownRequested = false; //use atomic because RequestShutdown() and IsShutdownRequested() may be called from different threads
 };
 
 
-//should be instantiated AFTER all callbacks have been registered to the GracefulShutdown
+/**
+    Connects a system signal (typically SIGTERM) to the GracefulShutdown Singleton so that the service shutdown is requested upon receiving that signal
+
+    Should be instantiated in the service's main function AFTER all callbacks have been registered to the GracefulShutdown
+ */
 class GracefulShutdownOnSignal
 {
     public:
         GracefulShutdownOnSignal(Signal signal = Signal::SIG_SHUTDOWN)
-            : _signalHandler(signal, [](){ GracefulShutdown::GetInstance().Shutdown(); })
+            : _signalHandler(signal, [](){ GracefulShutdown::GetInstance().RequestShutdown(); })
         {}
-        virtual  ~GracefulShutdownOnSignal() {}        
+        virtual  ~GracefulShutdownOnSignal() {}
     private:
         SignalHandler _signalHandler;
 };
