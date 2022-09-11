@@ -1,6 +1,8 @@
 target_sources(microservice-essentials
     PUBLIC
+        environment.h
         signal-handler.h
     PRIVATE
-        signal-handler.cpp        
+        environment.cpp
+        signal-handler.cpp
 )
