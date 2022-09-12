@@ -1,10 +1,12 @@
 #include "http-handler.h"
+#include <microservice-essentials/observability/logger.h>
 #define CPPHTTPLIB_OPENSSL_SUPPORT //be consistent with other projects to prevent seg fault
 #include <httplib/httplib.h>
 #include <nlohmann/json.hpp>
 #include <functional>
 #include <iostream>
 #include <regex>
+
 
 
 namespace {
@@ -102,16 +104,19 @@ HttpHandler::~HttpHandler()
 
 void HttpHandler::Handle()
 {
+    mse::Logger::GetInstance().Write(mse::LogLevel::info, std::string("serving on ") + _host + ':' + std::to_string(_port));
     _svr->listen(_host, _port);
 }
 
 void HttpHandler::Stop()
 {
+    mse::Logger::GetInstance().Write(mse::LogLevel::info, "stop requested");
     _svr->stop();
 }
 
 void HttpHandler::listStarShips(const httplib::Request& request, httplib::Response& response)
-{   
+{
+    mse::Logger::GetInstance().Write(mse::LogLevel::trace, "received listStarShips request");
     response.set_content(
             to_json(_api.ListStarShips()).dump(),
             "text/json"
@@ -121,6 +126,7 @@ void HttpHandler::listStarShips(const httplib::Request& request, httplib::Respon
 
 void HttpHandler::getStarShip(const httplib::Request& request, httplib::Response& response)
 {
+    mse::Logger::GetInstance().Write(mse::LogLevel::trace, "received getStarShip request");
     response.set_content(
             to_json(_api.GetStarShip(extractId(request.path))).dump(),
             "text/json"
@@ -130,6 +136,7 @@ void HttpHandler::getStarShip(const httplib::Request& request, httplib::Response
 
 void HttpHandler::updateStatus(const httplib::Request& request, httplib::Response& response)
 {
+    mse::Logger::GetInstance().Write(mse::LogLevel::trace, "received updateStatus request");
     _api.UpdateStatus(
         extractId(request.path),
         from_string(json::parse(request.body).at("status"))
