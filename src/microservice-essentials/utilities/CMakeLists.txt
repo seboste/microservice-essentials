@@ -5,4 +5,5 @@ target_sources(microservice-essentials
     PRIVATE
         environment.cpp
         signal-handler.cpp
+        environment.txx
 )
