@@ -14,9 +14,9 @@ target_sources(http-handler
 target_link_libraries(http-handler 
     PUBLIC 
         ports 
+        microservice-essentials
     PRIVATE 
         httplib::httplib 
         nlohmann_json::nlohmann_json
         OpenSSL::OpenSSL
-        microservice-essentials
     )

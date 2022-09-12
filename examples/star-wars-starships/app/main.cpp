@@ -14,8 +14,8 @@ int main()
 
     Core core(client, db);
 
-    //HttpHandler handler(core, "0.0.0.0", 8080);
-    GrpcHandler handler(core, "0.0.0.0", 50051);
+    //HttpHandler handler(core);
+    GrpcHandler handler(core);
 
 
     mse::GracefulShutdownOnSignal gracefulShutdown(mse::Signal::SIG_SHUTDOWN);
