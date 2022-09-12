@@ -95,7 +95,7 @@ SCENARIO( "Environment variables", "[utilities][environment]" )
                 REQUIRE_THROWS_AS(mse::getenv<float>("TEST_STRING_VAR"), std::invalid_argument);
             }            
         }
-    }    
+    }
 
     GIVEN("environment variable does not exist")
     {

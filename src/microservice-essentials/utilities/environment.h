@@ -1,9 +1,10 @@
-#pragma one
+#pragma once
 
 #include <cstdlib>
 #include <exception>
 #include <optional>
 #include <sstream>
+#include <string>
 
 
 namespace mse
@@ -12,9 +13,10 @@ namespace mse
 template<typename T> std::optional<T> getenv_optional(const std::string& env_name);
 template<typename T> T getenv(const std::string& env_name);
 template<typename T> T getenv_or(const std::string& env_name, T&& default_value);
+std::string getenv_or(const std::string& env_name, const char* default_value);
 
 template<>
-std::optional<std::string> getenv_optional(const std::string& env_name)
+inline std::optional<std::string> getenv_optional(const std::string& env_name)
 {
     char* env = std::getenv(env_name.c_str());
     if(env == nullptr)
@@ -25,7 +27,7 @@ std::optional<std::string> getenv_optional(const std::string& env_name)
 }
 
 template<typename T> 
-std::optional<T> getenv_optional(const std::string& env_name)
+inline std::optional<T> getenv_optional(const std::string& env_name)
 {
     std::optional<std::string> env = mse::getenv_optional<std::string>(env_name);
     if(!env.has_value())
@@ -43,7 +45,7 @@ std::optional<T> getenv_optional(const std::string& env_name)
 }
 
 template<typename T> 
-T getenv(const std::string& env_name)
+inline T getenv(const std::string& env_name)
 {
     std::optional<T> opt_val = mse::getenv_optional<T>(env_name);
     if(!opt_val.has_value())
@@ -54,7 +56,7 @@ T getenv(const std::string& env_name)
 }
 
 template<typename T> 
-T getenv_or(const std::string& env_name, T&& default_value)
+inline T getenv_or(const std::string& env_name, T&& default_value)
 {
     std::optional<T> opt_val = mse::getenv_optional<T>(env_name);
     if(!opt_val.has_value())
@@ -64,9 +66,6 @@ T getenv_or(const std::string& env_name, T&& default_value)
     return opt_val.value();
 }
 
-std::string getenv_or(const std::string& env_name, const char* default_value)
-{
-    return getenv_or(env_name, std::string(default_value));
-}
+
 
 }
