@@ -35,7 +35,10 @@ std::optional<T> getenv_optional(const std::string& env_name)
         
     std::stringstream stream(env.value());
     T value;
-    stream >> value;
+    if(!(stream >> value))
+    {
+        throw std::invalid_argument(std::string("the value '") + env.value() + " of the environment variable '" + env_name + "' cannot be converted.");
+    }
     return std::optional<T>(value);
 }
 
@@ -45,7 +48,7 @@ T getenv(const std::string& env_name)
     std::optional<T> opt_val = mse::getenv_optional<T>(env_name);
     if(!opt_val.has_value())
     {
-        throw std::runtime_error(std::string("environment variable '") + env_name + "' is not set.");
+        throw std::invalid_argument(std::string("environment variable '") + env_name + "' is not set.");
     }
     return opt_val.value();
 }
@@ -56,9 +59,14 @@ T getenv_or(const std::string& env_name, T&& default_value)
     std::optional<T> opt_val = mse::getenv_optional<T>(env_name);
     if(!opt_val.has_value())
     {
-        return default_value;
+        return std::move(default_value);
     }
     return opt_val.value();
+}
+
+std::string getenv_or(const std::string& env_name, const char* default_value)
+{
+    return getenv_or(env_name, std::string(default_value));
 }
 
 }
