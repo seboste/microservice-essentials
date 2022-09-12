@@ -1,5 +1,18 @@
 # microservice-essentials
 
+## Features
+
+### Basics
+- Base class for **handling** incoming traffic.
+- Definition of application and request specific **context**.
+
+### Cross Cutting Concerns
+- Singleton for notifying registered classes about upcoming service **shutdown** upon receiving a shutdown signal.
+
+### Utilities
+- Convenience for reading and converting **environment variables**.
+- Handling of **system signals**.
+
 ## Build
 ```
 mkdir build
