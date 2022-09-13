@@ -22,7 +22,7 @@ enum class LogLevel
 };
 
 std::string to_string(LogLevel level);
-LogLevel from_string(const std::string& level_string);
+void from_string(const std::string& level_string, LogLevel& level);
 
 class Logger
 {

@@ -28,7 +28,7 @@ std::string mse::to_string(LogLevel level)
     throw std::invalid_argument(std::string("invalid log level with id ") + std::to_string(static_cast<int>(level)));    
 }
 
-LogLevel mse::from_string(const std::string& level_string)
+void mse::from_string(const std::string& level_string, LogLevel& level)
 {
     static const std::unordered_map<std::string, LogLevel> mapping =
     {
@@ -40,14 +40,10 @@ LogLevel mse::from_string(const std::string& level_string)
         { "CRITICAL" , LogLevel::critical }
     };
     
-    if(auto cit = mapping.find(level_string); cit != mapping.cend())
-    {
-        return cit->second;
-    }
-    else
-    {
-        return LogLevel::invalid;
-    }
+    auto cit = mapping.find(level_string); 
+    level = (cit != mapping.cend())
+        ? cit->second
+        : LogLevel::invalid;    
 }
 
 LogProvider& LogProvider::GetInstance()
@@ -139,9 +135,10 @@ void DiscardLogger::write(const mse::Context& context, mse::LogLevel level, std:
 
 bool operator>>(std::istream& is, mse::LogLevel& level)
 {
+    level = mse::LogLevel::invalid;
     std::string level_string;
     is >> level_string;
-    level = mse::from_string(level_string);
+    mse::from_string(level_string, level);
     return level != mse::LogLevel::invalid;
 }
 
