@@ -75,7 +75,6 @@ private:
     ~LogProvider() = default;
 
     Logger* _logger = nullptr;    
-    DiscardLogger _defaultLogger;
 };
 
 }

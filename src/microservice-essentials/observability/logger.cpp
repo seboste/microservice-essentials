@@ -48,21 +48,32 @@ void mse::from_string(const std::string& level_string, LogLevel& level)
 
 LogProvider& LogProvider::GetInstance()
 {
+    std::cout << "making sure that the instance exists" << std::endl;
     static LogProvider _instance;
+    std::cout << "returning the instance" << std::endl;
     return _instance;
 }
 
 Logger& LogProvider::GetLogger()
 {
-    Logger* logger = GetInstance()._logger;
-    return logger != nullptr
-        ? *logger
-        : GetInstance()._defaultLogger;
+    if(Logger* logger = GetInstance()._logger; logger != nullptr)
+    {
+        return *logger;
+    }
+    else
+    {
+        static DiscardLogger _defaultLogger;
+        return _defaultLogger;
+    }
 }
 
 void LogProvider::SetLogger(Logger* logger)
 {
-    _logger = logger;
+    if(_logger == nullptr
+    || logger == nullptr)
+    {
+        _logger = logger;
+    }
 }
     
 void Logger::Write(std::string_view message)

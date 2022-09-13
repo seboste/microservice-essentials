@@ -1,13 +1,130 @@
 #include <catch2/catch_test_macros.hpp>
 #include <microservice-essentials/observability/logger.h>
-#include <exception>
+
+namespace
+{
+class TestLogger : public mse::Logger
+{        
+    public:
+        TestLogger(mse::LogLevel min_log_level = mse::LogLevel::info)
+            : Logger(min_log_level)
+        {
+        }
+
+        virtual void write(const mse::Context& context, mse::LogLevel level, std::string_view message) override
+        {
+            _last_message = message;
+            _last_level = level;
+        }
+
+        void clear()
+        {
+            _last_message = "";
+            _last_level = mse::LogLevel::invalid;
+        }
+
+        std::string _last_message;
+        mse::LogLevel _last_level = mse::LogLevel::invalid;
+};
+
+}
 
 SCENARIO( "Logger", "[observability][logging]" )
 {
+    GIVEN("a test logger with debug as min log level")
+    {
+        TestLogger logger(mse::LogLevel::debug);
+        WHEN("a message with default log level is written")
+        {
+            logger.Write("my message");
+            THEN("the last message is set correctly")
+            {
+                REQUIRE(logger._last_message == "my message");            
+            }
+            AND_THEN("the message has been written with info level")
+            {
+                REQUIRE(logger._last_level == mse::LogLevel::info);
+            }
+        }
+        WHEN("a message with debug level is written")
+        {
+            logger.Write(mse::LogLevel::debug, "my debug message");
+            THEN("the last message is set correctly")
+            {
+                REQUIRE(logger._last_message == "my debug message");
+            }
+            AND_THEN("the last log level is set correctly")
+            {
+                REQUIRE(logger._last_level == mse::LogLevel::debug);
+            }
+        }
+        logger.clear();
+        WHEN("a message with trace level is written")
+        {        
+            logger.Write(mse::LogLevel::trace, "my trace message");
+            THEN("the last message has not been modified")
+            {
+                REQUIRE(logger._last_message == "");
+            }
+            AND_THEN("the last log level has not been modified")
+            {
+                REQUIRE(logger._last_level == mse::LogLevel::invalid);
+            }
+        }
+
+    }
 }
 
 SCENARIO( "LogProvider", "[observability][logging]" )
 {
+    GIVEN("a log provider with no logging instance")
+    {
+        mse::LogProvider::GetInstance().SetLogger(nullptr);
+        WHEN("a message is written to the global logger")
+        {
+            THEN("nothing happens")
+            {                
+                REQUIRE_NOTHROW(mse::LogProvider::GetLogger().Write("test"));
+            }
+        }
+    }
+
+    GIVEN("a logging instance")
+    {
+        {
+            TestLogger logger;
+
+            WHEN("a message is written to the global logger")
+            {
+                mse::LogProvider::GetLogger().Write("message 1");
+                THEN("the message is written to that instance")
+                {
+                    REQUIRE(logger._last_message == "message 1");
+                }            
+            }
+
+            AND_GIVEN("a second logger instance")
+            {
+                TestLogger logger2;
+                WHEN("a message is written to the global logger")
+                {
+                    mse::LogProvider::GetLogger().Write("message 2");
+                    THEN("the message is written to the first instance only")
+                    {
+                        REQUIRE(logger._last_message == "message 2");
+                        REQUIRE(logger2._last_message == "");
+                    }
+                }
+            }
+        }
+        WHEN("the instance is deleted and a message is written to the global logger")
+        {
+            THEN("nothing happens")
+            {
+                mse::LogProvider::GetLogger().Write("message 3");
+            }
+        }
+    }
 }
 
 SCENARIO( "LogLevel", "[observability][logging]" )
