@@ -91,8 +91,15 @@ SCENARIO( "LogProvider", "[observability][logging]" )
 
     GIVEN("a logging instance")
     {
+        Logger* my_logger = nullptr;
         {
             TestLogger logger;
+            my_logger = &logger;
+
+            THEN("the global logger points to that instance")
+            {
+                REQUIRE(&mse::LogProvider::GetLogger() == my_logger);
+            }
 
             WHEN("a message is written to the global logger")
             {
@@ -117,11 +124,18 @@ SCENARIO( "LogProvider", "[observability][logging]" )
                 }
             }
         }
-        WHEN("the instance is deleted and a message is written to the global logger")
+        WHEN("the instance is deleted")
         {
-            THEN("nothing happens")
+            THEN("the global logger does not point to that instance anymore")
             {
-                mse::LogProvider::GetLogger().Write("message 3");
+                REQUIRE(&mse::LogProvider::GetLogger() != my_logger);
+            }
+            AND_WHEN("a message is written to the global logger")
+            {
+                THEN("nothing happens")
+                {
+                    mse::LogProvider::GetLogger().Write("message 3");
+                }
             }
         }
     }
