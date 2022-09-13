@@ -47,10 +47,8 @@ void mse::from_string(const std::string& level_string, LogLevel& level)
 }
 
 LogProvider& LogProvider::GetInstance()
-{
-    std::cout << "making sure that the instance exists" << std::endl;
+{    
     static LogProvider _instance;
-    std::cout << "returning the instance" << std::endl;
     return _instance;
 }
 
