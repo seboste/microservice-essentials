@@ -1,5 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <microservice-essentials/observability/logger.h>
+#include <iostream>
 
 namespace
 {
@@ -91,7 +92,7 @@ SCENARIO( "LogProvider", "[observability][logging]" )
 
     GIVEN("a logging instance")
     {
-        Logger* my_logger = nullptr;
+        mse::Logger* my_logger = nullptr;
         {
             TestLogger logger;
             my_logger = &logger;
@@ -252,9 +253,51 @@ SCENARIO( "LogLevel", "[observability][logging]" )
 
 SCENARIO( "ConsoleLogger", "[observability][logging]" )
 {
+    GIVEN("a console logger and cout and cerr redirected to buffer")
+    {        
+        std::ostringstream strCout, strCerr;
+        std::streambuf* oldCoutStreamBuf = std::cout.rdbuf( strCout.rdbuf() );
+        std::streambuf* oldCerrStreamBuf = std::cerr.rdbuf( strCerr.rdbuf() );
+    
+
+        mse::ConsoleLogger logger(mse::LogLevel::trace, mse::LogLevel::warn);
+
+        WHEN("a message is written with info level")
+        {
+            logger.Write(mse::LogLevel::info, "info");
+            THEN("the message is written to standard output")
+            {
+                REQUIRE(strCout.str() == "info\n");
+            }
+        }
+
+        WHEN("a message is written with warn level")
+        {
+            logger.Write(mse::LogLevel::warn, "warn");
+            THEN("the message is written to standard error")
+            {
+                REQUIRE(strCerr.str() == "warn\n");
+            }
+        }
+
+        std::cout.rdbuf(oldCoutStreamBuf);
+        std::cerr.rdbuf(oldCerrStreamBuf);
+    }
+
 }
 
 SCENARIO( "DiscardLogger", "[observability][logging]" )
 {
+    GIVEN("a discard logger")
+    {
+        mse::DiscardLogger logger;
+
+        WHEN("a message is written")
+        {
+            THEN("nothing happens")
+            {
+                REQUIRE_NOTHROW(logger.Write("some message"));
+            }
+        }
+    }
 }
-   
