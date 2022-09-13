@@ -1,6 +1,7 @@
 #pragma once
 
 #include <microservice-essentials/context.h>
+#include <microservice-essentials/utilities/environment.h>
 #include <string_view>
 
 namespace mse
@@ -9,13 +10,20 @@ namespace mse
 enum class LogLevel
 {
     //compliant to spdlog
+    invalid = -1,
     trace,
+    lowest = trace,
     debug,
     info,
     warn,
     err,
-    critical
+    critical,
+    highest = critical
 };
+
+std::string to_string(LogLevel level);
+LogLevel from_string(const std::string& level_string);
+
 
 class Logger
 {
@@ -44,7 +52,7 @@ private:
 class ConsoleLogger : public mse::Logger
 {
 public:
-    ConsoleLogger(LogLevel min_log_level, LogLevel min_err_log_level = mse::LogLevel::err);
+    ConsoleLogger(LogLevel min_log_level = mse::getenv_or("LOG_LEVEL", mse::LogLevel::info) , LogLevel min_err_log_level = mse::LogLevel::err);
     virtual ~ConsoleLogger();
 
     virtual void write(const mse::Context& context, mse::LogLevel level, std::string_view message) override;
@@ -64,4 +72,6 @@ public:
 
 }
 
+bool operator>>(std::istream& is, mse::LogLevel& level);
+std::ostream& operator<<(std::ostream& os, const mse::LogLevel& level);
 

@@ -1,5 +1,6 @@
 #include "logger.h"
 #include <iostream>
+#include <unordered_map>
 
 using namespace mse;
 
@@ -11,6 +12,42 @@ Logger& getDefaultLogger()
     return logger;
 }
 
+}
+
+std::string mse::to_string(LogLevel level)
+{
+    switch(level)
+    {
+        case LogLevel::trace: return "TRACE";
+        case LogLevel::debug: return "DEBUG";
+        case LogLevel::info: return "INFO";
+        case LogLevel::warn: return "WARN";
+        case LogLevel::err: return "ERROR";
+        case LogLevel::critical: return "CRITICAL";
+    }
+    throw std::invalid_argument(std::string("invalid log level with id ") + std::to_string(static_cast<int>(level)));    
+}
+
+LogLevel mse::from_string(const std::string& level_string)
+{
+    static const std::unordered_map<std::string, LogLevel> mapping =
+    {
+        { "TRACE" , LogLevel::trace },
+        { "DEBUG" , LogLevel::debug },
+        { "INFO" , LogLevel::info },
+        { "WARN" , LogLevel::warn },
+        { "ERROR" , LogLevel::err },
+        { "CRITICAL" , LogLevel::critical }
+    };
+    
+    if(auto cit = mapping.find(level_string); cit != mapping.cend())
+    {
+        return cit->second;
+    }
+    else
+    {
+        return LogLevel::invalid;
+    }
 }
 
 
@@ -108,3 +145,16 @@ void DiscardLogger::write(const mse::Context& context, mse::LogLevel level, std:
 }
 
 
+bool operator>>(std::istream& is, mse::LogLevel& level)
+{
+    std::string level_string;
+    is >> level_string;
+    level = mse::from_string(level_string);
+    return level != mse::LogLevel::invalid;
+}
+
+std::ostream& operator<<(std::ostream& os, const mse::LogLevel& level)
+{
+    os << mse::to_string(level);
+    return os;
+}

@@ -9,7 +9,7 @@
 
 int main()
 {
-    mse::ConsoleLogger logger(mse::LogLevel::info);
+    mse::ConsoleLogger logger;
 
     HttpStarWarsClient client;    
     //DummyStarWarsClient client;
