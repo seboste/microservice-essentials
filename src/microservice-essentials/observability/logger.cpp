@@ -50,19 +50,23 @@ LogLevel mse::from_string(const std::string& level_string)
     }
 }
 
-
-Logger* Logger::_Instance = nullptr;
-
-Logger& Logger::GetInstance()
+LogProvider& LogProvider::GetInstance()
 {
-    if(_Instance)
-    {
-        return *_Instance;
-    }
-    else
-    {
-        return getDefaultLogger();
-    }
+    static LogProvider _instance;
+    return _instance;
+}
+
+Logger& LogProvider::GetLogger()
+{
+    Logger* logger = GetInstance()._logger;
+    return logger != nullptr
+        ? *logger
+        : GetInstance()._defaultLogger;
+}
+
+void LogProvider::SetLogger(Logger* logger)
+{
+    _logger = logger;
 }
     
 void Logger::Write(std::string_view message)
@@ -85,31 +89,19 @@ void Logger::Write(const Context& context, mse::LogLevel level, std::string_view
     }
 }
 
-void Logger::SetLogger(Logger* logger)
-{
-    _Instance = logger;
-}
-
-Logger::Logger(LogLevel min_log_level, bool do_registration)
+Logger::Logger(LogLevel min_log_level)
     : _min_log_level(min_log_level)
-    , _do_registration(do_registration)
 {
-    if(_do_registration)
-    {
-        SetLogger(this);
-    }
+    LogProvider::GetInstance().SetLogger(this);    
 }
 
 Logger::~Logger()
 {
-    if(_do_registration)
-    {
-        SetLogger(nullptr);
-    }
+    LogProvider::GetInstance().SetLogger(nullptr);    
 }
 
 ConsoleLogger::ConsoleLogger(LogLevel min_log_level, LogLevel min_err_log_level)
-    : Logger(min_log_level, true)
+    : Logger(min_log_level)
     , _min_err_log_level(min_err_log_level)
 {
 }
@@ -132,7 +124,7 @@ void ConsoleLogger::write(const mse::Context& context, mse::LogLevel level, std:
 
 
 DiscardLogger::DiscardLogger()
-    : Logger(LogLevel::critical, false)
+    : Logger(LogLevel::critical)
 {
 }
 

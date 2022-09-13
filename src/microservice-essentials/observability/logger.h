@@ -24,29 +24,21 @@ enum class LogLevel
 std::string to_string(LogLevel level);
 LogLevel from_string(const std::string& level_string);
 
-
 class Logger
 {
-public:
-    static Logger& GetInstance();
-    
+public:        
     void Write(std::string_view message);
     void Write(LogLevel level, std::string_view message);
     void Write(const Context& context, mse::LogLevel level, std::string_view message);
 
 protected:
+    Logger(LogLevel min_log_level);
+    virtual ~Logger();
     
     virtual void write(const mse::Context& context, mse::LogLevel level, std::string_view message) = 0;
 
-    static void SetLogger(Logger* logger);
-
-    Logger(LogLevel min_log_level, bool do_registration);
-    virtual ~Logger();
-
 private:
-    LogLevel _min_log_level;
-    bool _do_registration;
-    static Logger* _Instance;
+    LogLevel _min_log_level;    
 };
 
 class ConsoleLogger : public mse::Logger
@@ -68,6 +60,22 @@ public:
     virtual ~DiscardLogger();
 
     virtual void write(const mse::Context& context, mse::LogLevel level, std::string_view message) override;
+};
+
+class LogProvider
+{
+public:
+    static LogProvider& GetInstance();
+    static Logger& GetLogger();
+    
+    void SetLogger(Logger* logger);
+
+private:
+    LogProvider() = default;
+    ~LogProvider() = default;
+
+    Logger* _logger = nullptr;    
+    DiscardLogger _defaultLogger;
 };
 
 }

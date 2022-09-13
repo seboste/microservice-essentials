@@ -39,12 +39,12 @@ bool GracefulShutdown::IsShutdownRequested() const
 
 void GracefulShutdown::RequestShutdown()
 {
-    Logger::GetInstance().Write(LogLevel::info, "shutting down service...");
+    LogProvider::GetLogger().Write(LogLevel::info, "shutting down service...");
     _isShutdownRequested = true;
     for(auto cb : _callbacks)
     {
-        Logger::GetInstance().Write(LogLevel::trace, std::string("informing ") + cb.first + " about shutdown.");
+        LogProvider::GetLogger().Write(LogLevel::trace, std::string("informing ") + cb.first + " about shutdown.");
         cb.second();
     }
-    Logger::GetInstance().Write(LogLevel::info, "...all registered components informed about shutdown.");
+    LogProvider::GetLogger().Write(LogLevel::info, "...all registered components informed about shutdown.");
 }
