@@ -1,14 +1,16 @@
 #include <catch2/catch_test_macros.hpp>
 #include <microservice-essentials/observability/logger.h>
 #include <iostream>
+#include <memory>
 
 namespace
 {
 class TestLogger : public mse::Logger
 {        
     public:
-        TestLogger(mse::LogLevel min_log_level = mse::LogLevel::info)
+        TestLogger(mse::LogLevel min_log_level = mse::LogLevel::info, bool do_registration = false)
             : Logger(min_log_level)
+            , _autoLogProviderRegistration(do_registration ? std::make_unique<mse::LogProvider::AutoRegistration>(*this) : nullptr)
         {
         }
 
@@ -26,6 +28,7 @@ class TestLogger : public mse::Logger
 
         std::string _last_message;
         mse::LogLevel _last_level = mse::LogLevel::invalid;
+        std::unique_ptr<mse::LogProvider::AutoRegistration> _autoLogProviderRegistration;
 };
 
 }
@@ -94,7 +97,7 @@ SCENARIO( "LogProvider", "[observability][logging]" )
     {
         mse::Logger* my_logger = nullptr;
         {
-            TestLogger logger;
+            TestLogger logger(mse::LogLevel::info, true);
             my_logger = &logger;
 
             WHEN("the global logger instance is obtained")
@@ -116,14 +119,14 @@ SCENARIO( "LogProvider", "[observability][logging]" )
 
             AND_GIVEN("a second logger instance")
             {
-                TestLogger logger2;
+                TestLogger logger2(mse::LogLevel::info, true);
                 WHEN("a message is written to the global logger")
                 {
                     mse::LogProvider::GetLogger().Write("message 2");
-                    THEN("the message is written to the first instance only")
+                    THEN("the message is written to the second instance only")
                     {
-                        REQUIRE(logger._last_message == "message 2");
-                        REQUIRE(logger2._last_message == "");
+                        REQUIRE(logger._last_message == "");
+                        REQUIRE(logger2._last_message == "message 2");                        
                     }
                 }
             }

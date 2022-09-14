@@ -67,13 +67,19 @@ Logger& LogProvider::GetLogger()
 
 void LogProvider::SetLogger(Logger* logger)
 {
-    if(_logger == nullptr
-    || logger == nullptr)
-    {
-        _logger = logger;
-    }
+    _logger = logger;
 }
-    
+
+LogProvider::AutoRegistration::AutoRegistration(Logger& logger)
+{
+    LogProvider::GetInstance().SetLogger(&logger);
+}
+
+LogProvider::AutoRegistration::~AutoRegistration()
+{
+    LogProvider::GetInstance().SetLogger(nullptr);
+}
+
 void Logger::Write(std::string_view message)
 {
     Write(LogLevel::info, message);
@@ -96,23 +102,24 @@ void Logger::Write(const Context& context, mse::LogLevel level, std::string_view
 
 Logger::Logger(LogLevel min_log_level)
     : _min_log_level(min_log_level)
-{
-    LogProvider::GetInstance().SetLogger(this);    
+{   
 }
 
 Logger::~Logger()
-{
-    LogProvider::GetInstance().SetLogger(nullptr);    
+{    
 }
 
 ConsoleLogger::ConsoleLogger(LogLevel min_log_level, LogLevel min_err_log_level)
     : Logger(min_log_level)
     , _min_err_log_level(min_err_log_level)
+    , _auto_log_provider_registration(*this)
 {
+    LogProvider::GetInstance().SetLogger(this);
 }
 
 ConsoleLogger::~ConsoleLogger()
 {
+    LogProvider::GetInstance().SetLogger(nullptr);
 }
 
 void ConsoleLogger::write(const mse::Context& context, mse::LogLevel level, std::string_view message)
