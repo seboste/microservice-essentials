@@ -97,11 +97,14 @@ SCENARIO( "LogProvider", "[observability][logging]" )
             TestLogger logger;
             my_logger = &logger;
 
-            THEN("the global logger points to that instance")
+            WHEN("the global logger instance is obtained")
             {
-                REQUIRE(&mse::LogProvider::GetLogger() == my_logger);
+                mse::Logger* global_logger = &mse::LogProvider::GetLogger();            
+                THEN("it points to the instance")
+                {                    
+                    REQUIRE(global_logger == my_logger);
+                }
             }
-
             WHEN("a message is written to the global logger")
             {
                 mse::LogProvider::GetLogger().Write("message 1");
