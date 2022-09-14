@@ -9,6 +9,9 @@
 ### Cross Cutting Concerns
 - Singleton for notifying registered classes about upcoming service **shutdown** upon receiving a shutdown signal.
 
+### Observability
+- A minimalistic customizeable **logging** framework.
+
 ### Utilities
 - Convenience for reading and converting **environment variables**.
 - Handling of **system signals**.

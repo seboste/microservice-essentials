@@ -24,6 +24,13 @@ enum class LogLevel
 std::string to_string(LogLevel level);
 void from_string(const std::string& level_string, LogLevel& level);
 
+
+/**
+ * Abstract base class for all loggers that forwards all messages with at least a minimum log level to the implementation.
+ * During construction/destruction of an instance, it is automatically registered/deregistered with the global LogProvider singleton.
+ * A single instance of a subclass shall typically be created in the application's main function.
+ * The LogProvider singleton shall be used for global access to the logger. 
+ */
 class Logger
 {
 public:        
@@ -41,6 +48,11 @@ private:
     LogLevel _min_log_level;    
 };
 
+
+/**
+ * A logger implementation that writes to standard output/error based on the log level.
+ * By default the minimum log level can be specified by setting the 'LOG_LEVEL' environment variable.
+ */
 class ConsoleLogger : public mse::Logger
 {
 public:
@@ -53,6 +65,9 @@ private:
     LogLevel _min_err_log_level;
 };
 
+/**
+ * A logger implementation that discards all log messages.
+ */
 class DiscardLogger : public mse::Logger
 {
 public:
@@ -62,6 +77,10 @@ public:
     virtual void write(const mse::Context& context, mse::LogLevel level, std::string_view message) override;
 };
 
+/**
+ * Singleton that provides the global logger. 
+ * If no logger has been instantiated, a DiscardLogger is used.
+ */
 class LogProvider
 {
 public:
@@ -77,8 +96,9 @@ private:
     Logger* _logger = nullptr;    
 };
 
-}
+} //mse namespace
 
+//stream operators for LogLevel enabling support by mse::getenv
 bool operator>>(std::istream& is, mse::LogLevel& level);
 std::ostream& operator<<(std::ostream& os, const mse::LogLevel& level);
 
