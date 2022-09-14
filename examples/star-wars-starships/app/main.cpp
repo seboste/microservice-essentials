@@ -5,17 +5,20 @@
 #include <adapters/http-handler/http-handler.h>
 #include <adapters/grpc-handler/grpc-handler.h>
 #include <microservice-essentials/cross-cutting-concerns/graceful-shutdown.h>
+#include <microservice-essentials/observability/logger.h>
 
 int main()
-{    
+{
+    mse::ConsoleLogger logger;
+
     HttpStarWarsClient client;    
     //DummyStarWarsClient client;
     InMemoryStatusDB db;
 
     Core core(client, db);
 
-    //HttpHandler handler(core);
-    GrpcHandler handler(core);
+    HttpHandler handler(core);
+    //GrpcHandler handler(core);
 
 
     mse::GracefulShutdownOnSignal gracefulShutdown(mse::Signal::SIG_SHUTDOWN);

@@ -61,7 +61,7 @@ public:
     }
 
     virtual void Handle() override
-    {
+    {        
         _server = _serverBuilder.BuildAndStart();
         _server->Wait();
     }

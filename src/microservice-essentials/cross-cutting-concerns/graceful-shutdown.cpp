@@ -1,4 +1,5 @@
 #include "graceful-shutdown.h"
+#include <microservice-essentials/observability/logger.h>
 #include <chrono>
 
 using namespace mse;
@@ -38,9 +39,12 @@ bool GracefulShutdown::IsShutdownRequested() const
 
 void GracefulShutdown::RequestShutdown()
 {
+    LogProvider::GetLogger().Write(LogLevel::info, "shutting down service...");
     _isShutdownRequested = true;
     for(auto cb : _callbacks)
     {
+        LogProvider::GetLogger().Write(LogLevel::trace, std::string("informing ") + cb.first + " about shutdown.");
         cb.second();
     }
+    LogProvider::GetLogger().Write(LogLevel::info, "...all registered components informed about shutdown.");
 }
