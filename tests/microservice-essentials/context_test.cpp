@@ -1,7 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <microservice-essentials/context.h>
 
-SCENARIO("Context Metadata")
+SCENARIO("Context Metadata", "[context]")
 {
     GIVEN("Empty Context")
     {
@@ -51,7 +51,7 @@ SCENARIO("Context Metadata")
     }
 }
 
-SCENARIO("Context with Parent")
+SCENARIO("Context with Parent", "[context]")
 {
     GIVEN("A context with metadata")
     {
@@ -94,7 +94,7 @@ SCENARIO("Context with Parent")
     }
 }
 
-SCENARIO("Context Initialization")
+SCENARIO("Context Initialization", "[context]")
 {
     WHEN("a context is constructed from an initializer list")
     {
