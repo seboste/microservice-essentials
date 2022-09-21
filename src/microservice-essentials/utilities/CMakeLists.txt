@@ -1,9 +1,12 @@
 target_sources(microservice-essentials
     PUBLIC
         environment.h
+        metadata-converter.h
         signal-handler.h
     PRIVATE
         environment.cpp
-        signal-handler.cpp
         environment.txx
+        metadata-converter.cpp
+        metadata-converter.txx
+        signal-handler.cpp        
 )

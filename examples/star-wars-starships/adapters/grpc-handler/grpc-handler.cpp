@@ -2,6 +2,8 @@
 #include <generated/api.grpc.pb.h>
 #include <grpcpp/grpcpp.h>
 #include <microservice-essentials/handler.h>
+#include <microservice-essentials/context.h>
+#include <microservice-essentials/utilities/metadata-converter.h>
 
 using namespace grpc;
 
@@ -73,6 +75,8 @@ public:
 
     virtual Status ListStarShips(::grpc::ServerContext* context, const ::StarShips::ListStarShipsRequest* request, ::StarShips::ListStarShipsResponse* response)
     {
+        mse::Context ctx(mse::ToContextMetadata(context->client_metadata()));
+
         for(const ::Starship& starship : _api.ListStarShips())
         {            
             to_protobuf(starship, *response->add_starships());            
@@ -81,6 +85,8 @@ public:
     }
     virtual Status GetStarShip(::grpc::ServerContext* context, const ::StarShips::GetStarShipRequest* request, ::StarShips::GetStarShipResponse* response)
     {
+        mse::Context ctx(mse::ToContextMetadata(context->client_metadata()));
+
         to_protobuf(
             _api.GetStarShip(request->id()),
             *response->mutable_starships()
@@ -89,6 +95,8 @@ public:
     }
     virtual Status UpdateStatus(::grpc::ServerContext* context, const ::StarShips::UpdateStatusRequest* request, ::StarShips::UpdateStatusResponse* response)
     {
+        mse::Context ctx(mse::ToContextMetadata(context->client_metadata()));
+        
         _api.UpdateStatus(request->id(), from_protobuf(request->status()) );
         return Status::OK;
     }

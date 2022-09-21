@@ -2,31 +2,15 @@
 
 using namespace mse;
 
-Context::Context()
-    : Context(nullptr)
-{
-}
-
-Context::Context(std::initializer_list<MetaData::value_type> metadata)
-    : Context(nullptr, metadata)
-{
-}
-
-Context::Context(Context* parent_context, std::initializer_list<MetaData::value_type> metadata)
+Context::Context(const MetaData& metadata, Context* parent_context)
     : _metadata(metadata)
     , _parent_context(parent_context)
-{
-}
-
-Context::Context(Context* parent_context)
-    : Context(parent_context, {})
 {
 }
 
 Context::~Context()
 {
 }
-
 
 
     //static Context& GetGlobalContext();

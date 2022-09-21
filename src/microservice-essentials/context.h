@@ -12,12 +12,14 @@ class Context
 {
 public:
     typedef std::multimap<std::string, std::string> MetaData;    
-
-    Context();
-    Context(std::initializer_list<MetaData::value_type> metadata);
-    Context(Context* parent_context);
-    Context(Context* parent_context, std::initializer_list<MetaData::value_type> metadata);
     
+    Context(const MetaData& metadata, Context* parent_context);
+    Context(Context* parent_context) : Context({}, parent_context) {}
+    Context(const MetaData& metadata) : Context(metadata, nullptr) {}
+    Context(std::initializer_list<MetaData::value_type> metadata, Context* parent_context) : Context(MetaData(metadata), parent_context) {}
+    Context(std::initializer_list<MetaData::value_type> metadata) : Context(metadata, nullptr) {}
+    Context() : Context({}, nullptr) {}
+
     virtual ~Context();
 
     //static Context& GetGlobalContext();
@@ -40,3 +42,5 @@ private:
 };
 
 }
+
+#include "context.txx"
