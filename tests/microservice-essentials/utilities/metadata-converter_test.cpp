@@ -13,7 +13,7 @@ SCENARIO( "Metadata converter", "[metadata][context]" )
         const ExternalMetadata external_metadata = { { "a", "x"}, {"b", "y"} };
         WHEN("it is converted to context metadata")
         {
-            const mse::Context::MetaData metadata = mse::ToContextMetadata(external_metadata);
+            const mse::Context::Metadata metadata = mse::ToContextMetadata(external_metadata);
             THEN("the result contains the same elements as the original")
             {
                 REQUIRE(external_metadata.size() == metadata.size());                

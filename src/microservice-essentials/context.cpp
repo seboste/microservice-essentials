@@ -2,7 +2,7 @@
 
 using namespace mse;
 
-Context::Context(const MetaData& metadata, Context* parent_context)
+Context::Context(const Metadata& metadata, Context* parent_context)
     : _metadata(metadata)
     , _parent_context(parent_context)
 {
@@ -21,9 +21,9 @@ void Context::Clear()
     _metadata.clear();
 }
 
-Context::MetaData Context::GetAllMetaData() const
+Context::Metadata Context::GetAllMetaData() const
 {
-    Context::MetaData metadata = _metadata;
+    Context::Metadata metadata = _metadata;
     if(_parent_context != nullptr)
     {
         metadata.merge(_parent_context->GetAllMetaData());
@@ -36,7 +36,7 @@ void Context::Insert(const std::string& key, const std::string& value)
     _metadata.insert({ key, value});
 }
 
-void Context::Insert(std::initializer_list<MetaData::value_type> metadata)
+void Context::Insert(std::initializer_list<Metadata::value_type> metadata)
 {
     _metadata.insert(metadata);
 }

@@ -6,9 +6,9 @@ namespace mse
 {
 
 template<typename Container> 
-inline Context::MetaData ToContextMetadata(const Container& external_metadata)
+inline Context::Metadata ToContextMetadata(const Container& external_metadata)
 {
-    Context::MetaData metadata;
+    Context::Metadata metadata;
     for(auto key_value_pair: external_metadata)
     {
         const std::string key(std::begin(key_value_pair.first), std::end(key_value_pair.first));
