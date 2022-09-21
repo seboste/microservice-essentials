@@ -7,14 +7,27 @@ Context::Context()
 {
 }
 
+Context::Context(std::initializer_list<MetaData::value_type> metadata)
+    : Context(nullptr, metadata)
+{
+}
+
+Context::Context(Context* parent_context, std::initializer_list<MetaData::value_type> metadata)
+    : _metadata(metadata)
+    , _parent_context(parent_context)
+{
+}
+
 Context::Context(Context* parent_context)
-    : _parent_context(parent_context)
+    : Context(parent_context, {})
 {
 }
 
 Context::~Context()
 {
 }
+
+
 
     //static Context& GetGlobalContext();
     //static Context& GetThreadLocalContext();
@@ -37,6 +50,11 @@ Context::MetaData Context::GetAllMetaData() const
 void Context::Insert(const std::string& key, const std::string& value)
 {
     _metadata.insert({ key, value});
+}
+
+void Context::Insert(std::initializer_list<MetaData::value_type> metadata)
+{
+    _metadata.insert(metadata);
 }
 
 const std::string& Context::At(const std::string& key) const

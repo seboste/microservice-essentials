@@ -20,16 +20,23 @@ SCENARIO("Context Metadata")
         WHEN("some data is inserted")
         {
             context.Insert("test", "some_value");
+            context.Insert({{"a", "x"}, {"b", "y"}});
             THEN("the data can be retrieved")
             {
                 REQUIRE(context.Contains("test") == true);
                 REQUIRE(context.At("test") == "some_value");
+                REQUIRE(context.Contains("a") == true);
+                REQUIRE(context.At("a") == "x");
+                REQUIRE(context.Contains("b") == true);
+                REQUIRE(context.At("b") == "y");
             }
             AND_THEN("the metadata multimap contains that data")
             {
                 REQUIRE(context.GetMetaData().find("test") != context.GetMetaData().cend());
                 auto allMetaData = context.GetAllMetaData();
                 REQUIRE(allMetaData.find("test") != allMetaData.cend());
+                REQUIRE(allMetaData.find("a") != allMetaData.cend());
+                REQUIRE(allMetaData.find("b") != allMetaData.cend());
             }
 
             AND_WHEN("context is cleared")
@@ -44,7 +51,7 @@ SCENARIO("Context Metadata")
     }
 }
 
-SCENARIO("Parent Context")
+SCENARIO("Context with Parent")
 {
     GIVEN("A context with metadata")
     {
@@ -83,6 +90,25 @@ SCENARIO("Parent Context")
                 }
             }
             
+        }
+    }
+}
+
+SCENARIO("Context Initialization")
+{
+    WHEN("a context is constructed from an initializer list")
+    {
+        mse::Context context({{"a","x"}, {"b","y"}, {"c", "z"}});
+        THEN("the context contains all the metadata")
+        {
+            REQUIRE(context.GetMetaData().size() == 3);
+            REQUIRE(context.Contains("a"));
+            REQUIRE(context.At("a") == "x");
+            REQUIRE(context.Contains("b"));
+            REQUIRE(context.At("b") == "y");
+            REQUIRE(context.Contains("c"));
+            REQUIRE(context.At("c") == "z");
+
         }
     }
 }
