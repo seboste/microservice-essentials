@@ -1,5 +1,7 @@
 #include "http-handler.h"
 #include <microservice-essentials/observability/logger.h>
+#include <microservice-essentials/context.h>
+#include <microservice-essentials/utilities/metadata-converter.h>
 #define CPPHTTPLIB_OPENSSL_SUPPORT //be consistent with other projects to prevent seg fault
 #include <httplib/httplib.h>
 #include <nlohmann/json.hpp>
@@ -115,7 +117,9 @@ void HttpHandler::Stop()
 }
 
 void HttpHandler::listStarShips(const httplib::Request& request, httplib::Response& response)
-{
+{    
+    mse::Context ctx(mse::ToContextMetadata(request.headers));
+
     mse::LogProvider::GetLogger().Write(mse::LogLevel::trace, "received listStarShips request");
     response.set_content(
             to_json(_api.ListStarShips()).dump(),
@@ -126,6 +130,8 @@ void HttpHandler::listStarShips(const httplib::Request& request, httplib::Respon
 
 void HttpHandler::getStarShip(const httplib::Request& request, httplib::Response& response)
 {
+    mse::Context ctx(mse::ToContextMetadata(request.headers));
+
     mse::LogProvider::GetLogger().Write(mse::LogLevel::trace, "received getStarShip request");
     response.set_content(
             to_json(_api.GetStarShip(extractId(request.path))).dump(),
@@ -136,6 +142,8 @@ void HttpHandler::getStarShip(const httplib::Request& request, httplib::Response
 
 void HttpHandler::updateStatus(const httplib::Request& request, httplib::Response& response)
 {
+    mse::Context ctx(mse::ToContextMetadata(request.headers));
+    
     mse::LogProvider::GetLogger().Write(mse::LogLevel::trace, "received updateStatus request");
     _api.UpdateStatus(
         extractId(request.path),
