@@ -6,10 +6,9 @@
 
 SCENARIO( "Metadata converter", "[metadata][context]" )
 {
+    typedef std::multimap<std::string_view, std::string_view> ExternalMetadata;
     GIVEN("some multimap similar to the one returned by grpc::ServerContext::client_metadata()")
     {
-        typedef std::multimap<std::string_view, std::string_view> ExternalMetadata;
-
         const ExternalMetadata external_metadata = { { "a", "x"}, {"b", "y"} };
         WHEN("it is converted to context metadata")
         {
@@ -28,6 +27,31 @@ SCENARIO( "Metadata converter", "[metadata][context]" )
                 if(citB != metadata.end())
                 {
                     REQUIRE(citB->second == "y" );
+                }
+            }
+        }
+    }
+
+    GIVEN("some context metadata")
+    {
+        const mse::Context::Metadata metadata = { { "a", "x"}, {"b", "y"} };
+        WHEN("it is converted to some multimap similar to the one returned by grpc::ServerContext::client_metadata()")
+        {
+            const ExternalMetadata external_metadata = mse::FromContextMetadata<ExternalMetadata>(metadata);
+            THEN("the result contains the same elements as the original")
+            {
+                REQUIRE(metadata.size() == external_metadata.size());                
+                auto citA = external_metadata.find("a");
+                REQUIRE(citA != external_metadata.end());
+                if(citA != external_metadata.end())
+                {
+                    REQUIRE(citA->second.compare("x") == 0);
+                }
+                auto citB = external_metadata.find("b");
+                REQUIRE(citB != external_metadata.end());
+                if(citB != external_metadata.end())
+                {
+                    REQUIRE(citB->second.compare("y") == 0);
                 }
             }
         }

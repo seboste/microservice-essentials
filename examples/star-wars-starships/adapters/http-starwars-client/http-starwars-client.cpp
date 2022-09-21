@@ -1,9 +1,9 @@
 #include "http-starwars-client.h"
-
+#include <microservice-essentials/context.h>
+#include <microservice-essentials/utilities/metadata-converter.h>
 #define CPPHTTPLIB_OPENSSL_SUPPORT  //be consistent with other projects to prevent seg fault
 #include <httplib.h>
 #include <nlohmann/json.hpp>
-
 #include <iostream>
 #include <regex>
 
@@ -56,10 +56,15 @@ HttpStarWarsClient::~HttpStarWarsClient()
 
 std::vector<StarshipProperties> HttpStarWarsClient::ListStarShipProperties() const
 {
+    mse::Context ctx; //TODO: get from handler via threadlocal storage
+
     std::vector<StarshipProperties> starships;    
     for(std::string path = "/api/starships/?format=json"; path != "";)
     {
-        auto resp = _cli->Get(path);
+        auto resp = _cli->Get(
+            path,
+            mse::FromContextMetadata<httplib::Headers>(ctx.GetMetadata())
+        );
         json data = json::parse(resp->body);
         json nextNode = data.at("next");
         path = nextNode.is_null() ? std::string() : nextNode.get<std::string>();
@@ -73,7 +78,12 @@ std::vector<StarshipProperties> HttpStarWarsClient::ListStarShipProperties() con
 
 std::optional<StarshipProperties> HttpStarWarsClient::GetStarShipProperties(const std::string& starshipId) const
 {
-    auto resp = _cli->Get(std::string("/api/starships/") + starshipId + "/?format=json");
+    mse::Context ctx; //TODO: get from handler via threadlocal storage
+
+    auto resp = _cli->Get(
+        std::string("/api/starships/") + starshipId + "/?format=json", 
+        mse::FromContextMetadata<httplib::Headers>(ctx.GetMetadata())
+        );
     if(!resp || (resp->status != 404 && resp->status != 200))
     {
         throw std::runtime_error("invalid response");

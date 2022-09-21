@@ -8,8 +8,8 @@ SCENARIO("Context Metadata", "[context]")
         mse::Context context;
         THEN("random metadata is not available")
         {
-            REQUIRE(context.GetMetaData().size() == 0);
-            REQUIRE(context.GetAllMetaData().size() == 0);
+            REQUIRE(context.GetMetadata().size() == 0);
+            REQUIRE(context.GetAllMetadata().size() == 0);
             REQUIRE(context.Contains("test") == false);
         }
         AND_THEN("getting random metadata results in out of range exception")
@@ -32,8 +32,8 @@ SCENARIO("Context Metadata", "[context]")
             }
             AND_THEN("the metadata multimap contains that data")
             {
-                REQUIRE(context.GetMetaData().find("test") != context.GetMetaData().cend());
-                auto allMetaData = context.GetAllMetaData();
+                REQUIRE(context.GetMetadata().find("test") != context.GetMetadata().cend());
+                auto allMetaData = context.GetAllMetadata();
                 REQUIRE(allMetaData.find("test") != allMetaData.cend());
                 REQUIRE(allMetaData.find("a") != allMetaData.cend());
                 REQUIRE(allMetaData.find("b") != allMetaData.cend());
@@ -72,7 +72,7 @@ SCENARIO("Context with Parent", "[context]")
                 another_context.Insert("test2", "value2");
                 THEN("another_context contains both metadatas")
                 {
-                    REQUIRE(another_context.GetAllMetaData().size() == 2);
+                    REQUIRE(another_context.GetAllMetadata().size() == 2);
                     REQUIRE(another_context.Contains("test") == true);
                     REQUIRE(another_context.Contains("test2") == true);
                     REQUIRE(another_context.At("test") == "value");
@@ -101,7 +101,7 @@ SCENARIO("Context Initialization", "[context]")
         mse::Context context({{"a","x"}, {"b","y"}, {"c", "z"}});
         THEN("the context contains all the metadata")
         {
-            REQUIRE(context.GetMetaData().size() == 3);
+            REQUIRE(context.GetMetadata().size() == 3);
             REQUIRE(context.Contains("a"));
             REQUIRE(context.At("a") == "x");
             REQUIRE(context.Contains("b"));

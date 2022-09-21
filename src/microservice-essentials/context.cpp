@@ -21,12 +21,12 @@ void Context::Clear()
     _metadata.clear();
 }
 
-Context::Metadata Context::GetAllMetaData() const
+Context::Metadata Context::GetAllMetadata() const
 {
     Context::Metadata metadata = _metadata;
     if(_parent_context != nullptr)
     {
-        metadata.merge(_parent_context->GetAllMetaData());
+        metadata.merge(_parent_context->GetAllMetadata());
     }
     return metadata;
 }

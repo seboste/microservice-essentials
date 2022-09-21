@@ -27,9 +27,9 @@ public:
 
     void Clear();
 
-    const Metadata& GetMetaData() const { return _metadata; }
-    Metadata& GetMetaData() { return _metadata; }
-    Metadata GetAllMetaData() const;
+    const Metadata& GetMetadata() const { return _metadata; }
+    Metadata& GetMetadata() { return _metadata; }
+    Metadata GetAllMetadata() const;
     
     void Insert(std::initializer_list<Metadata::value_type> metadata);
     void Insert(const std::string& key, const std::string& value);        
