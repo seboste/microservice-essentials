@@ -13,7 +13,24 @@ namespace mse
      */
     template<typename Container> inline Context::Metadata ToContextMetadata(const Container& external_metadata);
 
+    /**
+     * Converts Context::Metadata to some
+     * can be used for all container types that have an import-method for a key-value-pair of strings (e.g. std::set, std::multimap, std::map, ...)
+     * works for e.g. httplib::Headers
+     */
     template<typename Container> inline Container FromContextMetadata(const Context::Metadata& metadata);
+
+    /**
+     * Exports metadata by calling some function that takes two strings for each metadata item
+     * works for e.g. grpc::ClientContext::AddMetaData 
+     * 
+     * Code snippet:
+     * mse::Context ctx;
+     * grpc::ClientContext cc;
+     * mse::ExportMetadata(ctx.GetMetadata(), &grpc::ClientContext::AddMetadata, cc);     
+     */
+    template<typename ExportFunction> inline void ExportMetadata(const Context::Metadata& metadata, ExportFunction export_fn);
+    template<typename ExportMemberFunction, typename ExportObjectType> inline void ExportMetadata(const Context::Metadata& metadata, ExportMemberFunction export_fn, ExportObjectType& export_obj);    
 }
 
 #include "metadata-converter.txx"

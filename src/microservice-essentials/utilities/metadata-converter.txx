@@ -1,6 +1,7 @@
 #pragma once
 
 #include "metadata-converter.h"
+#include <functional>
 
 namespace mse
 {
@@ -27,6 +28,22 @@ inline Container FromContextMetadata(const Context::Metadata& metadata)
         external_metadata.insert({key_value_pair.first, key_value_pair.second});
     }
     return external_metadata;
+}
+
+template<typename ExportFunction>
+inline void ExportMetadata(const Context::Metadata& metadata, ExportFunction export_fn)
+{
+    for(const auto& key_value_pair : metadata)
+    {
+        export_fn(key_value_pair.first, key_value_pair.second);            
+    }
+}
+
+template<typename ExportMemberFunction, typename ExportObjectType>
+inline void ExportMetadata(const Context::Metadata& metadata, ExportMemberFunction export_fn, ExportObjectType& export_obj)
+{
+    using namespace std::placeholders;
+    ExportMetadata(metadata, std::bind(export_fn, &export_obj, _1, _2));        
 }
 
 }

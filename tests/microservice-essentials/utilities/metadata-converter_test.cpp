@@ -55,5 +55,39 @@ SCENARIO( "Metadata converter", "[metadata][context]" )
                 }
             }
         }
+
+        AND_GIVEN("some struct with an AddMetaData function")
+        {
+            struct MyClientContext //similar to grpc::ClientContext
+            {
+                void AddMetadata(const std::string& key, std::string_view value)
+                {
+                    _metadata.insert({key, std::string(value) });
+                }                
+                std::map<std::string, std::string> _metadata;
+            };
+
+            MyClientContext cc;
+            WHEN("the context metadata is exported")
+            {
+                mse::ExportMetadata(metadata, &MyClientContext::AddMetadata, cc);
+                THEN("the result contains the same elements as the original")
+                {
+                    REQUIRE(metadata.size() == cc._metadata.size());                
+                    auto citA = cc._metadata.find("a");
+                    REQUIRE(citA != cc._metadata.end());
+                    if(citA != cc._metadata.end())
+                    {
+                        REQUIRE(citA->second.compare("x") == 0);
+                    }
+                    auto citB = cc._metadata.find("b");
+                    REQUIRE(citB != cc._metadata.end());
+                    if(citB != cc._metadata.end())
+                    {
+                        REQUIRE(citB->second.compare("y") == 0);
+                    }
+                }
+            }
+        }
     }
 }
