@@ -1,5 +1,8 @@
 #include <catch2/catch_test_macros.hpp>
 #include <microservice-essentials/context.h>
+#include <algorithm>
+#include <iomanip>
+#include <vector>
 
 SCENARIO("Context Metadata", "[context]")
 {
@@ -48,6 +51,42 @@ SCENARIO("Context Metadata", "[context]")
                 }
             }
         }
+    }
+
+    GIVEN("Context with metadata")
+    {
+        mse::Context context({ { "a" , "x"}, {"b" , "y"}, {"c" , "z"} });
+        WHEN("a filtered subset of the data is retrieved")
+        {
+            mse::Context::MetadataVector filtered_metadata = context.GetFilteredMetadata({"a", "c"});
+            THEN("that subset is available in the given order")
+            {                
+                REQUIRE(filtered_metadata.size() == 2);
+                REQUIRE(filtered_metadata[0].first ==  "a");
+                REQUIRE(filtered_metadata[0].second ==  "x");
+                REQUIRE(filtered_metadata[1].first ==  "c");
+                REQUIRE(filtered_metadata[1].second ==  "z");                
+            }
+            AND_THEN("others are not available")
+            {
+                auto cit = std::find_if(filtered_metadata.begin(), filtered_metadata.end(), [](const mse::Context::MetadataVector::value_type& key_value_pair){ return key_value_pair.first == "y"; });
+                REQUIRE(cit == filtered_metadata.end());
+            }
+        }
+
+        WHEN("a filtered subset of the data is retrieved in reverse order")
+        {
+            mse::Context::MetadataVector filtered_metadata = context.GetFilteredMetadata({"c", "a"});
+            THEN("that subset is available in the reverse order")
+            {                
+                REQUIRE(filtered_metadata.size() == 2);
+                REQUIRE(filtered_metadata[1].first ==  "a");
+                REQUIRE(filtered_metadata[1].second ==  "x");
+                REQUIRE(filtered_metadata[0].first ==  "c");
+                REQUIRE(filtered_metadata[0].second ==  "z");
+            }
+        }
+        
     }
 }
 
@@ -109,6 +148,37 @@ SCENARIO("Context Initialization", "[context]")
             REQUIRE(context.Contains("c"));
             REQUIRE(context.At("c") == "z");
 
+        }
+    }
+
+    WHEN("a local context is constructed")
+    {        
+        mse::Context context = MSE_LOCAL_CONTEXT;
+        const int context_line = __LINE__ -1;
+
+        THEN("the metadata holds the filename")
+        {
+            REQUIRE(context.At("file").find("context_test.cpp") != std::string::npos);
+        }
+        AND_THEN("the metadata holds the function")
+        {
+            REQUIRE(context.At("function").find("CATCH2_INTERNAL_TEST") != std::string::npos);
+        }
+        AND_THEN("the metadata holds the line")
+        {
+            REQUIRE(context.At("line") == std::to_string(context_line));
+        }
+        AND_THEN("the metadata holds the timestamp in UTZ format")
+        {
+            REQUIRE(context.Contains("timestamp"));
+            std::string timestamp = context.At("timestamp");
+            std::stringstream timestampStream(timestamp);
+            std::tm tmb = {};            
+            timestampStream >> std::get_time(&tmb, "%Y-%m-%dT%H:%M:%SZ");
+            REQUIRE(!timestampStream.fail());
+            std::chrono::system_clock::time_point tp = std::chrono::system_clock::from_time_t(timegm (&tmb));
+            using namespace std::chrono_literals;
+            REQUIRE((std::chrono::system_clock::now() - tp) < 2s);
         }
     }
 }

@@ -1,10 +1,33 @@
 #include "context.h"
 
+#include <sstream>
+#include <iomanip>
+
 using namespace mse;
 
-Context::Context(const Metadata& metadata, Context* parent_context)
+namespace 
+{
+
+std::string to_string(std::chrono::time_point<std::chrono::system_clock> tp)
+{
+    std::time_t tt = std::chrono::system_clock::to_time_t(tp);
+    std::tm tm = *std::gmtime(&tt); //GMT (UTC)
+    std::stringstream ss;
+    ss << std::put_time( &tm, "%FT%TZ" );
+    return ss.str();
+}
+
+
+}
+
+Context::Context(const Metadata& metadata, const Context* parent_context)
     : _metadata(metadata)
     , _parent_context(parent_context)
+{
+}
+
+Context::Context(const Context* parent_context, const std::string& file, const std::string& function, int line, std::chrono::time_point<std::chrono::system_clock> tp)
+    : Context({ { "file", file }, {"function", function}, { "line", std::to_string(line) }, { "timestamp", to_string(tp)} }, parent_context)
 {
 }
 
@@ -29,6 +52,20 @@ Context::Metadata Context::GetAllMetadata() const
         metadata.merge(_parent_context->GetAllMetadata());
     }
     return metadata;
+}
+
+Context::MetadataVector Context::GetFilteredMetadata(const std::vector<std::string>& keys) const
+{
+    const Metadata all_metadata = GetAllMetadata();
+    MetadataVector filtered_metadata;
+    for(const auto& key : keys)
+    {
+        if(auto cit = all_metadata.find(key); cit != all_metadata.end())
+        {
+            filtered_metadata.push_back(*cit);
+        }        
+    }
+    return filtered_metadata;
 }
     
 void Context::Insert(const std::string& key, const std::string& value)

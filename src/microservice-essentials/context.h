@@ -1,9 +1,13 @@
 #pragma once
 
+#include <chrono>
 #include <string>
 #include <map>
+#include <vector>
 #include <initializer_list>
 
+
+#define MSE_LOCAL_CONTEXT mse::Context(nullptr, __FILE__, __FUNCTION__, __LINE__)
 
 namespace mse
 {
@@ -11,13 +15,15 @@ namespace mse
 class Context
 {
 public:
-    typedef std::multimap<std::string, std::string> Metadata;    
+    typedef std::multimap<std::string, std::string> Metadata;
+    typedef std::vector<Metadata::value_type> MetadataVector;
     
-    Context(const Metadata& metadata, Context* parent_context);
-    Context(Context* parent_context) : Context({}, parent_context) {}
+    Context(const Metadata& metadata, const Context* parent_context);
+    Context(const Context* parent_context) : Context({}, parent_context) {}
     Context(const Metadata& metadata) : Context(metadata, nullptr) {}
-    Context(std::initializer_list<Metadata::value_type> metadata, Context* parent_context) : Context(Metadata(metadata), parent_context) {}
+    Context(std::initializer_list<Metadata::value_type> metadata, const Context* parent_context) : Context(Metadata(metadata), parent_context) {}
     Context(std::initializer_list<Metadata::value_type> metadata) : Context(metadata, nullptr) {}
+    Context(const Context* parent_context, const std::string& file, const std::string& function, int line, std::chrono::time_point<std::chrono::system_clock> tp = std::chrono::system_clock::now());
     Context() : Context({}, nullptr) {}
 
     virtual ~Context();
@@ -30,6 +36,7 @@ public:
     const Metadata& GetMetadata() const { return _metadata; }
     Metadata& GetMetadata() { return _metadata; }
     Metadata GetAllMetadata() const;
+    MetadataVector GetFilteredMetadata(const std::vector<std::string>& keys) const;
     
     void Insert(std::initializer_list<Metadata::value_type> metadata);
     void Insert(const std::string& key, const std::string& value);        
@@ -37,10 +44,8 @@ public:
     bool Contains(const std::string& key) const;
 
 private:
-    Context* _parent_context = nullptr;
+    const Context* _parent_context = nullptr;
     Metadata _metadata;
 };
 
 }
-
-#include "context.txx"
