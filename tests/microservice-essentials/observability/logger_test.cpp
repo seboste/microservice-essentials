@@ -1,5 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <microservice-essentials/observability/logger.h>
+#include <nlohmann/json.hpp>
 #include <iostream>
 #include <memory>
 
@@ -306,4 +307,55 @@ SCENARIO( "DiscardLogger", "[observability][logging]" )
             }
         }
     }
+}
+
+SCENARIO("StructuredLogger", "[observability][logging]")
+{    
+    GIVEN("a structured logger with a TestLogger backend")
+    {
+        TestLogger test_logger;
+        mse::StructuredLogger structured_logger(test_logger, {"message"});
+        WHEN("a log message is written")
+        {
+            structured_logger.Write("test");
+            THEN("the message is written in json format")
+            {
+                REQUIRE(test_logger._last_message == "{\"message\":\"test\"}");
+            }
+        }
+    }
+
+    GIVEN("some context with metadata")
+    {
+        mse::Context context({{"a", "x"}, {"b", "y"}, {"c", "z"}});
+        WHEN("The context is converted to json")
+        {
+            std::string json_string = mse::StructuredLogger::to_json(context, nullptr);
+            THEN("it can be parsed")
+            {
+                nlohmann::json data = nlohmann::json::parse(json_string);
+                
+                AND_THEN("the metadata is present in the json")
+                {
+                    REQUIRE(data["a"].get<std::string>() == "x");
+                    REQUIRE(data["b"].get<std::string>() == "y");
+                    REQUIRE(data["c"].get<std::string>() == "z");
+                }
+            }
+        }
+    }
+    
+    GIVEN("some context with metadata including special characters")
+    {
+        mse::Context context({{"a\"", "x\t"}, {"b\r", "\ny"}, {"\\c", "z\fz\b"}});
+        WHEN("The context is converted to json")
+        {
+            std::string json_string = mse::StructuredLogger::to_json(context, nullptr);
+            THEN("it can be parsed")
+            {
+                nlohmann::json data = nlohmann::json::parse(json_string);
+            }
+        }
+    }
+
 }

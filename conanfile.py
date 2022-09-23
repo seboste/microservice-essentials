@@ -30,6 +30,7 @@ class MicroserviceEssentials(ConanFile):
             self.requires("grpc/1.48.0")
         if self.options.build_testing:
             self.requires("catch2/3.1.0")
+            self.requires("nlohmann_json/3.11.1")
 
     def build(self):
         cmake = CMake(self)

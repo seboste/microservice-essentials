@@ -10,6 +10,7 @@
 int main()
 {
     mse::ConsoleLogger logger;
+    mse::StructuredLogger structured_logger(logger);
 
     HttpStarWarsClient client;    
     //DummyStarWarsClient client;
