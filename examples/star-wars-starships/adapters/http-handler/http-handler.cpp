@@ -105,14 +105,14 @@ HttpHandler::~HttpHandler()
 }
 
 void HttpHandler::Handle()
-{
-    mse::LogProvider::GetLogger().Write(mse::LogLevel::info, std::string("serving on ") + _host + ':' + std::to_string(_port));
+{    
+    MSE_LOG_INFO(std::string("serving on ") + _host + ':' + std::to_string(_port));
     _svr->listen(_host, _port);
 }
 
 void HttpHandler::Stop()
 {
-    mse::LogProvider::GetLogger().Write(mse::LogLevel::info, "stop requested");
+    MSE_LOG_INFO("stop requested");
     _svr->stop();
 }
 
@@ -120,7 +120,7 @@ void HttpHandler::listStarShips(const httplib::Request& request, httplib::Respon
 {    
     mse::Context ctx(mse::ToContextMetadata(request.headers));
 
-    mse::LogProvider::GetLogger().Write(mse::LogLevel::trace, "received listStarShips request");
+    MSE_LOG_TRACE( "received listStarShips request");
     response.set_content(
             to_json(_api.ListStarShips()).dump(),
             "text/json"
@@ -132,7 +132,7 @@ void HttpHandler::getStarShip(const httplib::Request& request, httplib::Response
 {
     mse::Context ctx(mse::ToContextMetadata(request.headers));
 
-    mse::LogProvider::GetLogger().Write(mse::LogLevel::trace, "received getStarShip request");
+    MSE_LOG_TRACE( "received getStarShip request");
     response.set_content(
             to_json(_api.GetStarShip(extractId(request.path))).dump(),
             "text/json"
@@ -144,7 +144,7 @@ void HttpHandler::updateStatus(const httplib::Request& request, httplib::Respons
 {
     mse::Context ctx(mse::ToContextMetadata(request.headers));
     
-    mse::LogProvider::GetLogger().Write(mse::LogLevel::trace, "received updateStatus request");
+    MSE_LOG_TRACE( "received updateStatus request");
     _api.UpdateStatus(
         extractId(request.path),
         from_string(json::parse(request.body).at("status"))
