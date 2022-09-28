@@ -354,12 +354,48 @@ SCENARIO("StructuredLogger", "[observability][logging]")
             THEN("it can be parsed")
             {
                 nlohmann::json data = nlohmann::json::parse(json_string);
-                for(const auto& element : data.items())                
+                for(const auto& element : data.items())
                 {
                     AND_THEN(std::string("the value of key ") + element.key() + " didn't change")
                     {
                         REQUIRE(element.value().get<std::string>() == context.GetMetadata().find(element.key())->second);
                     }                    
+                }
+            }
+        }
+    }
+    GIVEN("some context with metadata including special characters in the keys")
+    {
+        mse::Context context({{"xtest\t\t\"", "a"}, {"test\nytest\r", "b"}, {"\\z\ftestz\b", "c"}});
+        WHEN("The context is converted to json")
+        {
+            std::string json_string = mse::StructuredLogger::to_json(context, nullptr);
+            THEN("it can be parsed")
+            {
+                nlohmann::json data = nlohmann::json::parse(json_string);
+                AND_THEN("all keys do exist")
+                {
+                    REQUIRE(data.contains("xtest\t\t\""));
+                    REQUIRE(data.contains("test\nytest\r"));
+                    REQUIRE(data.contains("\\z\ftestz\b"));
+                }
+            }
+        }
+    }
+
+    GIVEN("some context with metadata including multiple values for a single key")
+    {
+        mse::Context context({{"a", "value1"}, {"a", "value2"}});
+        WHEN("The context is converted to json")
+        {
+            std::string json_string = mse::StructuredLogger::to_json(context, nullptr);
+            std::cout << json_string << std::endl;
+            THEN("it can be parsed")
+            {
+                nlohmann::json data = nlohmann::json::parse(json_string);
+                AND_THEN("one of the values can be retrieved")
+                {
+                    REQUIRE(((data.at("a").get<std::string>() == "value1") || (data.at("a").get<std::string>() == "value2")));
                 }
             }
         }

@@ -27,26 +27,18 @@ std::string json_escape(const std::string& str)
         { '\\' , "\\\\" }
     };
 
-    std::cout << "input: '" << str << "'." << std::endl;
-
     std::string escaped_string;
     size_t pos = 0;
     auto escape_begin = std::sregex_iterator(str.begin(), str.end(), escape_regex);    
      for (std::sregex_iterator i = escape_begin; i != std::sregex_iterator(); ++i)
      {
-        std::cout << "replacing '" << str[i->position(0)] << "' by '" << escape_dict.at(i->str()[0]) << std::endl;
         escaped_string += str.substr(pos, i->position(0) - pos);
         std::string replacement = escape_dict.at(i->str()[0]);
         escaped_string += replacement;
         pos = i->position(0) + 1;
-
-        std::cout << "result: '" << escaped_string << "'." << std::endl;
      }
 
     escaped_string += str.substr(pos, str.size() - pos);
-    std::cout << "finally adding: '" << str.substr(pos, str.size() - pos) << "'." << std::endl;
-    std::cout << "final result: '" << escaped_string << "'." << std::endl;
-
     return escaped_string;
 }
 
