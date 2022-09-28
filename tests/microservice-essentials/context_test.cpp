@@ -7,6 +7,9 @@
 #include <string>
 #include <vector>
 
+#ifdef _WIN32
+#define timegm _mkgmtime
+#endif
 
 SCENARIO("Context Metadata", "[context]")
 {
