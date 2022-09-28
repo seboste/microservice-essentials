@@ -113,6 +113,10 @@ public:
     virtual void write(const mse::Context& context, mse::LogLevel level, std::string_view message) override;
 };
 
+/**
+ * A logger proxy that formats messages and context in a structured format such as json before forwarding it to a logging backend.
+ * By default "timestamp", "level", "app", "x-b3-traceid", "x-b3-spanid", and "message" will be written in json format.
+ */
 class StructuredLogger : public mse::Logger
 {
 public:    

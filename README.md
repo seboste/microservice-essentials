@@ -10,7 +10,7 @@
 - Singleton for notifying registered classes about upcoming service **shutdown** upon receiving a shutdown signal.
 
 ### Observability
-- A minimalistic customizeable **logging** framework.
+- A minimalistic customizeable **logging** framework including a structured logger.
 
 ### Utilities
 - Convenience for reading and converting **environment variables**.
