@@ -1,9 +1,12 @@
 #include <catch2/catch_test_macros.hpp>
 #include <microservice-essentials/context.h>
 #include <algorithm>
-#include <iomanip>
-#include <vector>
 #include <future>
+#include <iomanip>
+#include <sstream>
+#include <string>
+#include <vector>
+
 
 SCENARIO("Context Metadata", "[context]")
 {
