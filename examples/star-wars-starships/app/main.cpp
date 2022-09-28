@@ -9,6 +9,11 @@
 
 int main()
 {
+    mse::Context::GetGlobalContext().Insert({ 
+            {"app", mse::getenv_or("APP", "star-wars-starships") },
+            {"version", mse::getenv_or("VERSION", "1.0.0") }
+        });
+
     mse::ConsoleLogger logger;
     mse::StructuredLogger structured_logger(logger);
 
@@ -18,8 +23,8 @@ int main()
 
     Core core(client, db);
 
-    HttpHandler handler(core);
-    //GrpcHandler handler(core);
+    //HttpHandler handler(core);
+    GrpcHandler handler(core);
 
 
     mse::GracefulShutdownOnSignal gracefulShutdown(mse::Signal::SIG_SHUTDOWN);
