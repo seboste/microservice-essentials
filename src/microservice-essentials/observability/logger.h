@@ -124,7 +124,8 @@ public:
 
     virtual void write(const mse::Context& context, mse::LogLevel level, std::string_view message) override;
 
-    static const std::initializer_list<std::string_view> default_fields; // = { "timestamp", "level", "app", "trace", "span", "message" };
+    //include opentelemetry fields
+    static const std::initializer_list<std::string_view> default_fields; // = { "timestamp", "level", "app", "x-b3-traceid", "x-b3-spanid", "message" };
     static const std::initializer_list<std::string_view> all_fields; // = {};
 
 private:

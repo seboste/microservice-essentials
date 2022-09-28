@@ -246,5 +246,5 @@ void StructuredLogger::write(const mse::Context& context, mse::LogLevel level, s
     _logger_backend.Write(context_with_message, level, _formatter(context_with_message, _fields.empty() ? nullptr : &_fields));
 }
 
-const std::initializer_list<std::string_view> StructuredLogger::default_fields = { "timestamp", "level", "app", "trace", "span", "message" };
+const std::initializer_list<std::string_view> StructuredLogger::default_fields = { "timestamp", "level", "app", "x-b3-traceid", "x-b3-spanid", "message" };
 const std::initializer_list<std::string_view> StructuredLogger::all_fields = {};
