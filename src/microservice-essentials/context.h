@@ -3,6 +3,7 @@
 #include <chrono>
 #include <string>
 #include <map>
+#include <set>
 #include <vector>
 #include <initializer_list>
 
@@ -17,7 +18,7 @@ class Context
 public:
     typedef std::multimap<std::string, std::string> Metadata;
     typedef std::vector<Metadata::value_type> MetadataVector;
-    
+
     Context(const Metadata& metadata, const Context* parent_context);
     Context(const Context* parent_context) : Context({}, parent_context) {}
     Context(const Metadata& metadata) : Context(metadata, nullptr) {}
@@ -25,11 +26,15 @@ public:
     Context(std::initializer_list<Metadata::value_type> metadata) : Context(metadata, nullptr) {}
     Context(const Context* parent_context, const std::string& file, const std::string& function, int line, std::chrono::time_point<std::chrono::system_clock> tp = std::chrono::system_clock::now());
     Context() : Context({}, nullptr) {}
-
+    Context(const Context& other_context) { *this = other_context; }
+    Context(Context&& other_context) { *this = std::move(other_context); }
     virtual ~Context();
 
-    //static Context& GetGlobalContext();
-    //static Context& GetThreadLocalContext();
+    Context& operator=(const Context& other_context);
+    Context& operator=(Context&& other_context);
+
+    static Context& GetGlobalContext();
+    static Context& GetThreadLocalContext();
 
     void Clear();
 
@@ -44,6 +49,12 @@ public:
     bool Contains(const std::string& key) const;
 
 private:
+    class NoParent {};
+    Context(const NoParent& no_parent);
+
+    void initParentContext(const Context& other_context);
+    std::set<const Context*> getAllParents() const;
+
     const Context* _parent_context = nullptr;
     Metadata _metadata;
 };

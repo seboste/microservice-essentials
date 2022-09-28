@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <iomanip>
 #include <vector>
+#include <future>
 
 SCENARIO("Context Metadata", "[context]")
 {
@@ -179,6 +180,184 @@ SCENARIO("Context Initialization", "[context]")
             std::chrono::system_clock::time_point tp = std::chrono::system_clock::from_time_t(timegm (&tmb));
             using namespace std::chrono_literals;
             REQUIRE((std::chrono::system_clock::now() - tp) < 2s);
+        }
+    }
+}
+
+
+SCENARIO("Context Parent", "[context]")
+{
+    GIVEN("a global context with some metadata")
+    {
+        if(!mse::Context::GetGlobalContext().Contains("global"))
+        {
+            mse::Context::GetGlobalContext().Insert({{"global", "foo"}});
+        }
+        AND_GIVEN("a thread local context with some metadata")
+        {
+            if(!mse::Context::GetThreadLocalContext().Contains("thread_local"))
+            {
+                mse::Context::GetThreadLocalContext().Insert({{"thread_local", "bar"}});
+            }            
+            THEN("the thread local context contains global and thread local metadata")
+            {
+                REQUIRE(mse::Context::GetThreadLocalContext().Contains("global"));
+                REQUIRE(mse::Context::GetThreadLocalContext().Contains("thread_local"));
+            }
+            WHEN("a context without a parent is created")
+            {
+                mse::Context context({{"local","some_value"}}, nullptr);
+                THEN("that context contains all metadata")
+                {
+                    REQUIRE(context.Contains("global"));
+                    REQUIRE(context.Contains("thread_local"));
+                    REQUIRE(context.Contains("local"));
+                }
+
+                AND_WHEN("the thread local context is cleared")
+                {
+                    mse::Context::GetThreadLocalContext().Clear();
+                    THEN("the context contains all metadata but the thread local one")
+                    {
+                        REQUIRE(context.Contains("global"));
+                        REQUIRE(!context.Contains("thread_local"));
+                        REQUIRE(context.Contains("local"));
+                    }
+                }
+            }
+            WHEN("a thread local context in another thread is accessed")
+            {
+                auto future = std::async([]()
+                {
+                    const mse::Context& thread_local_context = mse::Context::GetThreadLocalContext(); 
+                    THEN("the thread local context contains the global but not the thread local metadata from the other thread")
+                    {
+                        REQUIRE(thread_local_context.Contains("global"));
+                        REQUIRE(!thread_local_context.Contains("thread_local"));
+                    }                    
+                });                
+                future.get();
+                REQUIRE(mse::Context::GetThreadLocalContext().Contains("thread_local"));
+            }
+            WHEN("a thread_local context of another thread is initialized with this thread's thread_local context")            
+            {
+                const mse::Context& thread_local_context = mse::Context::GetThreadLocalContext();
+                auto future = std::async([thread_local_context]()
+                {
+                    mse::Context::GetThreadLocalContext() = mse::Context(thread_local_context);
+                    mse::Context::GetThreadLocalContext().Insert({{"thread_local_child", "bar"}});
+                    THEN("the thread local context contains the global but not the thread local metadata from the other thread")
+                    {
+                        REQUIRE(mse::Context::GetThreadLocalContext().Contains("global"));
+                        REQUIRE(mse::Context::GetThreadLocalContext().Contains("thread_local"));
+                        REQUIRE(mse::Context::GetThreadLocalContext().Contains("thread_local_child"));
+                    }                    
+                });                           
+                future.get();
+                AND_THEN("the parent thread does not contain the child threads metadata")
+                {
+                    REQUIRE(!mse::Context::GetThreadLocalContext().Contains("thread_local_child"));
+                }
+            }
+            WHEN("an empty context is copied to the global context")
+            {
+                REQUIRE(mse::Context::GetGlobalContext().Contains("global"));
+                mse::Context context;
+                mse::Context::GetGlobalContext() = context;
+                THEN("the global context doesn't contain the metadata anymore")
+                {
+                    REQUIRE(!mse::Context::GetGlobalContext().Contains("global"));
+                }
+            }
+            WHEN("an empty context is moved to the global context")
+            {
+                REQUIRE(mse::Context::GetGlobalContext().Contains("global"));
+                mse::Context context;
+                mse::Context::GetGlobalContext() = std::move(context);
+                THEN("the global context doesn't contain the metadata anymore")
+                {
+                    REQUIRE(!mse::Context::GetGlobalContext().Contains("global"));
+                }
+            }
+            WHEN("an empty context is copied to the thread_local context")
+            {
+                REQUIRE(mse::Context::GetGlobalContext().Contains("global"));
+                REQUIRE(mse::Context::GetThreadLocalContext().Contains("thread_local"));
+                mse::Context context;                
+                mse::Context::GetThreadLocalContext() = context;
+                THEN("the thread_local context contains the global metadata")
+                {
+                    REQUIRE(mse::Context::GetThreadLocalContext().Contains("global"));
+                }
+                AND_THEN("the thread_local context doesn't contain the thread_local metadata anymore")
+                {
+                    REQUIRE(!mse::Context::GetThreadLocalContext().Contains("thread_local"));
+                }
+            }
+        }
+    }
+    GIVEN("a context with a parent context")
+    {
+        if(!mse::Context::GetThreadLocalContext().Contains("thread_local"))
+        {
+            mse::Context::GetThreadLocalContext().Insert({{"thread_local", "tl"}});
+        }
+
+        mse::Context parent({{"parent", "foo"}});
+        mse::Context child({{"child", "bar" }}, &parent);
+        WHEN("the child is copied to the parent")
+        {
+            parent = child;
+            THEN("the parent contains the thread local meta data")
+            {
+                REQUIRE(parent.Contains("thread_local"));
+            }
+            THEN("the parent contains the child meta data")
+            {
+                REQUIRE(parent.Contains("child"));
+            }
+            THEN("the parent does NOT contain the parent meta data")
+            {
+                REQUIRE(!parent.Contains("parent"));
+            }
+        }
+
+        WHEN("the parent is copied to the child")
+        {
+            child = parent;
+            THEN("the child contains the thread local meta data")
+            {
+                REQUIRE(child.Contains("thread_local"));
+            }
+            THEN("the child contains the parent meta data")
+            {
+                REQUIRE(child.Contains("parent"));
+            }
+            THEN("the child does NOT contain the child meta data")
+            {
+                REQUIRE(!child.Contains("child"));
+            }
+        }
+
+        AND_GIVEN("a grand child context")
+        {
+            mse::Context grand_child({{"grand_child", "bar" }}, &child);
+
+            WHEN("the grand child is copied to the grand parent")
+            {
+                THEN("a logic error is thrown")
+                {
+                    REQUIRE_THROWS_AS(parent = grand_child, std::logic_error);
+                }                
+            }
+
+            WHEN("the grand parent is copied to the grand child")
+            {                
+                THEN("no exception is thrown")
+                {
+                    REQUIRE_NOTHROW(grand_child = parent);
+                }
+            }
         }
     }
 }

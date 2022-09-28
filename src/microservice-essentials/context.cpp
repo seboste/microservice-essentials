@@ -2,6 +2,7 @@
 
 #include <sstream>
 #include <iomanip>
+#include <stdexcept>
 
 using namespace mse;
 
@@ -17,13 +18,24 @@ std::string to_string(std::chrono::time_point<std::chrono::system_clock> tp)
     return ss.str();
 }
 
+}
 
+Context::Context(const NoParent& no_parent)
+    : _parent_context(nullptr)
+{
 }
 
 Context::Context(const Metadata& metadata, const Context* parent_context)
     : _metadata(metadata)
-    , _parent_context(parent_context)
+    , _parent_context(parent_context
+        ? parent_context
+        : &GetThreadLocalContext() //let the thread local context be the parent
+    )
 {
+    if(parent_context == this) //I cannot be my own parent
+    {
+        throw std::logic_error("parent context is identical to its child");
+    }
 }
 
 Context::Context(const Context* parent_context, const std::string& file, const std::string& function, int line, std::chrono::time_point<std::chrono::system_clock> tp)
@@ -35,9 +47,41 @@ Context::~Context()
 {
 }
 
+Context& Context::operator=(const Context& other_context)
+{
+    if(this == &other_context)
+    {
+        return *this; //nothing todo
+    }
 
-    //static Context& GetGlobalContext();
-    //static Context& GetThreadLocalContext();
+    _metadata = other_context._metadata;
+    initParentContext(other_context);
+    return *this;
+}
+
+Context& Context::operator=(Context&& other_context)
+{
+    if(this == &other_context)
+    {
+        return *this; //nothing todo
+    }
+
+    _metadata = std::move(other_context._metadata);
+    initParentContext(other_context);
+    return *this;
+}
+
+Context& Context::GetGlobalContext()
+{
+    static Context global_context{NoParent()}; //global context must not have a parent. All others do.
+    return global_context;
+}
+
+Context& Context::GetThreadLocalContext()
+{
+    static thread_local Context threadlocal_context(&GetGlobalContext()); //global context is the parent of the thread local context
+    return threadlocal_context;
+}
 
 void Context::Clear()
 {
@@ -102,4 +146,34 @@ bool Context::Contains(const std::string& key) const
         return _parent_context->Contains(key);
     }
     return false;
+}
+
+std::set<const Context*> Context::getAllParents() const
+{    
+    std::set<const Context*> parents;
+    if(_parent_context != nullptr)
+    {
+        parents.insert(_parent_context);
+        parents.merge(_parent_context->getAllParents());
+    }
+    return parents;
+}
+
+void Context::initParentContext(const Context& other_context)
+{    
+    if(&GetGlobalContext() == this) //global context must never have a parent
+    {
+        _parent_context = nullptr;
+    }    
+    else
+    {
+        if(other_context._parent_context != this) //don't change _parent_context if other_context is a child
+        {
+            if(other_context.getAllParents().count(this))
+            {
+                throw std::logic_error("I cannot be one of my ancestors");
+            }
+            _parent_context = other_context._parent_context;
+        }
+    }
 }
