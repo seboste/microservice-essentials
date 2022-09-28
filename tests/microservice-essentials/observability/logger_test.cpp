@@ -345,15 +345,22 @@ SCENARIO("StructuredLogger", "[observability][logging]")
         }
     }
     
-    GIVEN("some context with metadata including special characters")
+    GIVEN("some context with metadata including special characters in the values")
     {
-        mse::Context context({{"a\"", "x\t"}, {"b\r", "\ny"}, {"\\c", "z\fz\b"}});
+        mse::Context context({{"a", "xtest\t\t\""}, {"b", "test\nytest\r"}, {"c", "\\z\ftestz\b"}, {"d" , ""}});
         WHEN("The context is converted to json")
         {
             std::string json_string = mse::StructuredLogger::to_json(context, nullptr);
             THEN("it can be parsed")
             {
                 nlohmann::json data = nlohmann::json::parse(json_string);
+                for(const auto& element : data.items())                
+                {
+                    AND_THEN(std::string("the value of key ") + element.key() + " didn't change")
+                    {
+                        REQUIRE(element.value().get<std::string>() == context.GetMetadata().find(element.key())->second);
+                    }                    
+                }
             }
         }
     }
