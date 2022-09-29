@@ -14,6 +14,7 @@ target_sources(http-starwars-client
 target_link_libraries(http-starwars-client 
     PUBLIC 
         ports
+        microservice-essentials
     PRIVATE
         httplib::httplib
         nlohmann_json::nlohmann_json

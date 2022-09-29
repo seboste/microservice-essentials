@@ -2,7 +2,17 @@
 
 #include <microservice-essentials/context.h>
 #include <microservice-essentials/utilities/environment.h>
+#include <functional>
+#include <initializer_list>
 #include <string_view>
+#include <vector>
+
+#define MSE_LOG_TRACE(m) mse::LogProvider::GetLogger().Write(MSE_LOCAL_CONTEXT, mse::LogLevel::trace, m);
+#define MSE_LOG_DEBUG(m) mse::LogProvider::GetLogger().Write(MSE_LOCAL_CONTEXT, mse::LogLevel::debug, m);
+#define MSE_LOG_INFO(m) mse::LogProvider::GetLogger().Write(MSE_LOCAL_CONTEXT, mse::LogLevel::info, m);
+#define MSE_LOG_WARN(m) mse::LogProvider::GetLogger().Write(MSE_LOCAL_CONTEXT, mse::LogLevel::warn, m);
+#define MSE_LOG_ERROR(m) mse::LogProvider::GetLogger().Write(MSE_LOCAL_CONTEXT, mse::LogLevel::err, m);
+#define MSE_LOG_CRITICAL(m) mse::LogProvider::GetLogger().Write(MSE_LOCAL_CONTEXT, mse::LogLevel::critical, m);
 
 namespace mse
 {
@@ -101,6 +111,32 @@ public:
     virtual ~DiscardLogger();
 
     virtual void write(const mse::Context& context, mse::LogLevel level, std::string_view message) override;
+};
+
+/**
+ * A logger proxy that formats messages and context in a structured format such as json before forwarding it to a logging backend.
+ * By default "timestamp", "level", "app", "x-b3-traceid", "x-b3-spanid", and "message" will be written in json format.
+ */
+class StructuredLogger : public mse::Logger
+{
+public:    
+    static std::string to_json(const mse::Context& context, const std::vector<std::string>* fields);
+    typedef std::function<std::string(const mse::Context& context, const std::vector<std::string>* fields)> Formatter;
+
+    StructuredLogger(mse::Logger& logger_backend, std::initializer_list<std::string_view> fields = default_fields, Formatter formatter = to_json);
+    virtual ~StructuredLogger();
+
+    virtual void write(const mse::Context& context, mse::LogLevel level, std::string_view message) override;
+
+    //include opentelemetry fields
+    static const std::initializer_list<std::string_view> default_fields; // = { "timestamp", "level", "app", "x-b3-traceid", "x-b3-spanid", "message" };
+    static const std::initializer_list<std::string_view> all_fields; // = {};
+
+private:
+    mse::Logger& _logger_backend;
+    Formatter _formatter;
+    std::vector<std::string> _fields;
+    LogProvider::AutoRegistration _auto_log_provider_registration;
 };
 
 } //mse namespace

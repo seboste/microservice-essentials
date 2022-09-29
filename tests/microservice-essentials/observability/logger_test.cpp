@@ -1,5 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <microservice-essentials/observability/logger.h>
+#include <nlohmann/json.hpp>
 #include <iostream>
 #include <memory>
 
@@ -306,4 +307,98 @@ SCENARIO( "DiscardLogger", "[observability][logging]" )
             }
         }
     }
+}
+
+SCENARIO("StructuredLogger", "[observability][logging]")
+{    
+    GIVEN("a structured logger with a TestLogger backend")
+    {
+        TestLogger test_logger;
+        mse::StructuredLogger structured_logger(test_logger, {"message"});
+        WHEN("a log message is written")
+        {
+            structured_logger.Write("test");
+            THEN("the message is written in json format")
+            {
+                REQUIRE(test_logger._last_message == "{\"message\":\"test\"}");
+            }
+        }
+    }
+
+    GIVEN("some context with metadata")
+    {
+        mse::Context context({{"a", "x"}, {"b", "y"}, {"c", "z"}});
+        WHEN("The context is converted to json")
+        {
+            std::string json_string = mse::StructuredLogger::to_json(context, nullptr);
+            THEN("it can be parsed")
+            {
+                nlohmann::json data = nlohmann::json::parse(json_string);
+                
+                AND_THEN("the metadata is present in the json")
+                {
+                    REQUIRE(data["a"].get<std::string>() == "x");
+                    REQUIRE(data["b"].get<std::string>() == "y");
+                    REQUIRE(data["c"].get<std::string>() == "z");
+                }
+            }
+        }
+    }
+    
+    GIVEN("some context with metadata including special characters in the values")
+    {
+        mse::Context context({{"a", "xtest\t\t\""}, {"b", "test\nytest\r"}, {"c", "\\z\ftestz\b"}, {"d" , ""}});
+        WHEN("The context is converted to json")
+        {
+            std::string json_string = mse::StructuredLogger::to_json(context, nullptr);
+            THEN("it can be parsed")
+            {
+                nlohmann::json data = nlohmann::json::parse(json_string);
+                for(const auto& element : data.items())
+                {
+                    AND_THEN(std::string("the value of key ") + element.key() + " didn't change")
+                    {
+                        REQUIRE(element.value().get<std::string>() == context.GetMetadata().find(element.key())->second);
+                    }                    
+                }
+            }
+        }
+    }
+    GIVEN("some context with metadata including special characters in the keys")
+    {
+        mse::Context context({{"xtest\t\t\"", "a"}, {"test\nytest\r", "b"}, {"\\z\ftestz\b", "c"}});
+        WHEN("The context is converted to json")
+        {
+            std::string json_string = mse::StructuredLogger::to_json(context, nullptr);
+            THEN("it can be parsed")
+            {
+                nlohmann::json data = nlohmann::json::parse(json_string);
+                AND_THEN("all keys do exist")
+                {
+                    REQUIRE(data.contains("xtest\t\t\""));
+                    REQUIRE(data.contains("test\nytest\r"));
+                    REQUIRE(data.contains("\\z\ftestz\b"));
+                }
+            }
+        }
+    }
+
+    GIVEN("some context with metadata including multiple values for a single key")
+    {
+        mse::Context context({{"a", "value1"}, {"a", "value2"}});
+        WHEN("The context is converted to json")
+        {
+            std::string json_string = mse::StructuredLogger::to_json(context, nullptr);
+            std::cout << json_string << std::endl;
+            THEN("it can be parsed")
+            {
+                nlohmann::json data = nlohmann::json::parse(json_string);
+                AND_THEN("one of the values can be retrieved")
+                {
+                    REQUIRE(((data.at("a").get<std::string>() == "value1") || (data.at("a").get<std::string>() == "value2")));
+                }
+            }
+        }
+    }
+
 }

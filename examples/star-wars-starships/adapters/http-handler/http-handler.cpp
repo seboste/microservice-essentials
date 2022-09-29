@@ -1,5 +1,7 @@
 #include "http-handler.h"
 #include <microservice-essentials/observability/logger.h>
+#include <microservice-essentials/context.h>
+#include <microservice-essentials/utilities/metadata-converter.h>
 #define CPPHTTPLIB_OPENSSL_SUPPORT //be consistent with other projects to prevent seg fault
 #include <httplib/httplib.h>
 #include <nlohmann/json.hpp>
@@ -103,20 +105,22 @@ HttpHandler::~HttpHandler()
 }
 
 void HttpHandler::Handle()
-{
-    mse::LogProvider::GetLogger().Write(mse::LogLevel::info, std::string("serving on ") + _host + ':' + std::to_string(_port));
+{    
+    MSE_LOG_INFO(std::string("serving on ") + _host + ':' + std::to_string(_port));
     _svr->listen(_host, _port);
 }
 
 void HttpHandler::Stop()
 {
-    mse::LogProvider::GetLogger().Write(mse::LogLevel::info, "stop requested");
+    MSE_LOG_INFO("stop requested");
     _svr->stop();
 }
 
 void HttpHandler::listStarShips(const httplib::Request& request, httplib::Response& response)
-{
-    mse::LogProvider::GetLogger().Write(mse::LogLevel::trace, "received listStarShips request");
+{    
+    mse::Context::GetThreadLocalContext() = mse::Context(mse::ToContextMetadata(request.headers));    
+
+    MSE_LOG_TRACE( "handling list star ships request");
     response.set_content(
             to_json(_api.ListStarShips()).dump(),
             "text/json"
@@ -126,7 +130,9 @@ void HttpHandler::listStarShips(const httplib::Request& request, httplib::Respon
 
 void HttpHandler::getStarShip(const httplib::Request& request, httplib::Response& response)
 {
-    mse::LogProvider::GetLogger().Write(mse::LogLevel::trace, "received getStarShip request");
+    mse::Context::GetThreadLocalContext() = mse::Context(mse::ToContextMetadata(request.headers));
+
+    MSE_LOG_TRACE( "received get star ship request");
     response.set_content(
             to_json(_api.GetStarShip(extractId(request.path))).dump(),
             "text/json"
@@ -136,7 +142,9 @@ void HttpHandler::getStarShip(const httplib::Request& request, httplib::Response
 
 void HttpHandler::updateStatus(const httplib::Request& request, httplib::Response& response)
 {
-    mse::LogProvider::GetLogger().Write(mse::LogLevel::trace, "received updateStatus request");
+    mse::Context::GetThreadLocalContext() = mse::Context(mse::ToContextMetadata(request.headers));
+    
+    MSE_LOG_TRACE( "received update status request");
     _api.UpdateStatus(
         extractId(request.path),
         from_string(json::parse(request.body).at("status"))
