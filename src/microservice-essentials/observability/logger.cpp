@@ -15,7 +15,7 @@ Logger& getDefaultLogger()
 
 std::string json_escape(const std::string& str)
 {
-    static const std::regex escape_regex("[\\b\\f\\n\\r\\t\"\\\\]");
+    static const std::regex escape_regex("[\b\\f\\n\\r\\t\"\\\\]");
     static const std::map<char, std::string> escape_dict = 
     {        
         { '\b' , "\\b" },
