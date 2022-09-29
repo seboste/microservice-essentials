@@ -25,6 +25,26 @@ Context::Context(const NoParent& no_parent)
 {
 }
 
+Context::Context(const Context* parent_context)
+    : Context({}, parent_context)
+{
+}
+
+Context::Context(const Metadata& metadata)
+    : Context(metadata, nullptr)
+{
+}
+
+Context::Context(std::initializer_list<Metadata::value_type> metadata, const Context* parent_context) 
+    : Context(Metadata(metadata), parent_context)
+{
+}
+
+Context::Context(std::initializer_list<Metadata::value_type> metadata)
+    : Context(metadata, nullptr)
+{
+}
+
 Context::Context(const Metadata& metadata, const Context* parent_context)
     : _metadata(metadata)
     , _parent_context(parent_context
@@ -41,6 +61,22 @@ Context::Context(const Metadata& metadata, const Context* parent_context)
 Context::Context(const Context* parent_context, const std::string& file, const std::string& function, int line, std::chrono::time_point<std::chrono::system_clock> tp)
     : Context({ { "file", file }, {"function", function}, { "line", std::to_string(line) }, { "timestamp", to_string(tp)} }, parent_context)
 {
+}
+
+
+Context::Context() 
+    : Context({}, nullptr) 
+{
+}
+
+Context::Context(const Context& other_context)
+{ 
+    *this = other_context; 
+}
+
+Context::Context(Context&& other_context) 
+{ 
+    *this = std::move(other_context);
 }
 
 Context::~Context()
