@@ -37,14 +37,14 @@ public:
     typedef std::vector<Metadata::value_type> MetadataVector;
 
     Context(const Metadata& metadata, const Context* parent_context);
-    Context(const Context* parent_context) : Context({}, parent_context) {}
-    Context(const Metadata& metadata) : Context(metadata, nullptr) {}
-    Context(std::initializer_list<Metadata::value_type> metadata, const Context* parent_context) : Context(Metadata(metadata), parent_context) {}
-    Context(std::initializer_list<Metadata::value_type> metadata) : Context(metadata, nullptr) {}
+    inline Context(const Context* parent_context) : Context({}, parent_context) {}
+    inline Context(const Metadata& metadata) : Context(metadata, nullptr) {}
+    inline Context(std::initializer_list<Metadata::value_type> metadata, const Context* parent_context) : Context(Metadata(metadata), parent_context) {}
+    inline Context(std::initializer_list<Metadata::value_type> metadata) : Context(metadata, nullptr) {}
     Context(const Context* parent_context, const std::string& file, const std::string& function, int line, std::chrono::time_point<std::chrono::system_clock> tp = std::chrono::system_clock::now());
-    Context() : Context({}, nullptr) {}
-    Context(const Context& other_context) { *this = other_context; }
-    Context(Context&& other_context) { *this = std::move(other_context); }
+    inline Context() : Context({}, nullptr) {}
+    inline Context(const Context& other_context) { *this = other_context; }
+    inline Context(Context&& other_context) { *this = std::move(other_context); }
     virtual ~Context();
 
     Context& operator=(const Context& other_context);
