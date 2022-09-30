@@ -1,5 +1,6 @@
 add_subdirectory(cross-cutting-concerns)
 add_subdirectory(observability)
+add_subdirectory(request)
 add_subdirectory(utilities)
 
 target_sources(microservice-essentials
