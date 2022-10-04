@@ -12,15 +12,15 @@ class RequestDecorator
 public:
     typedef std::function<Status(Context& context)> Func;   
 
-    RequestDecorator(const std::string& name, Context& context);
-    virtual ~RequestDecorator();
-    
-    virtual Status Process(Func func);
-protected:
-    virtual Status pre_process();
-    virtual Status post_process();
+    RequestDecorator(const std::string& name);
+    virtual ~RequestDecorator();    
 
-    Context& _context;
+    virtual Status Process(Func func, Context& context);    
+
+protected:
+    virtual Status pre_process(Context& context);
+    virtual Status post_process(Context& context);
+    
     std::string _name;
 };
 
