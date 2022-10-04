@@ -8,6 +8,7 @@ namespace mse
 //compatible to grpc::sthttps://grpc.github.io/grpc/core/md_doc_statuscodes.html
 enum class StatusCode
 {
+    invalid = -1,
     ok = 0,
     cancelled = 1,
     unknown = 2,
@@ -27,6 +28,9 @@ enum class StatusCode
     unauthenticated = 16
 };
 
+/**
+ * Simple status code struct. Use utilities/status-converter to convert from/to grpc/http error codes
+ */
 struct Status
 {    
     StatusCode code = StatusCode::ok;
@@ -39,3 +43,7 @@ std::string to_string(StatusCode status_code);
 void from_string(const std::string& status_code_string, StatusCode& status_code);
 
 }
+
+//stream operators for StatusCode
+bool operator>>(std::istream& is, mse::StatusCode& status_code);
+std::ostream& operator<<(std::ostream& os, const mse::StatusCode& status_code);

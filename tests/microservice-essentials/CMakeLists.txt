@@ -5,4 +5,5 @@ target_sources(tests
 PUBLIC
     context_test.cpp
     handler_test.cpp
+    status_test.cpp
     )
