@@ -10,7 +10,7 @@ namespace mse
 class RequestDecorator
 {
 public:
-    typedef std::function<Status(Context& context)> Func;   
+    typedef std::function<Status(Context& context)> Func;
 
     RequestDecorator(const std::string& name);
     virtual ~RequestDecorator();    
