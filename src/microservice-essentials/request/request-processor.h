@@ -2,6 +2,7 @@
 
 #include <microservice-essentials/request/request-hook.h>
 #include <microservice-essentials/context.h>
+#include <any>
 #include <memory>
 #include <vector>
 
@@ -14,6 +15,7 @@ public:
     RequestProcessor(const std::string& request_name, mse::Context&& context);
 
     RequestProcessor& With(std::unique_ptr<RequestHook>&& hook);
+    RequestProcessor& With(std::any&& hook_construction_params);
 
     Status Process(RequestHook::Func func);
 private:

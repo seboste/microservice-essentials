@@ -1,5 +1,6 @@
 #include "request-processor.h"
 #include <microservice-essentials/context.h>
+#include <microservice-essentials/request/request-hook-factory.h>
 
 using namespace mse;
 
@@ -13,6 +14,11 @@ RequestProcessor& RequestProcessor::With(std::unique_ptr<RequestHook>&& hook)
 {
     _hooks.emplace_back(std::move(hook));
     return *this;
+}
+
+RequestProcessor& RequestProcessor::With(std::any&& hook_construction_params)
+{
+    return With(RequestHookFactory::GetInstance().Create(hook_construction_params));
 }
 
 Status RequestProcessor::Process(RequestHook::Func func)
