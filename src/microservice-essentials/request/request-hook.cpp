@@ -25,22 +25,23 @@ Status RequestHook::Process(Func func, Context& context)
 
     MSE_LOG_TRACE(std::string("processing by ") + _name);
     
-    if(Status s = func(context); !s)
+    Status status = func(context);    
+    if( !status)
     {
-        MSE_LOG_TRACE(std::string("processing failed with status ") + to_string(s.code) + " (" + s.details + ")" );
-        return s;
+        MSE_LOG_TRACE(std::string("processing failed with status ") + to_string(status.code) + " (" + status.details + ")" );     
     }
 
     MSE_LOG_TRACE(std::string("postprocessing by ") + _name);
 
-    if(Status s = post_process(context); !s)
+    status = post_process(context, status);
+    
+    if(!status)
     {
-        MSE_LOG_TRACE(std::string("postprocessing failed with status ") + to_string(s.code) + " (" + s.details + ")" );
-        return s;
+        MSE_LOG_TRACE(std::string("postprocessing failed with status ") + to_string(status.code) + " (" + status.details + ")" );        
     }
 
     MSE_LOG_TRACE(std::string("completely processed by ") + _name);
-    return { StatusCode::ok };
+    return status;
 }
 
 
@@ -49,7 +50,7 @@ Status RequestHook::pre_process(Context& context)
     return Status{StatusCode::ok};
 }
 
-Status RequestHook::post_process(Context& context)
+Status RequestHook::post_process(Context& context, Status status)
 {
-    return Status{StatusCode::ok};
+    return status;
 }

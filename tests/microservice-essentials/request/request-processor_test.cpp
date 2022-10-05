@@ -20,9 +20,11 @@ public:
         return mse::Status{_preprocess_status_code};
     }
 
-    virtual mse::Status post_process(mse::Context& context) override
+    virtual mse::Status post_process(mse::Context& context, mse::Status status) override
     {
-        return mse::Status{_postprocess_status_code};
+        return status
+            ? mse::Status{_postprocess_status_code}
+            : status;
     }
 
 private:

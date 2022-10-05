@@ -19,7 +19,7 @@ public:
 
 protected:
     virtual Status pre_process(Context& context);
-    virtual Status post_process(Context& context);
+    virtual Status post_process(Context& context, Status status);
     
     std::string _name;
 };
