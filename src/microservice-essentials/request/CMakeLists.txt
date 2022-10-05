@@ -1,8 +1,8 @@
 target_sources(microservice-essentials
     PUBLIC
-        request-decorator.h
+        request-hook.h
         request-processor.h
     PRIVATE
-        request-decorator.cpp
+        request-hook.cpp
         request-processor.cpp
 )

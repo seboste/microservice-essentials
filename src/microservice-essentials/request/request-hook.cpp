@@ -1,19 +1,19 @@
-#include "request-decorator.h"
+#include "request-hook.h"
 #include <microservice-essentials/observability/logger.h>
 
 using namespace mse;
 
 
-RequestDecorator::RequestDecorator(const std::string& name)
+RequestHook::RequestHook(const std::string& name)
     : _name(name)
 {
 }
 
-RequestDecorator::~RequestDecorator()
+RequestHook::~RequestHook()
 {
 }
     
-Status RequestDecorator::Process(Func func, Context& context)
+Status RequestHook::Process(Func func, Context& context)
 {
     MSE_LOG_TRACE(std::string("preprocessing by ") + _name);
 
@@ -44,12 +44,12 @@ Status RequestDecorator::Process(Func func, Context& context)
 }
 
 
-Status RequestDecorator::pre_process(Context& context)
+Status RequestHook::pre_process(Context& context)
 {
     return Status{StatusCode::ok};
 }
 
-Status RequestDecorator::post_process(Context& context)
+Status RequestHook::post_process(Context& context)
 {
     return Status{StatusCode::ok};
 }

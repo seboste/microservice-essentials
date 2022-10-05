@@ -7,13 +7,13 @@
 namespace mse
 {
 
-class RequestDecorator
+class RequestHook
 {
 public:
     typedef std::function<Status(Context& context)> Func;
 
-    RequestDecorator(const std::string& name);
-    virtual ~RequestDecorator();    
+    RequestHook(const std::string& name);
+    virtual ~RequestHook();    
 
     virtual Status Process(Func func, Context& context);    
 

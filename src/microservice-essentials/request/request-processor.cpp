@@ -9,29 +9,29 @@ RequestProcessor::RequestProcessor(const std::string& request_name, mse::Context
 {
 }
 
-RequestProcessor& RequestProcessor::With(std::unique_ptr<RequestDecorator>&& decorator)
+RequestProcessor& RequestProcessor::With(std::unique_ptr<RequestHook>&& hook)
 {
-    _decorators.emplace_back(std::move(decorator));
+    _hooks.emplace_back(std::move(hook));
     return *this;
 }
 
-Status RequestProcessor::Process(RequestDecorator::Func func)
+Status RequestProcessor::Process(RequestHook::Func func)
 {
     //1. make given context available as the thread local context
     Context::GetThreadLocalContext() = _context;
     
     //2. create nested wrapper
-    RequestDecorator::Func wrapper = func;
-    for(auto decorator_cit = rbegin(_decorators); decorator_cit != rend(_decorators); ++decorator_cit)
+    RequestHook::Func wrapper = func;
+    for(auto hook_cit = rbegin(_hooks); hook_cit != rend(_hooks); ++hook_cit)
     {
-        RequestDecorator& decorator = **decorator_cit;
-        wrapper = [&decorator, wrapper](mse::Context& context)->mse::Status 
+        RequestHook& hook = **hook_cit;
+        wrapper = [&hook, wrapper](mse::Context& context)->mse::Status 
         { 
-            return decorator.Process(wrapper, context);
+            return hook.Process(wrapper, context);
         };
     }
 
-    //3. execute all decorators and the func with a new context    
+    //3. execute all hooks and the func with a new context    
     mse::Context request_context({{"request", _request_name}}, &_context);
     return wrapper(request_context);
 }

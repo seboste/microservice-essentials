@@ -5,11 +5,11 @@
 
 namespace
 {
-class DummyRequestDecorator : public mse::RequestDecorator
+class DummyRequestHook : public mse::RequestHook
 {
 public:
-    DummyRequestDecorator(const std::string& name, mse::StatusCode preprocess_status_code, mse::StatusCode postprocess_status_code)
-        : mse::RequestDecorator(name)
+    DummyRequestHook(const std::string& name, mse::StatusCode preprocess_status_code, mse::StatusCode postprocess_status_code)
+        : mse::RequestHook(name)
         , _preprocess_status_code(preprocess_status_code)
         , _postprocess_status_code(postprocess_status_code)
     {
@@ -40,11 +40,11 @@ SCENARIO("RequestProcessor", "[request]")
     GIVEN("a request processor")
     {
         mse::RequestProcessor processor("test", mse::Context());
-        WHEN("two successful decorators are added")
+        WHEN("two successful hooks are added")
         {
             processor
-                .With(std::make_unique<DummyRequestDecorator>("a", mse::StatusCode::ok, mse::StatusCode::ok))
-                .With(std::make_unique<DummyRequestDecorator>("b", mse::StatusCode::ok, mse::StatusCode::ok));            
+                .With(std::make_unique<DummyRequestHook>("a", mse::StatusCode::ok, mse::StatusCode::ok))
+                .With(std::make_unique<DummyRequestHook>("b", mse::StatusCode::ok, mse::StatusCode::ok));            
 
             AND_WHEN("some function is processed")
             {

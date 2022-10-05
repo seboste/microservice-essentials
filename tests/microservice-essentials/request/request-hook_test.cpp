@@ -1,14 +1,14 @@
 #include <catch2/catch_test_macros.hpp>
-#include <microservice-essentials/request/request-decorator.h>
+#include <microservice-essentials/request/request-hook.h>
 
 namespace 
 {
 
-class TestRequestDecorator : public mse::RequestDecorator
+class TestRequestHook : public mse::RequestHook
 {
 public:
-    TestRequestDecorator(mse::StatusCode preprocess_status_code, mse::StatusCode postprocess_status_code)
-        : mse::RequestDecorator("test")
+    TestRequestHook(mse::StatusCode preprocess_status_code, mse::StatusCode postprocess_status_code)
+        : mse::RequestHook("test")
         , _preprocess_status_code(preprocess_status_code)
         , _postprocess_status_code(postprocess_status_code)
         {
@@ -47,16 +47,16 @@ private:
 }
 
 
-SCENARIO("RequestDecorator", "[request]")
+SCENARIO("RequestHook", "[request]")
 {
-    GIVEN("a test request decorator that returns success")
+    GIVEN("a test request hook that returns success")
     {
-        TestRequestDecorator test_request_decorator(mse::StatusCode::ok, mse::StatusCode::ok);
+        TestRequestHook test_request_hook(mse::StatusCode::ok, mse::StatusCode::ok);
 
         WHEN("process is called on a successful function")
         {
             mse::Context context({{"test", "123"}});
-            mse::Status status = test_request_decorator.Process([&test_request_decorator](mse::Context& context) 
+            mse::Status status = test_request_hook.Process([&test_request_hook](mse::Context& context) 
             {
                 REQUIRE(context.Contains("test"));
                 REQUIRE(context.Contains("pre"));
@@ -64,7 +64,7 @@ SCENARIO("RequestDecorator", "[request]")
 
                 context.Insert({{"func", "xyz"}});
 
-                test_request_decorator._call_history.push_back(TestRequestDecorator::CallType::WRAPPED_FUNCTION);
+                test_request_hook._call_history.push_back(TestRequestHook::CallType::WRAPPED_FUNCTION);
                 return mse::Status{mse::StatusCode::ok};
             }, context);
 
@@ -72,13 +72,13 @@ SCENARIO("RequestDecorator", "[request]")
             
             THEN("pre process has been called")
             {
-                REQUIRE(test_request_decorator._call_history[0] == TestRequestDecorator::CallType::PRE_PROCESS);
+                REQUIRE(test_request_hook._call_history[0] == TestRequestHook::CallType::PRE_PROCESS);
                 AND_THEN("the function has been called")
                 {
-                    REQUIRE(test_request_decorator._call_history[1] == TestRequestDecorator::CallType::WRAPPED_FUNCTION);
+                    REQUIRE(test_request_hook._call_history[1] == TestRequestHook::CallType::WRAPPED_FUNCTION);
                     AND_THEN("post process has been called")
                     {
-                        REQUIRE(test_request_decorator._call_history[2] == TestRequestDecorator::CallType::POST_PROCESS);
+                        REQUIRE(test_request_hook._call_history[2] == TestRequestHook::CallType::POST_PROCESS);
                     }
                 }
             }
