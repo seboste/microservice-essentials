@@ -18,7 +18,7 @@ public:
     typedef std::function<std::unique_ptr<RequestHook>(const std::any& hook_construction_parameters)> FactoryMethod;
     
     template<typename ParameterType>
-    void Register(FactoryMethod factory_method) { Register(typeid(ParameterType()), factory_method); }
+    void Register(FactoryMethod factory_method) { Register(typeid(ParameterType), factory_method); }
     void Register(const std::type_info& hook_construction_parameter_type, FactoryMethod factory_method);
     
     std::unique_ptr<RequestHook> Create(const std::any& hook_construction_parameters);
