@@ -1,4 +1,5 @@
 #include "request-hook-factory.h"
+#include <stdexcept>
 
 using namespace mse;
 
