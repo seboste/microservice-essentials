@@ -12,6 +12,9 @@
 ### Observability
 - A minimalistic customizeable **logging** framework including a structured logger.
 
+### Request
+- global and local **Hooks** that will be executed before and after processing/issuing a request.
+
 ### Utilities
 - Convenience for reading and converting **environment variables**.
 - Handling of **system signals**.
