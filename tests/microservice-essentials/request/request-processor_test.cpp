@@ -97,8 +97,7 @@ SCENARIO("RequestProcessor", "[request]")
             }
         }
         AND_GIVEN("a factory registration for the DummyRequestHook")
-        {
-            mse::RequestHookFactory::GetInstance().Clear();
+        {            
             mse::RequestHookFactory::GetInstance().Register<DummyRequestHook::Parameters>(DummyRequestHook::Create);
             WHEN("a parameter based hook is added") 
             {
@@ -127,6 +126,40 @@ SCENARIO("RequestProcessor", "[request]")
                     }
                 }
             }
+            AND_GIVEN("a global hook")
+            {          
+                DummyRequestHook::CallHistory call_history;                
+                mse::RequestProcessor::GloballyWith(DummyRequestHook::Parameters({"global", mse::StatusCode::ok, mse::StatusCode::ok, call_history }));
+
+                WHEN("a processor is created")
+                {
+                    mse::RequestProcessor processor("test", mse::Context());        
+                    AND_WHEN("some function is processed")
+                    {
+                        mse::Status status = processor.Process([&call_history](mse::Context& ctx)
+                        { 
+                            MSE_LOG_TRACE("function is executed");
+                            call_history.push_back({"func", "func"});
+                            return mse::Status{mse::StatusCode::ok};
+                        });
+
+                        THEN("execution has been successful")
+                        {
+                            REQUIRE(status);
+                        }
+                        AND_THEN("the global hook has been executed")
+                        {
+                            REQUIRE(call_history.size() == 3);
+                            REQUIRE((call_history[0].first == "global" && call_history[0].second == "pre"));                    
+                            REQUIRE((call_history[1].first == "func" && call_history[1].second == "func"));
+                            REQUIRE((call_history[2].first == "global" && call_history[2].second == "post"));                               
+                        }
+                    }
+                }
+
+                mse::RequestProcessor::ClearGlobalHooks();
+            }
+            mse::RequestHookFactory::GetInstance().Clear();
         }
     }
 }

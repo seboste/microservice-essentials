@@ -70,6 +70,8 @@ SCENARIO("RequestHookFactory", "[request]")
                     REQUIRE_THROWS_AS(mse::RequestHookFactory::GetInstance().Register<TestRequestHook::Parameters>(TestRequestHook::Create), std::invalid_argument);
                 }
             }
+
+            mse::RequestHookFactory::GetInstance().Clear();
         }
 
         WHEN("an unknown hook is created")        

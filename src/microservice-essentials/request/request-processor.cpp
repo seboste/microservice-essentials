@@ -4,10 +4,16 @@
 
 using namespace mse;
 
+std::vector<std::any> RequestProcessor::_global_hook_construction_params = {};
+
 RequestProcessor::RequestProcessor(const std::string& request_name, mse::Context&& context)
     : _request_name(request_name)
     , _context(std::move(context))
 {
+    for(const auto& params : _global_hook_construction_params)
+    {
+        With(params);
+    }
 }
 
 RequestProcessor& RequestProcessor::With(std::unique_ptr<RequestHook>&& hook)
@@ -16,9 +22,14 @@ RequestProcessor& RequestProcessor::With(std::unique_ptr<RequestHook>&& hook)
     return *this;
 }
 
-RequestProcessor& RequestProcessor::With(std::any&& hook_construction_params)
+RequestProcessor& RequestProcessor::With(const std::any& hook_construction_params)
 {
     return With(RequestHookFactory::GetInstance().Create(hook_construction_params));
+}
+
+void RequestProcessor::GloballyWith(const std::any& hook_construction_params)
+{
+    _global_hook_construction_params.push_back(hook_construction_params);
 }
 
 Status RequestProcessor::Process(RequestHook::Func func)
@@ -40,4 +51,9 @@ Status RequestProcessor::Process(RequestHook::Func func)
     //3. execute all hooks and the func with a new context    
     mse::Context request_context({{"request", _request_name}}, &_context);
     return wrapper(request_context);
+}
+
+void RequestProcessor::ClearGlobalHooks()
+{
+    _global_hook_construction_params.clear();
 }
