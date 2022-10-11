@@ -1,7 +1,6 @@
 #include "status.h"
 #include <stdexcept>
 #include <unordered_map>
-#include <iostream>
 
 using namespace mse;
 
