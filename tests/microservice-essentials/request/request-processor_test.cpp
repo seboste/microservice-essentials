@@ -162,4 +162,29 @@ SCENARIO("RequestProcessor", "[request]")
             mse::RequestHookFactory::GetInstance().Clear();
         }
     }
+    GIVEN("a request processor with a non empty context")
+    {
+        mse::Context::GetThreadLocalContext().Clear();
+
+        mse::Context context({{"a", "b"}});
+        mse::RequestProcessor processor("test", std::move(context));
+        WHEN("some function is executed")
+        {
+            mse::Status status = processor.Process([](mse::Context& ctx)
+            { 
+                THEN("the meta data is available inside the function")
+                {
+                    REQUIRE(ctx.Contains("a"));
+                }
+
+                THEN("the meta data is availble for the whole thread")
+                {
+                    REQUIRE(mse::Context::GetThreadLocalContext().Contains("a"));
+                }
+
+                return mse::Status{mse::StatusCode::ok};
+            });            
+        }
+        mse::Context::GetThreadLocalContext().Clear();
+    }
 }
