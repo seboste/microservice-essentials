@@ -55,6 +55,26 @@ private:
 };
 
 
+class RememberCallTypeRequestHook : public mse::RequestHook
+{
+public:
+    RememberCallTypeRequestHook(mse::RequestType& request_type)
+        : mse::RequestHook("RememberCallTypeRequestHook")
+        , _request_type(request_type)
+    {
+    }
+
+    virtual mse::Status pre_process(mse::Context& context) override
+    {
+        _request_type = GetRequestType();        
+        return mse::Status();
+    }    
+
+private:    
+    mse::RequestType& _request_type;
+};
+
+
 }
 
 SCENARIO("RequestProcessor", "[request]")
@@ -63,7 +83,7 @@ SCENARIO("RequestProcessor", "[request]")
     
     GIVEN("a request processor")
     {
-        mse::RequestProcessor processor("test", mse::Context());
+        mse::RequestProcessor processor("test", mse::RequestType::incoming, mse::Context());
         WHEN("two successful hooks are added")
         { 
             DummyRequestHook::CallHistory call_history;
@@ -126,17 +146,18 @@ SCENARIO("RequestProcessor", "[request]")
                     }
                 }
             }
-            AND_GIVEN("a global hook")
+            AND_GIVEN("a global handler hook and a global issuer hook")
             {          
                 DummyRequestHook::CallHistory call_history;                
-                mse::RequestProcessor::GloballyWith(DummyRequestHook::Parameters({"global", mse::StatusCode::ok, mse::StatusCode::ok, call_history }));
+                mse::RequestHandler::GloballyWith(DummyRequestHook::Parameters({"global_handler", mse::StatusCode::ok, mse::StatusCode::ok, call_history }));
+                mse::RequestIssuer::GloballyWith(DummyRequestHook::Parameters({"global_issuer", mse::StatusCode::ok, mse::StatusCode::ok, call_history }));
 
-                WHEN("a processor is created")
+                WHEN("a handler is created")
                 {
-                    mse::RequestProcessor processor("test", mse::Context());        
+                    mse::RequestHandler handler("test", mse::Context());
                     AND_WHEN("some function is processed")
                     {
-                        mse::Status status = processor.Process([&call_history](mse::Context& ctx)
+                        mse::Status status = handler.Process([&call_history](mse::Context& ctx)
                         { 
                             MSE_LOG_TRACE("function is executed");
                             call_history.push_back({"func", "func"});
@@ -147,44 +168,96 @@ SCENARIO("RequestProcessor", "[request]")
                         {
                             REQUIRE(status);
                         }
-                        AND_THEN("the global hook has been executed")
+                        AND_THEN("the global_handler hook has been executed")
                         {
                             REQUIRE(call_history.size() == 3);
-                            REQUIRE((call_history[0].first == "global" && call_history[0].second == "pre"));                    
+                            REQUIRE((call_history[0].first == "global_handler" && call_history[0].second == "pre"));                    
                             REQUIRE((call_history[1].first == "func" && call_history[1].second == "func"));
-                            REQUIRE((call_history[2].first == "global" && call_history[2].second == "post"));                               
+                            REQUIRE((call_history[2].first == "global_handler" && call_history[2].second == "post"));                               
                         }
                     }
                 }
 
-                mse::RequestProcessor::ClearGlobalHooks();
+                WHEN("an issuer is created")
+                {
+                    mse::RequestIssuer issuer("test", mse::Context());
+                    AND_WHEN("some function is processed")
+                    {
+                        mse::Status status = issuer.Process([&call_history](mse::Context& ctx)
+                        { 
+                            MSE_LOG_TRACE("function is executed");
+                            call_history.push_back({"func", "func"});
+                            return mse::Status{mse::StatusCode::ok};
+                        });
+
+                        THEN("execution has been successful")
+                        {
+                            REQUIRE(status);
+                        }
+                        AND_THEN("the global_issuer hook has been executed")
+                        {
+                            REQUIRE(call_history.size() == 3);
+                            REQUIRE((call_history[0].first == "global_issuer" && call_history[0].second == "pre"));                    
+                            REQUIRE((call_history[1].first == "func" && call_history[1].second == "func"));
+                            REQUIRE((call_history[2].first == "global_issuer" && call_history[2].second == "post"));                               
+                        }
+                    }
+                }
+
+                mse::RequestHandler::ClearGlobalHooks();
+                mse::RequestIssuer::ClearGlobalHooks();
             }
             mse::RequestHookFactory::GetInstance().Clear();
         }
     }
-    GIVEN("a request processor with a non empty context")
+    
+    mse::Context::GetThreadLocalContext().Clear();
+    mse::Context context({{"a", "b"}});
+    GIVEN("a request handler with a non empty context")
     {
-        mse::Context::GetThreadLocalContext().Clear();
-
-        mse::Context context({{"a", "b"}});
-        mse::RequestProcessor processor("test", std::move(context));
-        WHEN("some function is executed")
+        mse::RequestHandler handler("handler", std::move(context));
+        WHEN("handler is called with some hook")
         {
-            mse::Status status = processor.Process([](mse::Context& ctx)
-            { 
-                THEN("the meta data is available inside the function")
-                {
-                    REQUIRE(ctx.Contains("a"));
-                }
-
-                THEN("the meta data is availble for the whole thread")
-                {
-                    REQUIRE(mse::Context::GetThreadLocalContext().Contains("a"));
-                }
-
-                return mse::Status{mse::StatusCode::ok};
-            });            
+            mse::RequestType request_type = mse::RequestType::invalid;  
+            handler
+                .With(std::make_unique<RememberCallTypeRequestHook>(request_type))
+                .Process([](mse::Context& ctx)
+                { 
+                    THEN("the meta data is availble for the whole thread")
+                    {
+                        REQUIRE(mse::Context::GetThreadLocalContext().Contains("a"));
+                    }
+                    return mse::Status(); 
+                });
+            
+            THEN("the call type is incoming")
+            {
+                REQUIRE(request_type == mse::RequestType::incoming);
+            }
         }
-        mse::Context::GetThreadLocalContext().Clear();
     }
+    GIVEN("a request issuer with a non empty context")
+    {
+        mse::RequestIssuer issuer("issuer", std::move(context));
+        WHEN("issuer is called with some hook")
+        {
+            mse::RequestType request_type = mse::RequestType::invalid;  
+            issuer
+                .With(std::make_unique<RememberCallTypeRequestHook>(request_type))
+                .Process([](mse::Context& ctx) 
+                { 
+                    THEN("the meta data is NOT availble for the whole thread")
+                    {
+                        REQUIRE(!mse::Context::GetThreadLocalContext().Contains("a"));
+                    }
+                    return mse::Status(); 
+                });
+            
+            THEN("the call type is outgoing")
+            {
+                REQUIRE(request_type == mse::RequestType::outgoing);
+            }
+        }
+    }
+    mse::Context::GetThreadLocalContext().Clear();
 }
