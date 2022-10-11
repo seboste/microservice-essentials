@@ -1,5 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <microservice-essentials/request/request-processor.h>
+#include <microservice-essentials/request/request-hook-factory.h>
 #include <microservice-essentials/observability/logger.h>
 
 
@@ -10,6 +11,20 @@ class DummyRequestHook : public mse::RequestHook
 public:
 
     typedef std::vector<std::pair<std::string, std::string>> CallHistory; //hook name, function name
+
+    struct Parameters
+    {
+        std::string name;        
+        mse::StatusCode preprocess_status_code;
+        mse::StatusCode postprocess_status_code;
+        CallHistory& call_history;
+    };
+
+    static std::unique_ptr<mse::RequestHook> Create(std::any parameters)
+    {
+        Parameters params = std::any_cast<Parameters>(parameters);
+        return std::make_unique<DummyRequestHook>(params.name, params.preprocess_status_code, params.postprocess_status_code, params.call_history);
+    }
 
     DummyRequestHook(const std::string& name, mse::StatusCode preprocess_status_code, mse::StatusCode postprocess_status_code, CallHistory& call_history)
         : mse::RequestHook(name)
@@ -80,6 +95,38 @@ SCENARIO("RequestProcessor", "[request]")
                     REQUIRE((call_history[4].first == "a" && call_history[4].second == "post"));                    
                 }
             }
-        }        
+        }
+        AND_GIVEN("a factory registration for the DummyRequestHook")
+        {
+            mse::RequestHookFactory::GetInstance().Clear();
+            mse::RequestHookFactory::GetInstance().Register<DummyRequestHook::Parameters>(DummyRequestHook::Create);
+            WHEN("a parameter based hook is added") 
+            {
+                DummyRequestHook::CallHistory call_history;
+                processor.With(DummyRequestHook::Parameters({"dummy_param", mse::StatusCode::ok, mse::StatusCode::ok, call_history }));
+
+                AND_WHEN("some function is processed")
+                {
+                     mse::Status status = processor.Process([&call_history](mse::Context& ctx)
+                    { 
+                        MSE_LOG_TRACE("function is executed");
+                        call_history.push_back({"func", "func"});
+                        return mse::Status{mse::StatusCode::ok};
+                    });
+
+                    THEN("execution has been successful")
+                    {
+                        REQUIRE(status);
+                    }
+                    AND_THEN("the execution order is correct")
+                    {
+                        REQUIRE(call_history.size() == 3);
+                        REQUIRE((call_history[0].first == "dummy_param" && call_history[0].second == "pre"));                    
+                        REQUIRE((call_history[1].first == "func" && call_history[1].second == "func"));
+                        REQUIRE((call_history[2].first == "dummy_param" && call_history[2].second == "post"));                               
+                    }
+                }
+            }
+        }
     }
 }
