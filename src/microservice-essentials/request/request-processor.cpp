@@ -74,5 +74,5 @@ template<> std::vector<std::any> GlobalRequestHookConstructionHolder<RequestHand
 template<> std::vector<std::any> GlobalRequestHookConstructionHolder<RequestIssuer>::_global_hook_construction_params = {};
 
 //explicit instantiation
-template class GlobalRequestHookConstructionHolder<RequestHandler>;
-template class GlobalRequestHookConstructionHolder<RequestIssuer>;
+template class mse::GlobalRequestHookConstructionHolder<RequestHandler>;
+template class mse::GlobalRequestHookConstructionHolder<RequestIssuer>;
