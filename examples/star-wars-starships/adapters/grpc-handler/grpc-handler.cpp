@@ -4,6 +4,7 @@
 #include <microservice-essentials/handler.h>
 #include <microservice-essentials/context.h>
 #include <microservice-essentials/observability/logger.h>
+#include <microservice-essentials/request/request-processor.h>
 #include <microservice-essentials/utilities/metadata-converter.h>
 
 using namespace grpc;
@@ -78,32 +79,43 @@ public:
 
     virtual Status ListStarShips(::grpc::ServerContext* context, const ::StarShips::ListStarShipsRequest* request, ::StarShips::ListStarShipsResponse* response)
     {
-        mse::Context::GetThreadLocalContext() = mse::Context(mse::ToContextMetadata(context->client_metadata()));
-        MSE_LOG_TRACE("handling list starships request");
-
-        for(const ::Starship& starship : _api.ListStarShips())
-        {            
-            to_protobuf(starship, *response->add_starships());            
-        }
+        mse::RequestHandler("listStarShips", mse::Context(mse::ToContextMetadata(context->client_metadata())))
+            .Process([&](mse::Context& context)
+            {
+                MSE_LOG_TRACE("handling list starships request");
+                for(const ::Starship& starship : _api.ListStarShips())
+                {            
+                    to_protobuf(starship, *response->add_starships());            
+                }
+                return mse::Status();
+            });
         return Status::OK;
     }
     virtual Status GetStarShip(::grpc::ServerContext* context, const ::StarShips::GetStarShipRequest* request, ::StarShips::GetStarShipResponse* response)
     {
-        mse::Context::GetThreadLocalContext() = mse::Context(mse::ToContextMetadata(context->client_metadata()));        
-        MSE_LOG_TRACE("handling get starship request");
+        mse::RequestHandler("GetStarShip", mse::Context(mse::ToContextMetadata(context->client_metadata())))
+            .Process([&](mse::Context& context)
+            {
+                MSE_LOG_TRACE("handling get starship request");
 
-        to_protobuf(
-            _api.GetStarShip(request->id()),
-            *response->mutable_starships()
-        );
+                to_protobuf(
+                    _api.GetStarShip(request->id()),
+                    *response->mutable_starships()
+                );
+                return mse::Status();
+            });
         return Status::OK;
     }
     virtual Status UpdateStatus(::grpc::ServerContext* context, const ::StarShips::UpdateStatusRequest* request, ::StarShips::UpdateStatusResponse* response)
     {
-        mse::Context::GetThreadLocalContext() = mse::Context(mse::ToContextMetadata(context->client_metadata()));
-        MSE_LOG_TRACE("handling update status request");
-        
-        _api.UpdateStatus(request->id(), from_protobuf(request->status()) );
+        mse::RequestHandler("UpdateStatus", mse::Context(mse::ToContextMetadata(context->client_metadata())))
+            .Process([&](mse::Context& context)
+            {
+                MSE_LOG_TRACE("handling update status request");
+                
+                _api.UpdateStatus(request->id(), from_protobuf(request->status()) );
+                return mse::Status();
+            });
         return Status::OK;
     }
 private:

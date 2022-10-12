@@ -1,6 +1,7 @@
 #include "http-starwars-client.h"
 #include <microservice-essentials/context.h>
 #include <microservice-essentials/observability/logger.h>
+#include <microservice-essentials/request/request-processor.h>
 #include <microservice-essentials/utilities/metadata-converter.h>
 #define CPPHTTPLIB_OPENSSL_SUPPORT  //be consistent with other projects to prevent seg fault
 #include <httplib.h>
@@ -57,46 +58,62 @@ HttpStarWarsClient::~HttpStarWarsClient()
 
 std::vector<StarshipProperties> HttpStarWarsClient::ListStarShipProperties() const
 {
-    MSE_LOG_TRACE("listing starships");
+    std::vector<StarshipProperties> starships;
 
-    mse::Context client_context = mse::Context::GetThreadLocalContext();
-
-    std::vector<StarshipProperties> starships;    
-    for(std::string path = "/api/starships/?format=json"; path != "";)
-    {
-        auto resp = _cli->Get(
-            path,
-            mse::FromContextMetadata<httplib::Headers>(client_context.GetMetadata())
-        );
-        json data = json::parse(resp->body);
-        json nextNode = data.at("next");
-        path = nextNode.is_null() ? std::string() : nextNode.get<std::string>();
-        for(json starshipNode : data.at("results"))
+    mse::RequestIssuer("ListStarShipProperties", mse::Context())
+        .Process([&](mse::Context& context)
         {
-            starships.emplace_back(from_json(starshipNode));            
-        }
-    }
+            MSE_LOG_TRACE("listing starships");
+            for(std::string path = "/api/starships/?format=json"; path != "";)
+            {
+                auto resp = _cli->Get(
+                    path,
+                    mse::FromContextMetadata<httplib::Headers>(context.GetMetadata())
+                );
+                json data = json::parse(resp->body);
+                json nextNode = data.at("next");
+                path = nextNode.is_null() ? std::string() : nextNode.get<std::string>();
+                for(json starshipNode : data.at("results"))
+                {
+                    starships.emplace_back(from_json(starshipNode));            
+                }
+            }
+            return mse::Status();
+        });
+
     return starships;
 }
 
 std::optional<StarshipProperties> HttpStarWarsClient::GetStarShipProperties(const std::string& starshipId) const
 {
-    MSE_LOG_TRACE("getting starships");
+    std::optional<StarshipProperties> starshipProperties = std::nullopt;
+    
+    mse::Status status = mse::RequestIssuer("GetStarShipProperties", mse::Context())
+        .Process([&](mse::Context& context)
+        {
+            MSE_LOG_TRACE("getting starships");
 
-    mse::Context client_context = mse::Context::GetThreadLocalContext();
-    auto resp = _cli->Get(
-        std::string("/api/starships/") + starshipId + "/?format=json", 
-        mse::FromContextMetadata<httplib::Headers>(client_context.GetMetadata())
-        );
-    if(!resp || (resp->status != 404 && resp->status != 200))
+            mse::Context client_context = mse::Context::GetThreadLocalContext();
+            auto resp = _cli->Get(
+                std::string("/api/starships/") + starshipId + "/?format=json", 
+                mse::FromContextMetadata<httplib::Headers>(client_context.GetMetadata())
+                );
+            if(!resp || (resp->status != 404 && resp->status != 200))
+            {
+                return mse::Status({ mse::StatusCode::internal, "invalid response"});                
+            }            
+            
+            if(resp->status != 404)
+            {
+                starshipProperties = from_json(json::parse(resp->body));
+            }
+            return mse::Status();
+        });
+
+    if(!status)
     {
         throw std::runtime_error("invalid response");
     }
 
-    if(resp->status == 404)
-    {
-        return std::nullopt;    
-    }
-
-    return from_json(json::parse(resp->body));
+    return starshipProperties;
 }
