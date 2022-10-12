@@ -4,6 +4,8 @@
 
 using namespace mse;
 
+mse::Status mse::Status::OK = mse::Status();
+
 std::string mse::to_string(StatusCode status_code)
 {
     switch(status_code)  

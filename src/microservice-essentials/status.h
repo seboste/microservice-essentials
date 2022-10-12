@@ -11,6 +11,7 @@ enum class StatusCode
 {
     invalid = -1,
     ok = 0,
+    lowest = ok,
     cancelled = 1,
     unknown = 2,
     invalid_argument = 3,
@@ -26,7 +27,8 @@ enum class StatusCode
     internal = 13,
     unavailable = 14,
     data_loss = 15,
-    unauthenticated = 16
+    unauthenticated = 16,
+    highest = unauthenticated
 };
 
 /**
@@ -38,6 +40,8 @@ struct Status
     std::string details;
 
     operator bool() const { return code == StatusCode::ok; }
+
+    static Status OK;
 };
 
 std::string to_string(StatusCode status_code);
