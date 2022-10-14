@@ -3,6 +3,7 @@
 #include <microservice-essentials/observability/logger.h>
 #include <microservice-essentials/request/request-processor.h>
 #include <microservice-essentials/utilities/metadata-converter.h>
+#include <microservice-essentials/utilities/status-converter.h>
 #define CPPHTTPLIB_OPENSSL_SUPPORT  //be consistent with other projects to prevent seg fault
 #include <httplib.h>
 #include <nlohmann/json.hpp>
@@ -88,32 +89,29 @@ std::optional<StarshipProperties> HttpStarWarsClient::GetStarShipProperties(cons
 {
     std::optional<StarshipProperties> starshipProperties = std::nullopt;
     
-    mse::Status status = mse::RequestIssuer("GetStarShipProperties", mse::Context())
+    mse::RequestIssuer("GetStarShipProperties", mse::Context())
         .Process([&](mse::Context& context)
         {
             MSE_LOG_TRACE("getting starships");
 
+            mse::Status status { mse::StatusCode::unknown ,""};
             mse::Context client_context = mse::Context::GetThreadLocalContext();
-            auto resp = _cli->Get(
+            if(auto resp = _cli->Get(
                 std::string("/api/starships/") + starshipId + "/?format=json", 
                 mse::FromContextMetadata<httplib::Headers>(client_context.GetMetadata())
-                );
-            if(!resp || (resp->status != 404 && resp->status != 200))
+                ); resp)
             {
-                return mse::Status({ mse::StatusCode::internal, "invalid response"});                
-            }            
-            
-            if(resp->status != 404)
-            {
-                starshipProperties = from_json(json::parse(resp->body));
+                status.code = mse::FromHttpStatusCode(resp->status);                
+                if(status)
+                {
+                    starshipProperties = from_json(json::parse(resp->body));
+                }
+                else if(status.code != mse::StatusCode::not_found)
+                {
+                    throw std::runtime_error("invalid response");
+                }
             }
-            return mse::Status();
+            return status;
         });
-
-    if(!status)
-    {
-        throw std::runtime_error("invalid response");
-    }
-
     return starshipProperties;
 }

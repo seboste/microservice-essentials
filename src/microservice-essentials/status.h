@@ -18,7 +18,7 @@ enum class StatusCode
     deadline_exceeded  = 4,
     not_found = 5,
     already_exists = 6,
-    permission_deinied = 7,
+    permission_denied = 7,
     resource_exhausted = 8,
     failed_precondition = 9,
     aborted = 10,

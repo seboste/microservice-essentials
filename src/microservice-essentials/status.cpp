@@ -17,7 +17,7 @@ std::string mse::to_string(StatusCode status_code)
         case StatusCode::deadline_exceeded : return "DEADLINE_EXCEEDED";
         case StatusCode::not_found : return "NOT_FOUND";
         case StatusCode::already_exists : return "ALREADY_EXISTS";
-        case StatusCode::permission_deinied : return "PERMISSION_DENIED";
+        case StatusCode::permission_denied : return "PERMISSION_DENIED";
         case StatusCode::resource_exhausted : return "RESOURCE_EXHAUSTED";
         case StatusCode::failed_precondition : return "FAILED_PRECONDITION";
         case StatusCode::aborted : return "ABORTED";
@@ -42,7 +42,7 @@ void mse::from_string(const std::string& status_code_string, StatusCode& status_
         { "DEADLINE_EXCEEDED" , StatusCode::deadline_exceeded },
         { "NOT_FOUND" , StatusCode::not_found },
         { "ALREADY_EXISTS" , StatusCode::already_exists },
-        { "PERMISSION_DENIED" , StatusCode::permission_deinied },
+        { "PERMISSION_DENIED" , StatusCode::permission_denied },
         { "RESOURCE_EXHAUSTED" , StatusCode::resource_exhausted },
         { "FAILED_PRECONDITION" , StatusCode::failed_precondition },
         { "ABORTED" , StatusCode::aborted },
