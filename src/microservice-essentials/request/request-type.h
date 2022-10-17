@@ -9,8 +9,8 @@ namespace mse
 enum class RequestType
 {
     invalid = -1,
-    incoming,
-    outgoing
+    incoming,       //requests that are handled by this service
+    outgoing        //requests that are issued from this service to another service
 };
 
 std::string to_string(RequestType request_type);

@@ -11,6 +11,12 @@
 namespace mse
 {
 
+/**
+ * Singleton factory for creating registered hooks based on a hook type specific parameter class
+ * One or more parameter classes along with a custom factory method can be registered for each hook type.
+ * The typeid of the parameter class passed as an std::any is used to call the correct factory method.
+ * This factory is used by the request hook classes.
+*/
 class RequestHookFactory
 {
 public:

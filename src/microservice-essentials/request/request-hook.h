@@ -8,6 +8,13 @@
 namespace mse
 {
 
+/**
+ * Base class for all request hooks. Derived classes can be used to add business independent behavior to a request (e.g. reliability, security, ...)
+ * See request-processor.h for more details.
+ * The default behavior of the Process method is to call pre_process before and post_process after the passed function is called.
+ * The funcion and post_process will only be called if pre_process succeeds (status code ok).
+ * The default implementation of pre_process and post_process is empty.
+*/
 class RequestHook
 {
 public:

@@ -47,7 +47,7 @@ Status RequestHook::Process(Func func, Context& context)
 
 Status RequestHook::pre_process(Context& context)
 {
-    return Status{StatusCode::ok};
+    return Status::OK;
 }
 
 Status RequestHook::post_process(Context& context, Status status)
