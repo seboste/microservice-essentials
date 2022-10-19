@@ -2,31 +2,10 @@
 
 #include <microservice-essentials/request/request-hook.h>
 #include <microservice-essentials/observability/logger.h>
-
-
 #include <microservice-essentials/request/request-hook-factory.h>
 
 namespace mse
 {
-
-template<typename ParametersT, typename RequestHookT>
-class AutoRequestHookParameterRegistration
-{
-    public:
-        static std::unique_ptr<RequestHookT> Create(const std::any& parameters)
-        {
-            return std::make_unique<RequestHookT>(std::any_cast<ParametersT>(parameters));
-        }
-
-        AutoRequestHookParameterRegistration()
-        {
-            static bool registration_done = []()
-            {
-                mse::RequestHookFactory::GetInstance().Register<ParametersT>(Create);
-                return true;
-            }();
-        }
-};
 
 /**
 

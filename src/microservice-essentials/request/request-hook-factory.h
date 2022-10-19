@@ -36,4 +36,31 @@ private:
     std::unordered_map<std::type_index, FactoryMethod> _factory_methods;
 };
 
+/**
+ * During first creation of an instance of this class, a Create method is registered to the 
+ * RequestHookFactory that generates a RequestHookT based on ParametersT.
+ * Best practise is to have an instance of this class as a member of a Parameter struct so
+ * that the corresponding RequestHook can be created based on that Parameter struct.
+*/
+template<typename ParametersT, typename RequestHookT>
+class AutoRequestHookParameterRegistration
+{
+public:
+    static std::unique_ptr<RequestHookT> Create(const std::any& parameters)
+    {
+        return std::make_unique<RequestHookT>(std::any_cast<ParametersT>(parameters));
+    }
+
+    AutoRequestHookParameterRegistration()
+    {
+        static bool registration_done = []()
+        {
+            //this static variable along with the inialization makes sure that the registration
+            //is done exactly once when the first AutoRequestHookParameterRegistration is created.
+            mse::RequestHookFactory::GetInstance().Register<ParametersT>(Create);
+            return true;
+        }();
+    }
+};
+
 }
