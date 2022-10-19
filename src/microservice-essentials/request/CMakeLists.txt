@@ -1,0 +1,12 @@
+target_sources(microservice-essentials
+    PUBLIC
+        request-hook.h
+        request-hook-factory.h
+        request-processor.h
+        request-type.h
+    PRIVATE
+        request-hook.cpp
+        request-hook-factory.cpp
+        request-processor.cpp
+        request-type.cpp
+)

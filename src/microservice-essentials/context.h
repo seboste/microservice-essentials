@@ -63,6 +63,7 @@ public:
     void Insert(std::initializer_list<Metadata::value_type> metadata);
     void Insert(const std::string& key, const std::string& value);        
     const std::string& At(const std::string& key) const;
+    const std::string& AtOr(const std::string& key, const std::string& default_value) const;
     bool Contains(const std::string& key) const;
 
 private:

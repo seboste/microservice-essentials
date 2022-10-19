@@ -1,7 +1,9 @@
 #include "http-handler.h"
-#include <microservice-essentials/observability/logger.h>
 #include <microservice-essentials/context.h>
+#include <microservice-essentials/observability/logger.h>
+#include <microservice-essentials/request/request-processor.h>
 #include <microservice-essentials/utilities/metadata-converter.h>
+#include <microservice-essentials/utilities/status-converter.h>
 #define CPPHTTPLIB_OPENSSL_SUPPORT //be consistent with other projects to prevent seg fault
 #include <httplib/httplib.h>
 #include <nlohmann/json.hpp>
@@ -117,37 +119,46 @@ void HttpHandler::Stop()
 }
 
 void HttpHandler::listStarShips(const httplib::Request& request, httplib::Response& response)
-{    
-    mse::Context::GetThreadLocalContext() = mse::Context(mse::ToContextMetadata(request.headers));    
-
-    MSE_LOG_TRACE( "handling list star ships request");
-    response.set_content(
-            to_json(_api.ListStarShips()).dump(),
-            "text/json"
-        );
-    response.status = 200;
+{
+    response.status = mse::ToHttpStatusCode(
+        mse::RequestHandler("listStarShips", mse::Context(mse::ToContextMetadata(request.headers)))
+            .Process([&](mse::Context& context)
+            {
+                response.set_content(
+                        to_json(_api.ListStarShips()).dump(),
+                        "text/json"
+                    );
+                return mse::Status();
+            })
+        .code);    
 }
 
 void HttpHandler::getStarShip(const httplib::Request& request, httplib::Response& response)
 {
-    mse::Context::GetThreadLocalContext() = mse::Context(mse::ToContextMetadata(request.headers));
-
-    MSE_LOG_TRACE( "received get star ship request");
-    response.set_content(
-            to_json(_api.GetStarShip(extractId(request.path))).dump(),
-            "text/json"
-        );
-    response.status = 200;
+    response.status = mse::ToHttpStatusCode(
+        mse::RequestHandler("getStarShip", mse::Context(mse::ToContextMetadata(request.headers)))
+            .Process([&](mse::Context& context)
+            {
+                response.set_content(
+                        to_json(_api.GetStarShip(extractId(request.path))).dump(),
+                        "text/json"
+                    );
+                return mse::Status();
+            })
+        .code);    
 }
 
 void HttpHandler::updateStatus(const httplib::Request& request, httplib::Response& response)
 {
-    mse::Context::GetThreadLocalContext() = mse::Context(mse::ToContextMetadata(request.headers));
-    
-    MSE_LOG_TRACE( "received update status request");
-    _api.UpdateStatus(
-        extractId(request.path),
-        from_string(json::parse(request.body).at("status"))
-        );
-    response.status = 200;
+    response.status = mse::ToHttpStatusCode(
+        mse::RequestHandler("updateStatus", mse::Context(mse::ToContextMetadata(request.headers)))
+            .Process([&](mse::Context& context)
+            {
+                _api.UpdateStatus(
+                    extractId(request.path),
+                    from_string(json::parse(request.body).at("status"))
+                    );
+                return mse::Status();
+            })
+        .code);
 }

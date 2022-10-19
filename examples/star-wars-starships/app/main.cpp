@@ -6,6 +6,8 @@
 #include <adapters/grpc-handler/grpc-handler.h>
 #include <microservice-essentials/cross-cutting-concerns/graceful-shutdown.h>
 #include <microservice-essentials/observability/logger.h>
+#include <microservice-essentials/observability/logging-request-hook.h>
+#include <microservice-essentials/request/request-processor.h>
 
 int main()
 {
@@ -16,6 +18,9 @@ int main()
 
     mse::ConsoleLogger logger;
     mse::StructuredLogger structured_logger(logger);
+
+    mse::RequestHandler::GloballyWith(mse::LoggingRequestHook::Parameters{});    
+    mse::RequestIssuer::GloballyWith(mse::LoggingRequestHook::Parameters{});
 
     HttpStarWarsClient client;    
     //DummyStarWarsClient client;

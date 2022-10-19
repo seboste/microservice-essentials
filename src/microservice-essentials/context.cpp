@@ -171,6 +171,19 @@ const std::string& Context::At(const std::string& key) const
     throw std::out_of_range(key + " not found in context metadata");
 }
 
+const std::string& Context::AtOr(const std::string& key, const std::string& default_value) const
+{
+    if(auto cit = _metadata.find(key); cit != _metadata.cend())
+    {
+        return cit->second;
+    }
+    if(_parent_context != nullptr)
+    {
+        return _parent_context->AtOr(key, default_value);
+    }
+    return default_value;
+}
+
 bool Context::Contains(const std::string& key) const
 {
     if(_metadata.find(key) != _metadata.cend())

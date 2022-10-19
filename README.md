@@ -5,6 +5,7 @@
 ### Basics
 - Base class for **handling** incoming traffic.
 - Definition of application and request specific **context**.
+- Definition of a **request status**.
 
 ### Cross Cutting Concerns
 - Singleton for notifying registered classes about upcoming service **shutdown** upon receiving a shutdown signal.
@@ -12,8 +13,12 @@
 ### Observability
 - A minimalistic customizeable **logging** framework including a structured logger.
 
+### Request
+- global and local **Hooks** that will be executed before and after handling/issuing a request.
+
 ### Utilities
 - Convenience for reading and converting **environment variables**.
+- Converting of **request status** and **context metadata**.
 - Handling of **system signals**.
 
 ## Build

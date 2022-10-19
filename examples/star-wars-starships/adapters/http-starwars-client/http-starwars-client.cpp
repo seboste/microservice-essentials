@@ -1,7 +1,9 @@
 #include "http-starwars-client.h"
 #include <microservice-essentials/context.h>
 #include <microservice-essentials/observability/logger.h>
+#include <microservice-essentials/request/request-processor.h>
 #include <microservice-essentials/utilities/metadata-converter.h>
+#include <microservice-essentials/utilities/status-converter.h>
 #define CPPHTTPLIB_OPENSSL_SUPPORT  //be consistent with other projects to prevent seg fault
 #include <httplib.h>
 #include <nlohmann/json.hpp>
@@ -57,46 +59,57 @@ HttpStarWarsClient::~HttpStarWarsClient()
 
 std::vector<StarshipProperties> HttpStarWarsClient::ListStarShipProperties() const
 {
-    MSE_LOG_TRACE("listing starships");
+    std::vector<StarshipProperties> starships;
 
-    mse::Context client_context = mse::Context::GetThreadLocalContext();
-
-    std::vector<StarshipProperties> starships;    
-    for(std::string path = "/api/starships/?format=json"; path != "";)
-    {
-        auto resp = _cli->Get(
-            path,
-            mse::FromContextMetadata<httplib::Headers>(client_context.GetMetadata())
-        );
-        json data = json::parse(resp->body);
-        json nextNode = data.at("next");
-        path = nextNode.is_null() ? std::string() : nextNode.get<std::string>();
-        for(json starshipNode : data.at("results"))
+    mse::RequestIssuer("ListStarShipProperties", mse::Context())
+        .Process([&](mse::Context& context)
         {
-            starships.emplace_back(from_json(starshipNode));            
-        }
-    }
+            MSE_LOG_TRACE("listing starships");
+            for(std::string path = "/api/starships/?format=json"; path != "";)
+            {
+                auto resp = _cli->Get(
+                    path,
+                    mse::FromContextMetadata<httplib::Headers>(context.GetMetadata())
+                );
+                json data = json::parse(resp->body);
+                json nextNode = data.at("next");
+                path = nextNode.is_null() ? std::string() : nextNode.get<std::string>();
+                for(json starshipNode : data.at("results"))
+                {
+                    starships.emplace_back(from_json(starshipNode));            
+                }
+            }
+            return mse::Status();
+        });
+
     return starships;
 }
 
 std::optional<StarshipProperties> HttpStarWarsClient::GetStarShipProperties(const std::string& starshipId) const
 {
-    MSE_LOG_TRACE("getting starships");
-
-    mse::Context client_context = mse::Context::GetThreadLocalContext();
-    auto resp = _cli->Get(
-        std::string("/api/starships/") + starshipId + "/?format=json", 
-        mse::FromContextMetadata<httplib::Headers>(client_context.GetMetadata())
-        );
-    if(!resp || (resp->status != 404 && resp->status != 200))
-    {
-        throw std::runtime_error("invalid response");
-    }
-
-    if(resp->status == 404)
-    {
-        return std::nullopt;    
-    }
-
-    return from_json(json::parse(resp->body));
+    std::optional<StarshipProperties> starshipProperties = std::nullopt;
+    
+    mse::RequestIssuer("GetStarShipProperties", mse::Context())
+        .Process([&](mse::Context& context)
+        {            
+            mse::Status status { mse::StatusCode::unknown ,""};
+            mse::Context client_context = mse::Context::GetThreadLocalContext();
+            if(auto resp = _cli->Get(
+                std::string("/api/starships/") + starshipId + "/?format=json", 
+                mse::FromContextMetadata<httplib::Headers>(client_context.GetMetadata())
+                ); resp)
+            {
+                status.code = mse::FromHttpStatusCode(resp->status);                
+                if(status)
+                {
+                    starshipProperties = from_json(json::parse(resp->body));
+                }
+                else if(status.code != mse::StatusCode::not_found)
+                {
+                    throw std::runtime_error("invalid response");
+                }
+            }
+            return status;
+        });
+    return starshipProperties;
 }

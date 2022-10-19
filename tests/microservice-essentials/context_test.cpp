@@ -26,6 +26,10 @@ SCENARIO("Context Metadata", "[context]")
         {
             REQUIRE_THROWS_AS(context.At("test"), std::out_of_range);
         }
+        AND_THEN("getting random metadata with default results in the default")
+        {
+            REQUIRE(context.AtOr("test", "default") == "default");
+        }
 
         WHEN("some data is inserted")
         {
@@ -35,6 +39,7 @@ SCENARIO("Context Metadata", "[context]")
             {
                 REQUIRE(context.Contains("test") == true);
                 REQUIRE(context.At("test") == "some_value");
+                REQUIRE(context.AtOr("test","default") == "some_value");
                 REQUIRE(context.Contains("a") == true);
                 REQUIRE(context.At("a") == "x");
                 REQUIRE(context.Contains("b") == true);
@@ -111,7 +116,9 @@ SCENARIO("Context with Parent", "[context]")
                 REQUIRE(context.Contains("test") == true);
                 REQUIRE(another_context.Contains("test") == true);
                 REQUIRE(context.At("test") == "value");
+                REQUIRE(context.AtOr("test", "default") == "value");
                 REQUIRE(another_context.At("test") == "value");
+                REQUIRE(another_context.AtOr("test", "default") == "value");
             }
             AND_WHEN("more metadata is inserted into the 2nd context")
             {
@@ -123,6 +130,8 @@ SCENARIO("Context with Parent", "[context]")
                     REQUIRE(another_context.Contains("test2") == true);
                     REQUIRE(another_context.At("test") == "value");
                     REQUIRE(another_context.At("test2") == "value2");
+                    REQUIRE(another_context.AtOr("test", "default") == "value");
+                    REQUIRE(another_context.AtOr("test2", "default") == "value2");
                 }
 
                 AND_WHEN("another_context is cleared")
