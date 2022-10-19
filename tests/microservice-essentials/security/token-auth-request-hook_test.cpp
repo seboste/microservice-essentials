@@ -2,7 +2,7 @@
 #include <microservice-essentials/security/token-auth-request-hook.h>
 #include <microservice-essentials/security/basic-token-auth-request-hook.h>
 
-SCENARIO("Token Authorization Request Hook", "[security][authorization]")
+SCENARIO("Token Authorization Request Hook", "[security][authentication]")
 {
     GIVEN("a basic token auth request hook")
     {
@@ -48,7 +48,7 @@ SCENARIO("Token Authorization Request Hook", "[security][authorization]")
     }
 }
 
-SCENARIO("Basic Token Authorization Request Hook", "[security][authorization]")
+SCENARIO("Basic Token Authorization Request Hook", "[security][authentication]")
 {    
     WHEN("a basic token auth request hook is created based on the parameters")
     {

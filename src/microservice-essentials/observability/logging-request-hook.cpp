@@ -3,27 +3,8 @@
 
 using namespace mse;
 
-/*
-namespace {
-
-std::unique_ptr<mse::RequestHook> CreateLoggingRequestHook(const std::any& parameters)
-{
-    //return std::make_unique<LoggingRequestHook>(std::any_cast<LoggingRequestHook::Parameters>(parameters));
-}
-
-//execute this registration at some point during static initialization
-static bool register_hook = []()
-{    
-    //mse::RequestHookFactory::GetInstance().Register<LoggingRequestHook::Parameters>(CreateLoggingRequestHook);
-    return true;
-}();
-
-}
-
-*/
-
 LoggingRequestHook::LoggingRequestHook(const Parameters& parameters)
-    : RequestHook("Logging")
+    : RequestHook("logging")
     , _parameters(parameters)
 {    
 }

@@ -3,7 +3,7 @@
 using namespace mse;
 
 BasicTokenAuthRequestHook::BasicTokenAuthRequestHook(const Parameters& parameters)
-    : TokenAuthRequestHook("basic token authorization", parameters.metadata_key)
+    : TokenAuthRequestHook("basic token authentication", parameters.metadata_key)
     , _required_token_value(parameters.required_token_value)
 {
 }
