@@ -8,7 +8,8 @@ namespace mse
 {
 
 /**
-
+ * Request hook that logs the request name before as well as the request name 
+ * and the status after each request on predefined log levels
  */
 class LoggingRequestHook : public mse::RequestHook
 {    
