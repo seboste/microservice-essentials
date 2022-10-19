@@ -8,6 +8,7 @@
 #include <microservice-essentials/observability/logger.h>
 #include <microservice-essentials/observability/logging-request-hook.h>
 #include <microservice-essentials/request/request-processor.h>
+#include <microservice-essentials/security/basic-token-auth-request-hook.h>
 
 int main()
 {
@@ -20,6 +21,8 @@ int main()
     mse::StructuredLogger structured_logger(logger);
 
     mse::RequestHandler::GloballyWith(mse::LoggingRequestHook::Parameters{});    
+    mse::RequestHandler::GloballyWith(mse::BasicTokenAuthRequestHook::Parameters{});
+    
     mse::RequestIssuer::GloballyWith(mse::LoggingRequestHook::Parameters{});
 
     HttpStarWarsClient client;    

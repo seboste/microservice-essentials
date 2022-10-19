@@ -13,8 +13,6 @@ namespace mse
 class LoggingRequestHook : public mse::RequestHook
 {    
 public:
-    
-
     struct Parameters
     {
         mse::LogLevel loglevel_success = mse::LogLevel::trace;
