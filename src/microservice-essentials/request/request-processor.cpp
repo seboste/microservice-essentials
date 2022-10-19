@@ -63,7 +63,7 @@ RequestIssuer::RequestIssuer(const std::string& request_name, mse::Context&& con
 
 template<typename RequestProcessorType>
 GlobalRequestHookConstructionHolder<RequestProcessorType>::GlobalRequestHookConstructionHolder(RequestProcessorType& requestProcessor)
-{
+{    
     for(const auto& params : _global_hook_construction_params)
     {
         requestProcessor.With(params);

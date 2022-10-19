@@ -1,6 +1,8 @@
 target_sources(microservice-essentials
     PUBLIC
-        logger.h        
+        logger.h
+        logging-request-hook.h
     PRIVATE
-        logger.cpp        
+        logger.cpp
+        logging-request-hook.cpp
 )
