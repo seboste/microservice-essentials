@@ -66,9 +66,9 @@ SCENARIO( "Graceful Shutdown Registration & Callback Invocation", "[cross-cuttin
         WHEN("the shutdown signal is raised")
         {                    
             std::raise(static_cast<int>(mse::Signal::SIG_SHUTDOWN));
-            THEN("the callback is called within 20ms")
+            THEN("the callback is called within 30ms")
             {                        
-                std::this_thread::sleep_for(20ms);
+                std::this_thread::sleep_for(30ms);
                 REQUIRE(cbCallCount == 1);
             }
         }

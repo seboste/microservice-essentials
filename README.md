@@ -14,7 +14,10 @@
 - A minimalistic customizeable **logging** framework including a structured logger.
 
 ### Request
-- global and local **Hooks** that will be executed before and after handling/issuing a request.
+- Global and local **Hooks** that will be executed before and after handling/issuing a request.
+
+### Security
+- Base functionality for token based authorization.
 
 ### Utilities
 - Convenience for reading and converting **environment variables**.
