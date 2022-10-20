@@ -5,6 +5,13 @@
 namespace mse
 {
 
+/**
+ * Abstract Request Hook for incoming request that extracts a token from 
+ * a predefined metadata key and passes it to its subclass for validation
+ * before the request can be processed.
+ * Returns StatusCode::unauthenticated if the token is not present or the
+ * validation fails.
+*/
 class TokenAuthRequestHook : public mse::RequestHook
 {
 public:    
