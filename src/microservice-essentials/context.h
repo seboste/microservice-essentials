@@ -73,8 +73,8 @@ private:
     void initParentContext(const Context& other_context);
     std::set<const Context*> getAllParents() const;
 
-    const Context* _parent_context = nullptr;
     Metadata _metadata;
+    const Context* _parent_context = nullptr;
 };
 
 }

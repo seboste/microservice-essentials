@@ -20,7 +20,7 @@ std::string to_string(std::chrono::time_point<std::chrono::system_clock> tp)
 
 }
 
-Context::Context(const NoParent& no_parent)
+Context::Context(const NoParent&)
     : _parent_context(nullptr)
 {
 }

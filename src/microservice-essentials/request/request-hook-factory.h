@@ -60,6 +60,7 @@ public:
             mse::RequestHookFactory::GetInstance().Register<ParametersT>(Create);
             return true;
         }();
+        (void)registration_done;
     }
 };
 

@@ -7,12 +7,6 @@ using namespace mse;
 
 namespace {
 
-Logger& getDefaultLogger()
-{
-    static DiscardLogger logger;
-    return logger;
-}
-
 std::string json_escape(const std::string& str)
 {
     static const std::regex escape_regex("[\b\\f\\n\\r\\t\"\\\\]");
@@ -54,6 +48,7 @@ std::string mse::to_string(LogLevel level)
         case LogLevel::warn: return "WARN";
         case LogLevel::err: return "ERROR";
         case LogLevel::critical: return "CRITICAL";
+        case LogLevel::invalid: break;
     }
     throw std::invalid_argument(std::string("invalid log level with id ") + std::to_string(static_cast<int>(level)));    
 }
@@ -152,7 +147,7 @@ ConsoleLogger::~ConsoleLogger()
     LogProvider::GetInstance().SetLogger(nullptr);
 }
 
-void ConsoleLogger::write(const mse::Context& context, mse::LogLevel level, std::string_view message)
+void ConsoleLogger::write(const mse::Context& /*context*/, mse::LogLevel level, std::string_view message)
 {
     if(static_cast<int>(level) >= static_cast<int>(_min_err_log_level))
     {
@@ -174,7 +169,7 @@ DiscardLogger::~DiscardLogger()
 {
 }
 
-void DiscardLogger::write(const mse::Context& context, mse::LogLevel level, std::string_view message)
+void DiscardLogger::write(const mse::Context& /*context*/, mse::LogLevel /*level*/, std::string_view /*message*/)
 {
 }
 
@@ -229,9 +224,9 @@ std::string StructuredLogger::to_json(const mse::Context& context, const std::ve
 StructuredLogger::StructuredLogger(mse::Logger& logger_backend, std::initializer_list<std::string_view> fields, Formatter formatter)
     : Logger(LogLevel::lowest)
     , _logger_backend(logger_backend)
-    , _formatter(formatter)
-    , _auto_log_provider_registration(*this)
+    , _formatter(formatter)    
     , _fields(fields.begin(), fields.end())
+    , _auto_log_provider_registration(*this)
 {
 }
  

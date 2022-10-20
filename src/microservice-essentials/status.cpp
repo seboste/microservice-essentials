@@ -8,7 +8,7 @@ mse::Status mse::Status::OK = mse::Status();
 
 std::string mse::to_string(StatusCode status_code)
 {
-    switch(status_code)  
+    switch(status_code)
     {
         case StatusCode::ok : return "OK";
         case StatusCode::cancelled : return "CANCELLED";
@@ -27,6 +27,7 @@ std::string mse::to_string(StatusCode status_code)
         case StatusCode::unavailable : return "UNAVAILABLE";
         case StatusCode::data_loss : return "DATA_LOSS";
         case StatusCode::unauthenticated : return "UNAUTHENTICATED";
+        case StatusCode::invalid: break;
     }
     throw std::invalid_argument(std::string("invalid status code with id ") + std::to_string(static_cast<int>(status_code)));    
 }

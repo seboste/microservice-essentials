@@ -3,6 +3,17 @@
 
 using namespace mse;
 
+
+LoggingRequestHook::Parameters::Parameters()
+    : loglevel_success(mse::LogLevel::trace), loglevel_failure(mse::LogLevel::trace)
+{
+}
+ 
+LoggingRequestHook::Parameters::Parameters(mse::LogLevel ll_success, mse::LogLevel ll_failure)
+    : loglevel_success(ll_success), loglevel_failure(ll_failure)
+{
+}
+
 LoggingRequestHook::LoggingRequestHook(const Parameters& parameters)
     : RequestHook("logging")
     , _parameters(parameters)
