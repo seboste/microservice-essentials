@@ -31,6 +31,13 @@ template<typename T> T getenv(const std::string& env_name);
 template<typename T> T getenv_or(const std::string& env_name, T&& default_value);
 std::string getenv_or(const std::string& env_name, const char* default_value);
 
+
+namespace impl
+{
+//wrapper for std::getenv and the MSVC equivalent _dupenv_s (to be used internally only)
+std::optional<std::string> getenv(const std::string& env_var); 
+}
+
 }
 
 #include "environment.txx"
