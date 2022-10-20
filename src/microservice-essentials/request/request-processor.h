@@ -98,4 +98,8 @@ class RequestIssuer : public RequestProcessor, public GlobalRequestHookConstruct
         RequestIssuer(const std::string& request_name, mse::Context&& context);
 };
 
+//explicit instantiation declaration to suppress warning
+template<> std::vector<std::any> GlobalRequestHookConstructionHolder<RequestHandler>::_global_hook_construction_params;
+template<> std::vector<std::any> GlobalRequestHookConstructionHolder<RequestIssuer>::_global_hook_construction_params;
+
 }
