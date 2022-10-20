@@ -1,12 +1,7 @@
-add_library(core)
-
-target_sources(core
-    PUBLIC
-        core.h
+target_sources(starships
     PRIVATE
+        core.h
         core.cpp
     )
-
-target_link_libraries(core PUBLIC ports)
 
 

@@ -1,11 +1,7 @@
-add_library(ports INTERFACE)
-
-target_sources(ports
-    INTERFACE
+target_sources(starships
+    PRIVATE
         api.h
         model.h
         starwars-client.h
         status-db.h
     )
-
-target_include_directories(ports INTERFACE ${STARSHIP_EXAMPLE_DIR})

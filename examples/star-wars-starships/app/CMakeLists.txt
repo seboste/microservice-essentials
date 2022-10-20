@@ -1,15 +1,10 @@
-add_executable (starships 
-    main.cpp
+target_sources(starships 
+    PRIVATE
+        main.cpp
     )
 
 target_link_libraries(starships 
-    PUBLIC
-        core        
-        dummy-starwars-client
-        grpc-handler
-        http-handler
-        http-starwars-client 
-        in-memory-status-db
+    PUBLIC    
         microservice-essentials
     )
     
