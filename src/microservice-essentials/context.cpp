@@ -13,7 +13,7 @@ namespace
 std::string to_string(std::chrono::time_point<std::chrono::system_clock> tp)
 {
     std::time_t tt = std::chrono::system_clock::to_time_t(tp);
-#ifdef MSVC //doesn't have gmtime_r and gmtime is already thread safe
+#ifdef _MSC_VER //doesn't have gmtime_r and gmtime is already thread safe
     std::tm tm = *gmtime(&tt);
 #else
     std::tm tm;
