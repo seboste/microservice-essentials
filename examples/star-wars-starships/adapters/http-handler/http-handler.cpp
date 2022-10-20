@@ -122,7 +122,7 @@ void HttpHandler::listStarShips(const httplib::Request& request, httplib::Respon
 {
     response.status = mse::ToHttpStatusCode(
         mse::RequestHandler("listStarShips", mse::Context(mse::ToContextMetadata(request.headers)))
-            .Process([&](mse::Context& context)
+            .Process([&](mse::Context&)
             {
                 response.set_content(
                         to_json(_api.ListStarShips()).dump(),
@@ -137,7 +137,7 @@ void HttpHandler::getStarShip(const httplib::Request& request, httplib::Response
 {
     response.status = mse::ToHttpStatusCode(
         mse::RequestHandler("getStarShip", mse::Context(mse::ToContextMetadata(request.headers)))
-            .Process([&](mse::Context& context)
+            .Process([&](mse::Context&)
             {
                 response.set_content(
                         to_json(_api.GetStarShip(extractId(request.path))).dump(),
@@ -152,7 +152,7 @@ void HttpHandler::updateStatus(const httplib::Request& request, httplib::Respons
 {
     response.status = mse::ToHttpStatusCode(
         mse::RequestHandler("updateStatus", mse::Context(mse::ToContextMetadata(request.headers)))
-            .Process([&](mse::Context& context)
+            .Process([&](mse::Context&)
             {
                 _api.UpdateStatus(
                     extractId(request.path),

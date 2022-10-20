@@ -90,7 +90,7 @@ std::optional<StarshipProperties> HttpStarWarsClient::GetStarShipProperties(cons
     std::optional<StarshipProperties> starshipProperties = std::nullopt;
     
     mse::RequestIssuer("GetStarShipProperties", mse::Context())
-        .Process([&](mse::Context& context)
+        .Process([&](mse::Context&)
         {            
             mse::Status status { mse::StatusCode::unknown ,""};
             mse::Context client_context = mse::Context::GetThreadLocalContext();
