@@ -52,7 +52,7 @@ SCENARIO("Basic Token Authorization Request Hook", "[security][authentication]")
 {    
     WHEN("a basic token auth request hook is created based on the parameters")
     {
-        std::unique_ptr<mse::RequestHook> basic_auth_token_request_hook = mse::RequestHookFactory::GetInstance().Create(mse::BasicTokenAuthRequestHook::Parameters({"auth", "my-secret-pwd"}));
+        std::unique_ptr<mse::RequestHook> basic_auth_token_request_hook = mse::RequestHookFactory::GetInstance().Create(mse::BasicTokenAuthRequestHook::Parameters("auth", "my-secret-pwd"));
         THEN("the request hook is not null")
         {
             REQUIRE(basic_auth_token_request_hook != nullptr);

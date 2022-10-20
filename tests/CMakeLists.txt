@@ -2,6 +2,13 @@ enable_testing()
 find_package(Catch2 3 CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG)
 add_executable(tests)
+
+if(MSVC)
+  target_compile_options(tests PRIVATE /W4 /WX)
+else()
+  target_compile_options(tests PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
+
 add_subdirectory(microservice-essentials)    
 target_link_libraries(tests PRIVATE Catch2::Catch2WithMain nlohmann_json::nlohmann_json microservice-essentials)
 include(CTest)

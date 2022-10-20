@@ -19,8 +19,9 @@ class BasicTokenAuthRequestHook : public mse::TokenAuthRequestHook
 public:
     struct Parameters
     {
-        std::string metadata_key = "authorization";
-        std::string required_token_value = "secret-token";  //should not be stored in code
+        Parameters(const std::string& md_key = "authorization", const std::string& req_token_val = "secret-token");
+        std::string metadata_key;
+        std::string required_token_value;  //should not be stored in code
         
         AutoRequestHookParameterRegistration<BasicTokenAuthRequestHook::Parameters, BasicTokenAuthRequestHook> auto_registration;
     };

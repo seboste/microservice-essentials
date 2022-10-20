@@ -14,7 +14,7 @@ public:
         int b = 1;
     };
 
-    TestRequestHook(const Parameters& parameters)
+    TestRequestHook(const Parameters& /*parameters*/)
         : mse::RequestHook("test")
         {
         }    

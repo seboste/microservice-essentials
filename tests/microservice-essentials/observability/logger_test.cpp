@@ -15,7 +15,7 @@ class TestLogger : public mse::Logger
         {
         }
 
-        virtual void write(const mse::Context& context, mse::LogLevel level, std::string_view message) override
+        virtual void write(const mse::Context&, mse::LogLevel level, std::string_view message) override
         {
             _last_message = message;
             _last_level = level;
