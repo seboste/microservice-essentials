@@ -99,8 +99,10 @@ class RequestIssuer : public RequestProcessor, public GlobalRequestHookConstruct
 };
 
 //explicit instantiation declaration to suppress warning
+#ifndef _MSC_VER
 template<> std::vector<std::any> GlobalRequestHookConstructionHolder<RequestHandler>::_global_hook_construction_params;
 template<> std::vector<std::any> GlobalRequestHookConstructionHolder<RequestIssuer>::_global_hook_construction_params;
+#endif
 
 extern template class mse::GlobalRequestHookConstructionHolder<RequestHandler>;
 extern template class mse::GlobalRequestHookConstructionHolder<RequestIssuer>;
