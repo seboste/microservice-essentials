@@ -34,17 +34,17 @@ public:
     {
     }
 
-    virtual mse::Status pre_process(mse::Context& context) override
+    virtual mse::Status pre_process(mse::Context& /*context*/) override
     {
         _call_history.push_back({_name, "pre"});
-        return mse::Status{_preprocess_status_code};
+        return mse::Status{_preprocess_status_code, ""};
     }
 
-    virtual mse::Status post_process(mse::Context& context, mse::Status status) override
+    virtual mse::Status post_process(mse::Context& /*context*/, mse::Status status) override
     {
         _call_history.push_back({_name, "post"});
         return status
-            ? mse::Status{_postprocess_status_code}
+            ? mse::Status{_postprocess_status_code, ""}
             : status;
     }
 
@@ -64,7 +64,7 @@ public:
     {
     }
 
-    virtual mse::Status pre_process(mse::Context& context) override
+    virtual mse::Status pre_process(mse::Context& /*context*/) override
     {
         _request_type = GetRequestType();        
         return mse::Status();
@@ -94,11 +94,11 @@ SCENARIO("RequestProcessor", "[request]")
 
             AND_WHEN("some function is processed")
             {                
-                mse::Status status = processor.Process([&call_history](mse::Context& ctx)
+                mse::Status status = processor.Process([&call_history](mse::Context&)
                     { 
                         MSE_LOG_TRACE("function is executed");
                         call_history.push_back({"func", "func"});
-                        return mse::Status{mse::StatusCode::ok};
+                        return mse::Status::OK;
                     });
 
                 THEN("execution has been successful")
@@ -126,11 +126,11 @@ SCENARIO("RequestProcessor", "[request]")
 
                 AND_WHEN("some function is processed")
                 {
-                     mse::Status status = processor.Process([&call_history](mse::Context& ctx)
+                     mse::Status status = processor.Process([&call_history](mse::Context&)
                     { 
                         MSE_LOG_TRACE("function is executed");
                         call_history.push_back({"func", "func"});
-                        return mse::Status{mse::StatusCode::ok};
+                        return mse::Status::OK;
                     });
 
                     THEN("execution has been successful")
@@ -157,11 +157,11 @@ SCENARIO("RequestProcessor", "[request]")
                     mse::RequestHandler handler("test", mse::Context());
                     AND_WHEN("some function is processed")
                     {
-                        mse::Status status = handler.Process([&call_history](mse::Context& ctx)
+                        mse::Status status = handler.Process([&call_history](mse::Context&)
                         { 
                             MSE_LOG_TRACE("function is executed");
                             call_history.push_back({"func", "func"});
-                            return mse::Status{mse::StatusCode::ok};
+                            return mse::Status::OK;
                         });
 
                         THEN("execution has been successful")
@@ -183,11 +183,11 @@ SCENARIO("RequestProcessor", "[request]")
                     mse::RequestIssuer issuer("test", mse::Context());
                     AND_WHEN("some function is processed")
                     {
-                        mse::Status status = issuer.Process([&call_history](mse::Context& ctx)
+                        mse::Status status = issuer.Process([&call_history](mse::Context&)
                         { 
                             MSE_LOG_TRACE("function is executed");
                             call_history.push_back({"func", "func"});
-                            return mse::Status{mse::StatusCode::ok};
+                            return mse::Status::OK;
                         });
 
                         THEN("execution has been successful")
@@ -221,7 +221,7 @@ SCENARIO("RequestProcessor", "[request]")
             mse::RequestType request_type = mse::RequestType::invalid;  
             handler
                 .With(std::make_unique<RememberCallTypeRequestHook>(request_type))
-                .Process([](mse::Context& ctx)
+                .Process([](mse::Context&)
                 { 
                     THEN("the meta data is availble for the whole thread")
                     {
@@ -244,7 +244,7 @@ SCENARIO("RequestProcessor", "[request]")
             mse::RequestType request_type = mse::RequestType::invalid;  
             issuer
                 .With(std::make_unique<RememberCallTypeRequestHook>(request_type))
-                .Process([](mse::Context& ctx) 
+                .Process([](mse::Context&) 
                 { 
                     THEN("the meta data is NOT availble for the whole thread")
                     {

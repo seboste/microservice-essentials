@@ -1,7 +1,6 @@
 #pragma once
 
 #include "environment.h"
-#include <cstdlib>
 #include <exception>
 #include <sstream>
 
@@ -11,12 +10,7 @@ namespace mse
 template<>
 inline std::optional<std::string> getenv_optional(const std::string& env_name)
 {
-    char* env = std::getenv(env_name.c_str());
-    if(env == nullptr)
-    {
-        return std::nullopt;
-    }
-    return std::optional<std::string>(std::string(env));
+    return mse::impl::getenv(env_name);
 }
 
 template<typename T> 

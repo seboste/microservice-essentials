@@ -3,6 +3,7 @@
 #include <sstream>
 #include <iomanip>
 #include <stdexcept>
+#include <time.h>
 
 using namespace mse;
 
@@ -12,7 +13,12 @@ namespace
 std::string to_string(std::chrono::time_point<std::chrono::system_clock> tp)
 {
     std::time_t tt = std::chrono::system_clock::to_time_t(tp);
-    std::tm tm = *std::gmtime(&tt); //GMT (UTC)
+    std::tm tm;
+#ifdef _MSC_VER //doesn't have gmtime_r and gmtime is already thread safe
+    gmtime_s(&tm, &tt); //non standard - reverse order of arguments
+#else    
+    gmtime_r(&tt, &tm); //GMT (UTC)
+#endif
     std::stringstream ss;
     ss << std::put_time( &tm, "%FT%TZ" );
     return ss.str();
@@ -20,7 +26,7 @@ std::string to_string(std::chrono::time_point<std::chrono::system_clock> tp)
 
 }
 
-Context::Context(const NoParent& no_parent)
+Context::Context(const NoParent&)
     : _parent_context(nullptr)
 {
 }

@@ -1,4 +1,12 @@
 add_library(microservice-essentials)
+
+if(MSVC)
+  target_compile_options(microservice-essentials PRIVATE /W4 /WX)
+else()
+  target_compile_options(microservice-essentials PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
+
+
 add_subdirectory (microservice-essentials)
 target_include_directories(microservice-essentials PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

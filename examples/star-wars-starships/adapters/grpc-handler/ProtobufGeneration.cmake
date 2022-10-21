@@ -61,6 +61,7 @@ function(target_protos)
         target_sources(${TARGET} PRIVATE ${generatedSrc})        
     endforeach()
 
-    target_include_directories(${TARGET} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+    target_include_directories(${TARGET} PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+    target_link_libraries(${TARGET} PUBLIC gRPC::gRPC)
 
 endfunction(target_protos)

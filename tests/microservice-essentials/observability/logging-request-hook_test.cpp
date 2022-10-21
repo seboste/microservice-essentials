@@ -8,7 +8,7 @@ class LogToHistory: public mse::Logger
 {
 public:
     LogToHistory() : mse::Logger(mse::LogLevel::lowest), _auto_log_provider_registration(*this) {}
-    virtual void write(const mse::Context& context, mse::LogLevel level, std::string_view message) override
+    virtual void write(const mse::Context&, mse::LogLevel level, std::string_view message) override
     {
         _log_history[level].push_back(std::string(message));
     }
@@ -42,7 +42,7 @@ SCENARIO( "LoggingRequestHook", "[observability][logging][request-hook]" )
         {
             bool has_been_called = false;
             mse::Context context;
-            mse::Status status = hook.Process([&](mse::Context& context)
+            mse::Status status = hook.Process([&](mse::Context&)
                 {
                     has_been_called = true;
                     return mse::Status::OK;
@@ -70,7 +70,7 @@ SCENARIO( "LoggingRequestHook", "[observability][logging][request-hook]" )
 
             WHEN("the process method is called on a successful function")
             {
-                hook.Process([&](mse::Context& context) { return mse::Status::OK; }, context);
+                hook.Process([&](mse::Context&) { return mse::Status::OK; }, context);
             }
 
 
@@ -82,7 +82,7 @@ SCENARIO( "LoggingRequestHook", "[observability][logging][request-hook]" )
                     hook.SetRequestType(mse::RequestType::incoming);
                     AND_WHEN("the process method is called on a successful function")
                     {
-                        hook.Process([&](mse::Context& context) { return mse::Status::OK; }, context);
+                        hook.Process([&](mse::Context&) { return mse::Status::OK; }, context);
                         THEN("there are 2 messages in the first category")
                         {
                             REQUIRE(log._log_history[mse::LogLevel::info].size() == 2);
@@ -106,7 +106,7 @@ SCENARIO( "LoggingRequestHook", "[observability][logging][request-hook]" )
                     hook.SetRequestType(mse::RequestType::outgoing);
                     AND_WHEN("the process method is called on a successful function")
                     {
-                        hook.Process([&](mse::Context& context) { return mse::Status({mse::StatusCode::not_found}); }, context);
+                        hook.Process([&](mse::Context&) { return mse::Status({mse::StatusCode::not_found, ""}); }, context);
                         THEN("there is 1 message in the first and 1 message in the second category")
                         {
                             REQUIRE(log._log_history[mse::LogLevel::info].size() == 1);

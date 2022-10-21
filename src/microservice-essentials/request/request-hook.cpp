@@ -45,12 +45,12 @@ Status RequestHook::Process(Func func, Context& context)
 }
 
 
-Status RequestHook::pre_process(Context& context)
+Status RequestHook::pre_process(Context&)
 {
     return Status::OK;
 }
 
-Status RequestHook::post_process(Context& context, Status status)
+Status RequestHook::post_process(Context&, Status status)
 {
     return status;
 }

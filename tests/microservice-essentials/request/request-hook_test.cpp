@@ -18,7 +18,7 @@ public:
     {
         context.Insert({{"pre", "process"}});
         _call_history.push_back(CallType::PRE_PROCESS);
-        return mse::Status{_preprocess_status_code};
+        return mse::Status{_preprocess_status_code, ""};
     }
 
     virtual mse::Status post_process(mse::Context& context, mse::Status status) override
@@ -26,7 +26,7 @@ public:
         context.Insert({{"post", "process"}});
         _call_history.push_back(CallType::POST_PROCESS);
         return status
-            ? mse::Status{_postprocess_status_code}
+            ? mse::Status{_postprocess_status_code, ""}
             : status;
     }
 
@@ -67,7 +67,7 @@ SCENARIO("RequestHook", "[request]")
                 context.Insert({{"func", "xyz"}});
 
                 test_request_hook._call_history.push_back(TestRequestHook::CallType::WRAPPED_FUNCTION);
-                return mse::Status{mse::StatusCode::ok};
+                return mse::Status{mse::StatusCode::ok, ""};
             }, context);
 
             REQUIRE(status);
@@ -110,7 +110,7 @@ SCENARIO("RequestHook", "[request]")
                 context.Insert({{"func", "xyz"}});
 
                 test_request_hook._call_history.push_back(TestRequestHook::CallType::WRAPPED_FUNCTION);
-                return mse::Status{mse::StatusCode::ok};
+                return mse::Status{mse::StatusCode::ok, ""};
             }, context);
 
             REQUIRE(status.code == mse::StatusCode::aborted);
@@ -146,7 +146,7 @@ SCENARIO("RequestHook", "[request]")
                 context.Insert({{"func", "xyz"}});
 
                 test_request_hook._call_history.push_back(TestRequestHook::CallType::WRAPPED_FUNCTION);
-                return mse::Status{mse::StatusCode::ok};
+                return mse::Status{mse::StatusCode::ok, ""};
             }, context);
 
             REQUIRE(status.code == mse::StatusCode::aborted);
@@ -189,7 +189,7 @@ SCENARIO("RequestHook", "[request]")
                 context.Insert({{"func", "xyz"}});
 
                 test_request_hook._call_history.push_back(TestRequestHook::CallType::WRAPPED_FUNCTION);
-                return mse::Status{mse::StatusCode::aborted};
+                return mse::Status{mse::StatusCode::aborted, ""};
             }, context);
 
             REQUIRE(status.code == mse::StatusCode::aborted);

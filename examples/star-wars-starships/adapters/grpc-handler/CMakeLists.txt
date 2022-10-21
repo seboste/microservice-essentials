@@ -1,22 +1,19 @@
 include(ProtobufGeneration.cmake)
 
-add_library(grpc-handler)
-
 find_package(gRPC CONFIG)
 
-target_protos(grpc-handler api.proto)
+add_library(generated-grpc-handler)
+target_protos(generated-grpc-handler api.proto)
+target_link_libraries(generated-grpc-handler)
 
-target_sources(grpc-handler
-    PUBLIC
-        grpc-handler.h
+target_sources(starships    
     PRIVATE
+        grpc-handler.h
         grpc-handler.cpp
     )
     
-target_link_libraries(grpc-handler 
-    PUBLIC 
-        ports
+target_link_libraries(starships    
+    PRIVATE
+        generated-grpc-handler        
         microservice-essentials
-    PRIVATE 
-        gRPC::gRPC        
     )

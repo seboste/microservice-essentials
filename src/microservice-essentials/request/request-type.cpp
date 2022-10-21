@@ -1,5 +1,3 @@
-#pragma once
-
 #include "request-type.h"
 #include <stdexcept>
 #include <unordered_map>
@@ -12,6 +10,7 @@ std::string mse::to_string(RequestType request_type)
     {
         case RequestType::incoming : return "INCOMING";
         case RequestType::outgoing : return "OUTGOING";
+        case RequestType::invalid : break;
     }
     throw std::invalid_argument(std::string("invalid request type with id ") + std::to_string(static_cast<int>(request_type)));    
 }

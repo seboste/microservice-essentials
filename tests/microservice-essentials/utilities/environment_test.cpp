@@ -2,21 +2,43 @@
 #include <catch2/matchers/catch_matchers_all.hpp>
 #include <microservice-essentials/utilities/environment.h>
 
+#include <stdlib.h>
 #include <iostream>
 
+namespace {
+
+void x_platform_putenv(const std::string& var, const std::string& val)
+{
+#ifdef _MSC_VER
+    _putenv_s(var.c_str(), val.c_str());
+#else
+    if(val.empty())
+    {
+        unsetenv(var.c_str());
+    }
+    else
+    {
+        setenv(var.c_str(), val.c_str(), 1);
+    }
+#endif
+}
+
+}
+
 using namespace std::chrono_literals;
+
 
 SCENARIO( "Environment variables", "[utilities][environment]" )
 {
     GIVEN("environment variable exists")
-    {
-        putenv(const_cast<char*>("TEST_STRING_VAR=string"));
-        putenv(const_cast<char*>("TEST_FLOAT_VAR=1.0"));
-        putenv(const_cast<char*>("TEST_FLOAT_EXP_VAR=-1.25e-3"));
-        putenv(const_cast<char*>("TEST_INT_VAR=-5"));
-        putenv(const_cast<char*>("TEST_DOUBLE_VAR=-1.23456"));
-        putenv(const_cast<char*>("TEST_BOOL_VAR_FALSE=0"));
-        putenv(const_cast<char*>("TEST_BOOL_VAR_TRUE=1"));
+    {        
+        x_platform_putenv("TEST_STRING_VAR","string");
+        x_platform_putenv("TEST_FLOAT_VAR","1.0");
+        x_platform_putenv("TEST_FLOAT_EXP_VAR","-1.25e-3");
+        x_platform_putenv("TEST_INT_VAR","-5");
+        x_platform_putenv("TEST_DOUBLE_VAR","-1.23456");
+        x_platform_putenv("TEST_BOOL_VAR_FALSE","0");
+        x_platform_putenv("TEST_BOOL_VAR_TRUE", "1");
 
         WHEN("string var is read")
         {
@@ -58,7 +80,7 @@ SCENARIO( "Environment variables", "[utilities][environment]" )
 
     GIVEN("string environment variable exists")
     {
-        putenv(const_cast<char*>("TEST_STRING_VAR=string"));
+        x_platform_putenv("TEST_STRING_VAR","string");
         
         WHEN("string var is read")
         {
@@ -99,7 +121,7 @@ SCENARIO( "Environment variables", "[utilities][environment]" )
 
     GIVEN("environment variable does not exist")
     {
-        putenv(const_cast<char*>("TEST_NONEXISTING_VAR"));
+        x_platform_putenv("TEST_NONEXISTING_VAR","");
         WHEN("that variable is read as optional")
         {
             std::optional<std::string> val_opt = mse::getenv_optional<std::string>("TEST_NONEXISTING_VAR");

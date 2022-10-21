@@ -1,10 +1,6 @@
-add_library(in-memory-status-db)
-
-target_sources(in-memory-status-db
-    PUBLIC
-        in-memory-status-db.h
+target_sources(starships    
     PRIVATE
+        in-memory-status-db.h
         in-memory-status-db.cpp
     )
 
-target_link_libraries(in-memory-status-db PUBLIC ports)
