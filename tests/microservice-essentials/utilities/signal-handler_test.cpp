@@ -128,7 +128,7 @@ SCENARIO( "Signal Handler", "[utilities][signal-handler]" )
         AND_GIVEN("Another signal handler for the SIG_FPE")
         {
             std::atomic<int> sigFpeCount = 0;     
-            mse::SignalHandler signalHandler(mse::Signal::SIG_FPE, [&](){ sigFpeCount++; });
+            mse::SignalHandler signalHandler2(mse::Signal::SIG_FPE, [&](){ sigFpeCount++; });
 
             WHEN("SIGTERM/SIGINT is raised")
             {
