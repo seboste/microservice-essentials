@@ -11,8 +11,15 @@ void x_platform_putenv(const std::string& var, const std::string& val)
 {
 #ifdef _MSC_VER
     _putenv_s(var.c_str(), val.c_str());
-#else    
-    setenv(var.c_str(), val.c_str(), 1);
+#else
+    if(val.empty())
+    {
+        unsetenv(var.c_str());
+    }
+    else
+    {
+        setenv(var.c_str(), val.c_str(), 1);
+    }
 #endif
 }
 
@@ -73,7 +80,7 @@ SCENARIO( "Environment variables", "[utilities][environment]" )
 
     GIVEN("string environment variable exists")
     {
-        putenv(const_cast<char*>("TEST_STRING_VAR=string"));
+        x_platform_putenv("TEST_STRING_VAR","string");
         
         WHEN("string var is read")
         {
@@ -114,7 +121,7 @@ SCENARIO( "Environment variables", "[utilities][environment]" )
 
     GIVEN("environment variable does not exist")
     {
-        putenv(const_cast<char*>("TEST_NONEXISTING_VAR"));
+        x_platform_putenv("TEST_NONEXISTING_VAR","");
         WHEN("that variable is read as optional")
         {
             std::optional<std::string> val_opt = mse::getenv_optional<std::string>("TEST_NONEXISTING_VAR");
