@@ -2,7 +2,7 @@
 #include <microservice-essentials/security/token-auth-request-hook.h>
 #include <microservice-essentials/security/basic-token-auth-request-hook.h>
 
-SCENARIO("Token Authorization Request Hook", "[security][authentication]")
+SCENARIO("Token Authorization Request Hook", "[security][authentication][request-hook]")
 {
     GIVEN("a basic token auth request hook")
     {
