@@ -15,9 +15,9 @@ ExceptionHandlingRequestHook::Parameters::Parameters(const std::vector<Exception
 {
 }
 
-ExceptionHandlingRequestHook::ExceptionHandlingRequestHook(const Parameters&)
+ExceptionHandlingRequestHook::ExceptionHandlingRequestHook(const Parameters& parameters)
     : RequestHook("exception handling")
-    , _exception_to_status_mappings()
+    , _exception_to_status_mappings(parameters.exception_to_status_mapping)
 {
 }
 

@@ -59,7 +59,7 @@ public:
     struct Parameters
     {
         Parameters(const std::vector<ExceptionToStatusMapping>& mappings = ExceptionHandlingRequestHook::_default_exception_to_status_mappings);
-        std::vector<ExceptionToStatusMapping> exception_to_status_mapping;        
+        std::vector<ExceptionToStatusMapping> exception_to_status_mapping  = ExceptionHandlingRequestHook::_default_exception_to_status_mappings;
         AutoRequestHookParameterRegistration<ExceptionHandlingRequestHook::Parameters, ExceptionHandlingRequestHook> auto_registration;
     };
 
