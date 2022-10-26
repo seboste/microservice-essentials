@@ -1,23 +1,8 @@
 #include <catch2/catch_test_macros.hpp>
 #include <microservice-essentials/observability/logging-request-hook.h>
 #include <microservice-essentials/request/request-hook-factory.h>
+#include <utilities/history_logger.h>
 
-namespace {
-
-class LogToHistory: public mse::Logger
-{
-public:
-    LogToHistory() : mse::Logger(mse::LogLevel::lowest), _auto_log_provider_registration(*this) {}
-    virtual void write(const mse::Context&, mse::LogLevel level, std::string_view message) override
-    {
-        _log_history[level].push_back(std::string(message));
-    }
-
-    std::map<mse::LogLevel, std::vector<std::string>> _log_history;
-    mse::LogProvider::AutoRegistration _auto_log_provider_registration;
-};
-
-}
 
 SCENARIO( "LoggingRequestHook", "[observability][logging][request-hook]" )
 {
@@ -62,7 +47,7 @@ SCENARIO( "LoggingRequestHook", "[observability][logging][request-hook]" )
 
     GIVEN("a history logger")
     {
-        LogToHistory log;        
+        mse_test::HistoryLogger log;
         AND_GIVEN("a logging request hook with different log levels")
         {
             mse::LoggingRequestHook hook({mse::LogLevel::info, mse::LogLevel::warn});

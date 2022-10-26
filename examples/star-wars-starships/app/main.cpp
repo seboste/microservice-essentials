@@ -5,6 +5,7 @@
 #include <adapters/http-handler/http-handler.h>
 #include <adapters/grpc-handler/grpc-handler.h>
 #include <microservice-essentials/cross-cutting-concerns/graceful-shutdown.h>
+#include <microservice-essentials/cross-cutting-concerns/exception-handling-request-hook.h>
 #include <microservice-essentials/observability/logger.h>
 #include <microservice-essentials/observability/logging-request-hook.h>
 #include <microservice-essentials/request/request-processor.h>
@@ -22,6 +23,7 @@ int main()
 
     mse::RequestHandler::GloballyWith(mse::LoggingRequestHook::Parameters{});    
     mse::RequestHandler::GloballyWith(mse::BasicTokenAuthRequestHook::Parameters{});
+    mse::RequestHandler::GloballyWith(mse::ExceptionHandlingRequestHook::Parameters{});
     
     mse::RequestIssuer::GloballyWith(mse::LoggingRequestHook::Parameters{});
 

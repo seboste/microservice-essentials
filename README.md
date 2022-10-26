@@ -9,12 +9,13 @@
 
 ### Cross Cutting Concerns
 - Singleton for notifying registered classes about upcoming service **shutdown** upon receiving a shutdown signal.
+- **Exception handling** for requests including optional forwarding/logging of exception details.
 
 ### Observability
 - A minimalistic customizeable **logging** framework including a structured logger.
 
 ### Request
-- Global and local **Hooks** that will be executed before and after handling/issuing a request.
+- Global and local **hooks** that will be executed before and after handling/issuing a request.
 
 ### Security
 - Base functionality for token based authorization.
