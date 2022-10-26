@@ -165,10 +165,9 @@ SCENARIO( "Exception Handling Request Hook", "[cross-cutting-concerns][exception
         WHEN("some other exception is thrown")
         {
             mse::Context context;
-            mse::Status status = request_hook.Process([](mse::Context&)
+            mse::Status status = request_hook.Process([](mse::Context&)->mse::Status
             {
-                throw std::string("bla");
-                return mse::Status::OK;
+                throw std::string("bla");                
             }
             , context);
             THEN("internal status is returned")
