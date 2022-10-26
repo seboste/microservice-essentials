@@ -1,5 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <microservice-essentials/cross-cutting-concerns/exception-handling-request-hook.h>
+#include <utilities/history_logger.h>
 
 SCENARIO("Exception Handling Request Hook Creation", "[cross-cutting-concerns][exception handling][request-hook]")
 {    
@@ -75,11 +76,11 @@ SCENARIO( "Exception Handling Predicate", "[cross-cutting-concerns][exception ha
 
 SCENARIO( "Exception Handling Request Hook", "[cross-cutting-concerns][exception handling][request-hook]" )
 {
-    GIVEN("Exception Handling Request Hook with single exception to status matching")
+    GIVEN("Exception Handling Request Hook with single exception handling definition")
     {
         mse::ExceptionHandlingRequestHook request_hook(mse::ExceptionHandlingRequestHook::Parameters(
             {
-                { mse::ExceptionHandling::Is<mse::ExceptionHandling::ExceptionOfType<std::runtime_error>>(), mse::Status{mse::StatusCode::data_loss, "test"} }
+                { mse::ExceptionHandling::Is<mse::ExceptionHandling::ExceptionOfType<std::runtime_error>>(), mse::Status{mse::StatusCode::data_loss, "test"}, mse::LogLevel::invalid, false }
             }));
         
         WHEN("the registered exception is thrown")
@@ -136,14 +137,14 @@ SCENARIO( "Exception Handling Request Hook", "[cross-cutting-concerns][exception
             mse::Context context;
             mse::Status status = request_hook.Process([](mse::Context&)
             {
-                throw std::invalid_argument("invalid argument");
+                throw std::invalid_argument("some exception details");
                 return mse::Status::OK;
             }
             , context);
             THEN("invalid_argument status is returned")
             {
                 REQUIRE(status.code == mse::StatusCode::invalid_argument);
-                REQUIRE(status.details == "invalid argument exception");
+                REQUIRE(status.details == "invalid argument exception: some exception details");
             }
         }
         WHEN("out of range excption is thrown")
@@ -151,14 +152,14 @@ SCENARIO( "Exception Handling Request Hook", "[cross-cutting-concerns][exception
             mse::Context context;
             mse::Status status = request_hook.Process([](mse::Context&)
             {
-                throw std::out_of_range("out of range argument");
+                throw std::out_of_range("some exception details");
                 return mse::Status::OK;
             }
             , context);
             THEN("invalid_argument status is returned")
             {
                 REQUIRE(status.code == mse::StatusCode::out_of_range);
-                REQUIRE(status.details == "out of range argument exception");
+                REQUIRE(status.details == "out of range argument exception: some exception details");
             }
         }
         WHEN("some other exception is thrown")
@@ -174,6 +175,89 @@ SCENARIO( "Exception Handling Request Hook", "[cross-cutting-concerns][exception
             {
                 REQUIRE(status.code == mse::StatusCode::internal);
                 REQUIRE(status.details == "unknown exception");
+            }
+        }
+    }
+
+    GIVEN("a history logger and an Exception Handling Request Hook with and without logging exception handling")
+    {
+        using namespace mse::ExceptionHandling;
+        mse::Context context;
+        mse_test::HistoryLogger log;        
+        mse::ExceptionHandlingRequestHook request_hook(mse::ExceptionHandlingRequestHook::Parameters(
+            {
+                { Is<ExceptionOfType<std::logic_error>>()  , mse::Status::OK, mse::LogLevel::invalid, false },  //no logging
+                { Is<ExceptionOfType<std::runtime_error>>(), mse::Status::OK, mse::LogLevel::trace  , false }   //logging                
+            }));        
+
+        WHEN("non logging exception is thrown")
+        {            
+            request_hook.Process([](mse::Context&)
+            {
+                throw std::logic_error("my custom exception details");
+                return mse::Status::OK;
+            }
+            , context);
+
+            THEN("log does not contain my custom exception details")
+            {
+                REQUIRE(log._log_history[mse::LogLevel::trace].empty());                
+            }
+        }
+        WHEN("logging exception is thrown")
+        {            
+            request_hook.Process([](mse::Context&)
+            {
+                throw std::runtime_error("my custom exception details");
+                return mse::Status::OK;
+            }
+            , context);
+
+            THEN("log contains my custom exception details")
+            {
+                REQUIRE(log._log_history[mse::LogLevel::trace].size() == 1);
+                REQUIRE(log._log_history[mse::LogLevel::trace][0].find("my custom exception details") != std::string::npos);                
+            }
+        }
+    }
+
+    GIVEN("Exception Handling Request Hook with and without detail forwarding")
+    {
+        using namespace mse::ExceptionHandling;
+        mse::Context context;                
+        mse::ExceptionHandlingRequestHook request_hook(mse::ExceptionHandlingRequestHook::Parameters(
+            {
+                { Is<ExceptionOfType<std::logic_error>>()  , mse::Status::OK, mse::LogLevel::invalid, true },  //detail forwarding
+                { Is<ExceptionOfType<std::runtime_error>>(), mse::Status::OK, mse::LogLevel::invalid, false }  //no detail forwarding
+            }));        
+
+        WHEN("non forwarding exception is thrown")
+        {            
+            mse::Status status = request_hook.Process([](mse::Context&)
+            {
+                throw std::runtime_error("my custom exception details");
+                return mse::Status::OK;
+            }
+            , context);
+
+            THEN("details do not contain my custom exception details")
+            {
+                std::cout << "details: " << status.details << std::endl;
+                REQUIRE(status.details.find("my custom exception details") == std::string::npos);
+            }
+        }
+        WHEN("forwarding exception is thrown")
+        {            
+            mse::Status status = request_hook.Process([](mse::Context&)
+            {
+                throw std::logic_error("my custom exception details");
+                return mse::Status::OK;
+            }
+            , context);
+
+            THEN("details contain my custom exception details")
+            {
+                REQUIRE(status.details.find("my custom exception details") != std::string::npos);
             }
         }
     }

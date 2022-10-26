@@ -1,5 +1,6 @@
 #pragma once
 
+#include <microservice-essentials/observability/logger.h>
 #include <microservice-essentials/request/request-hook.h>
 #include <microservice-essentials/request/request-hook-factory.h>
 #include <microservice-essentials/status.h>
@@ -39,12 +40,18 @@ class ExceptionHandlingRequestHook : public mse::RequestHook
 {
 public:
 
-    typedef std::pair<std::shared_ptr<ExceptionHandling::ExceptionTypePredicate>, mse::Status> ExceptionToStatusMapping;
+    struct ExceptionHandlingDefinition
+    {
+        std::shared_ptr<ExceptionHandling::ExceptionTypePredicate> exception_predicate;
+        mse::Status status;
+        mse::LogLevel log_level = mse::LogLevel::invalid; // do not log by default
+        bool forward_exception_details_to_caller = false; // do not leak private details by default
+    };
     
     struct Parameters
     {
-        Parameters(const std::vector<ExceptionToStatusMapping>& mappings = ExceptionHandlingRequestHook::_default_exception_to_status_mappings);
-        std::vector<ExceptionToStatusMapping> exception_to_status_mapping  = ExceptionHandlingRequestHook::_default_exception_to_status_mappings;
+        Parameters(const std::vector<ExceptionHandlingDefinition>& exception_handling_definitions = ExceptionHandlingRequestHook::_default_exception_handling_definitions);
+        std::vector<ExceptionHandlingDefinition> exception_handling_definitions  = ExceptionHandlingRequestHook::_default_exception_handling_definitions;
         AutoRequestHookParameterRegistration<ExceptionHandlingRequestHook::Parameters, ExceptionHandlingRequestHook> auto_registration;
     };
 
@@ -54,8 +61,8 @@ public:
     virtual Status Process(Func func, Context& context) override;
 
 private:
-    std::vector<ExceptionToStatusMapping> _exception_to_status_mappings;    
-    static const std::vector<ExceptionToStatusMapping> _default_exception_to_status_mappings;
+    Parameters _parameters;    
+    static const std::vector<ExceptionHandlingDefinition> _default_exception_handling_definitions;
 };
 
 }
