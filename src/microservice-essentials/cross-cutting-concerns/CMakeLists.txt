@@ -4,5 +4,6 @@ target_sources(microservice-essentials
         graceful-shutdown.h
     PRIVATE
         exception-handling-request-hook.cpp
+        exception-handling-request-hook.txx
         graceful-shutdown.cpp        
 )

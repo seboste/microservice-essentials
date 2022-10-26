@@ -22,21 +22,7 @@ namespace ExceptionHandling
     class ExceptionOfType : public ExceptionTypePredicate
     {
         public:
-            bool Test(const std::exception_ptr& exception) const override
-            {
-                try
-                {
-                    std::rethrow_exception(exception);
-                }
-                catch(const ExceptionType&)
-                {
-                    return true;
-                }
-                catch(...)
-                {
-                    return false;
-                }
-            }
+            bool Test(const std::exception_ptr& exception) const override;
     };
 
     class AnyException : public ExceptionTypePredicate
@@ -47,8 +33,7 @@ namespace ExceptionHandling
 
     template<typename Predicate>
     std::shared_ptr<ExceptionTypePredicate> Is() { return std::make_shared<Predicate>(); }
-
-}
+} //namespace ExceptionHandling
 
 class ExceptionHandlingRequestHook : public mse::RequestHook
 {
@@ -75,4 +60,5 @@ private:
 
 }
 
+#include "exception-handling-request-hook.txx"
 
