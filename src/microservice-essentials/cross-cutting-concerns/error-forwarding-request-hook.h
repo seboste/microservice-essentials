@@ -11,14 +11,10 @@ namespace mse
 class ErrorForwardingException : public std::runtime_error
 {
 public:
-    ErrorForwardingException(const mse::Status& status, bool forward_details);
-    
-    const Status& GetStatus() const { return _status; }
-    bool GetForwardDetails() const { return _forward_details; }
-
+    ErrorForwardingException(const mse::Status& status, const std::string& details);    
+    const Status& GetStatus() const { return _status; }    
 private:
     Status _status;
-    bool _forward_details = false;
 };
 
 class ErrorForwardingExceptionMapper : public mse::ExceptionHandling::Mapper
@@ -38,10 +34,15 @@ public:
 
     struct Parameters
     {
-        std::unordered_map<StatusCode, StatusCode> status_code_mapping;
+        //Builder pattern like methods for convinient creation
+        Parameters& IncludeAllErrorCodes(const mse::Status& map_to = mse::Status{ mse::StatusCode::internal, "" });
+        Parameters& Include(mse::StatusCode map_from, const mse::Status& map_to = mse::Status{ mse::StatusCode::internal, "" });
+        Parameters& Exclude(mse::StatusCode map_from);
+
+        std::unordered_map<StatusCode, Status> status_code_mapping;
         AutoRequestHookParameterRegistration<ErrorForwardingRequestHook::Parameters, ErrorForwardingRequestHook> auto_registration;
     };
-
+    
     ErrorForwardingRequestHook(const Parameters& parameters);
     virtual ~ErrorForwardingRequestHook();
 
