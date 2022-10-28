@@ -1,5 +1,6 @@
 #include "http-starwars-client.h"
 #include <microservice-essentials/context.h>
+#include <microservice-essentials/cross-cutting-concerns/error-forwarding-request-hook.h>
 #include <microservice-essentials/observability/logger.h>
 #include <microservice-essentials/request/request-processor.h>
 #include <microservice-essentials/utilities/metadata-converter.h>
@@ -62,15 +63,24 @@ std::vector<StarshipProperties> HttpStarWarsClient::ListStarShipProperties() con
     std::vector<StarshipProperties> starships;
 
     mse::RequestIssuer("ListStarShipProperties", mse::Context())
+        .With(mse::ErrorForwardingRequestHook::Parameters().IncludeAllErrorCodes())
         .Process([&](mse::Context& context)
         {
-            MSE_LOG_TRACE("listing starships");
             for(std::string path = "/api/starships/?format=json"; path != "";)
             {
                 auto resp = _cli->Get(
                     path,
                     mse::FromContextMetadata<httplib::Headers>(context.GetMetadata())
                 );
+                if(!resp)
+                {
+                    return mse::Status{ mse::StatusCode::unknown, "" };
+                }
+                if(mse::Status status { mse::FromHttpStatusCode(resp->status) ,""}; !status)
+                {
+                    return status;
+                }
+
                 json data = json::parse(resp->body);
                 json nextNode = data.at("next");
                 path = nextNode.is_null() ? std::string() : nextNode.get<std::string>();
@@ -79,7 +89,7 @@ std::vector<StarshipProperties> HttpStarWarsClient::ListStarShipProperties() con
                     starships.emplace_back(from_json(starshipNode));            
                 }
             }
-            return mse::Status();
+            return mse::Status::OK;
         });
 
     return starships;
@@ -90,6 +100,7 @@ std::optional<StarshipProperties> HttpStarWarsClient::GetStarShipProperties(cons
     std::optional<StarshipProperties> starshipProperties = std::nullopt;
     
     mse::RequestIssuer("GetStarShipProperties", mse::Context())
+        .With(mse::ErrorForwardingRequestHook::Parameters().IncludeAllErrorCodes().Exclude(mse::StatusCode::not_found))
         .Process([&](mse::Context&)
         {            
             mse::Status status { mse::StatusCode::unknown ,""};
@@ -99,14 +110,10 @@ std::optional<StarshipProperties> HttpStarWarsClient::GetStarShipProperties(cons
                 mse::FromContextMetadata<httplib::Headers>(client_context.GetMetadata())
                 ); resp)
             {
-                status.code = mse::FromHttpStatusCode(resp->status);                
+                status.code = mse::FromHttpStatusCode(resp->status);
                 if(status)
                 {
                     starshipProperties = from_json(json::parse(resp->body));
-                }
-                else if(status.code != mse::StatusCode::not_found)
-                {
-                    throw std::runtime_error("invalid response");
                 }
             }
             return status;
