@@ -1,7 +1,13 @@
 #include "exception-handling-request-hook.h"
 
 template<typename ExceptionType>
-bool mse::ExceptionHandling::ExceptionOfType<ExceptionType>::Test(const std::exception_ptr& exception) const
+mse::ExceptionHandling::ExceptionOfTypeMapper<ExceptionType>::ExceptionOfTypeMapper(const mse::ExceptionHandling::Definition& definition)
+    : mse::ExceptionHandling::ToConstantMapper(definition)
+{
+}
+
+template<typename ExceptionType>
+std::optional<mse::ExceptionHandling::Definition> mse::ExceptionHandling::ExceptionOfTypeMapper<ExceptionType>::Map(const std::exception_ptr& exception) const
 {
     try
     {
@@ -9,10 +15,10 @@ bool mse::ExceptionHandling::ExceptionOfType<ExceptionType>::Test(const std::exc
     }
     catch(const ExceptionType&)
     {
-        return true;
+        return ToConstantMapper::Map(exception);        
     }
     catch(...)
     {
-        return false;
+        return std::nullopt;
     }
 }
