@@ -69,13 +69,15 @@ SCENARIO( "Exception Handling Definition", "[cross-cutting-concerns][exception h
 
 SCENARIO( "Exception Handling Request Hook", "[cross-cutting-concerns][exception handling][request-hook]" )
 {
-    /*
+    
     GIVEN("Exception Handling Request Hook with single exception handling definition")
     {
+        using namespace mse::ExceptionHandling;
         mse::ExceptionHandlingRequestHook request_hook(mse::ExceptionHandlingRequestHook::Parameters(
             {
-                { mse::ExceptionHandling::Is<mse::ExceptionHandling::ExceptionOfType<std::runtime_error>>(), mse::Status{mse::StatusCode::data_loss, "test"}, mse::LogLevel::invalid, false }
+                std::make_shared<ExceptionOfTypeMapper<std::runtime_error>>(Definition{ mse::Status{mse::StatusCode::data_loss, "test"}, mse::LogLevel::invalid, false })
             }));
+
         
         WHEN("the registered exception is thrown")
         {
@@ -122,7 +124,6 @@ SCENARIO( "Exception Handling Request Hook", "[cross-cutting-concerns][exception
             }
         }
     }
-    */
     
     GIVEN("Exception Handling Request Hook with default exception to status matching")
     {
