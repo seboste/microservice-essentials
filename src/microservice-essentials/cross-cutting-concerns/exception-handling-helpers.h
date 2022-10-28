@@ -1,12 +1,9 @@
 #pragma once
 
 #include <microservice-essentials/observability/logger.h>
-#include <microservice-essentials/request/request-hook.h>
-#include <microservice-essentials/request/request-hook-factory.h>
 #include <microservice-essentials/status.h>
 #include <exception>
 #include <optional>
-#include <vector>
 
 namespace mse
 {
