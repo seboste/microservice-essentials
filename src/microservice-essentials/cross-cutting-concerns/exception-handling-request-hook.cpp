@@ -33,16 +33,6 @@ const std::vector<std::shared_ptr<ExceptionHandling::Mapper>> ExceptionHandlingR
     { std::make_shared<ToConstantMapper>                            (Definition{Status{StatusCode::internal,          "unknown exception"},               mse::LogLevel::warn,    false })}
 };
 
-ToConstantMapper::ToConstantMapper(const Definition& definition)
-    : _definition(definition)
-{
-}
-
-std::optional<Definition> ToConstantMapper::Map(const std::exception_ptr&) const
-{
-    return _definition;
-}
-
 ExceptionHandlingRequestHook::Parameters::Parameters(const std::vector<std::shared_ptr<ExceptionHandling::Mapper>>& ehm)
     : exception_handling_mappers(ehm)
 {
