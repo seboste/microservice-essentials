@@ -1,4 +1,5 @@
 #include "exception-handling-request-hook.h"
+#include <microservice-essentials/cross-cutting-concerns/error-forwarding-request-hook.h>
 
 namespace {
 
@@ -25,12 +26,14 @@ using namespace mse::ExceptionHandling;
 
 const std::vector<std::shared_ptr<ExceptionHandling::Mapper>> ExceptionHandlingRequestHook::_default_exception_handling_mappers
 { 
-    //reasoning for the defaults:
+    //reasoning for the defaults:    
     //- client errors can be forwarded to the client. No logging required.
     //- server errors remain private. Logging is required for diagnosis. Client must know about details.
-    { std::make_shared<ExceptionOfTypeMapper<std::invalid_argument>>(Definition{Status{StatusCode::invalid_argument,  "invalid argument exception"},      mse::LogLevel::invalid, true }) },
-    { std::make_shared<ExceptionOfTypeMapper<std::out_of_range>>    (Definition{Status{StatusCode::out_of_range,      "out of range argument exception"}, mse::LogLevel::invalid, true }) },
-    { std::make_shared<ToConstantMapper>                            (Definition{Status{StatusCode::internal,          "unknown exception"},               mse::LogLevel::warn,    false })}
+    //- errors retrieved from depending services are treated as server errors.
+    std::make_shared<ErrorForwardingExceptionMapper>              (                                                                                     mse::LogLevel::warn,    false),
+    std::make_shared<ExceptionOfTypeMapper<std::invalid_argument>>(Definition{Status{StatusCode::invalid_argument,  "invalid argument exception"},      mse::LogLevel::invalid, true }),
+    std::make_shared<ExceptionOfTypeMapper<std::out_of_range>>    (Definition{Status{StatusCode::out_of_range,      "out of range argument exception"}, mse::LogLevel::invalid, true }),
+    std::make_shared<ToConstantMapper>                            (Definition{Status{StatusCode::internal,          "unknown exception"},               mse::LogLevel::warn,    false })
 };
 
 ExceptionHandlingRequestHook::Parameters::Parameters(const std::vector<std::shared_ptr<ExceptionHandling::Mapper>>& ehm)
