@@ -35,8 +35,8 @@ public:
     struct Parameters
     {
         //Builder pattern like methods for convinient creation
-        Parameters& IncludeAllErrorCodes(const mse::Status& map_to = mse::Status{ mse::StatusCode::internal, "" });
-        Parameters& Include(mse::StatusCode map_from, const mse::Status& map_to = mse::Status{ mse::StatusCode::internal, "" });
+        Parameters& IncludeAllErrorCodes(const mse::Status& map_to = mse::Status{ mse::StatusCode::unavailable, "" });
+        Parameters& Include(mse::StatusCode map_from, const mse::Status& map_to = mse::Status{ mse::StatusCode::unavailable, "" });
         Parameters& Exclude(mse::StatusCode map_from);
 
         std::unordered_map<StatusCode, Status> status_code_mapping;
