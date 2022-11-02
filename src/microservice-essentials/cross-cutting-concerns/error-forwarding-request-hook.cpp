@@ -31,8 +31,8 @@ ErrorForwardingRequestHook::Parameters& ErrorForwardingRequestHook::Parameters::
     return *this;
 }       
 
-ErrorForwardingExceptionMapper::ErrorForwardingExceptionMapper(mse::LogLevel loglevel, bool forward_details)    
-    : _loglevel(loglevel)
+ErrorForwardingExceptionMapper::ErrorForwardingExceptionMapper(mse::LogLevel log_level, bool forward_details)    
+    : _log_level(log_level)
     , _forward_details(forward_details)
 {
 }
@@ -45,7 +45,7 @@ std::optional<mse::ExceptionHandling::Definition> ErrorForwardingExceptionMapper
     }
     catch(const ErrorForwardingException& e)
     {
-        return mse::ExceptionHandling::Definition { e.GetStatus(), _loglevel, _forward_details };
+        return mse::ExceptionHandling::Definition { e.GetStatus(), _log_level, _forward_details };
     }
     catch(...)
     {
@@ -80,7 +80,7 @@ ErrorForwardingRequestHook::~ErrorForwardingRequestHook()
         {
             details_stream << "(" << status.details << ")";
         }
-        throw ErrorForwardingException(cit->second, details_stream.str() ); //don't forward details
+        throw ErrorForwardingException(cit->second, details_stream.str() );
     }
     return status;
  }

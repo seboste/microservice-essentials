@@ -10,6 +10,7 @@
 ### Cross Cutting Concerns
 - Singleton for notifying registered classes about upcoming service **shutdown** upon receiving a shutdown signal.
 - **Exception handling** for requests including optional forwarding/logging of exception details.
+- **Error forwarding** from callees of the service to callers of the service.
 
 ### Observability
 - A minimalistic customizeable **logging** framework including a structured logger.
