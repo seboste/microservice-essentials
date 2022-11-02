@@ -1,4 +1,5 @@
 #include "exception-handling-request-hook.h"
+#include <microservice-essentials/cross-cutting-concerns/error-forwarding-request-hook.h>
 
 namespace {
 
@@ -23,18 +24,20 @@ std::string extract_exception_details(const std::exception_ptr& exception)
 using namespace mse;
 using namespace mse::ExceptionHandling;
 
-const std::vector<ExceptionHandlingRequestHook::ExceptionHandlingDefinition> ExceptionHandlingRequestHook::_default_exception_handling_definitions
+const std::vector<std::shared_ptr<ExceptionHandling::Mapper>> ExceptionHandlingRequestHook::_default_exception_handling_mappers
 { 
-    //reasoning for the defaults:
+    //reasoning for the defaults:    
     //- client errors can be forwarded to the client. No logging required.
     //- server errors remain private. Logging is required for diagnosis. Client must know about details.
-    { Is<ExceptionOfType<std::invalid_argument>>()  , Status{StatusCode::invalid_argument,  "invalid argument exception"},      mse::LogLevel::invalid, true },
-    { Is<ExceptionOfType<std::out_of_range>>()      , Status{StatusCode::out_of_range,      "out of range argument exception"}, mse::LogLevel::invalid, true },
-    { Is<AnyException>()                            , Status{StatusCode::internal,          "unknown exception"},               mse::LogLevel::warn,    false }
+    //- errors retrieved from depending services are treated as server errors.
+    std::make_shared<ErrorForwardingExceptionMapper>              (                                                                                     mse::LogLevel::warn,    false),
+    std::make_shared<ExceptionOfTypeMapper<std::invalid_argument>>(Definition{Status{StatusCode::invalid_argument,  "invalid argument exception"},      mse::LogLevel::invalid, true }),
+    std::make_shared<ExceptionOfTypeMapper<std::out_of_range>>    (Definition{Status{StatusCode::out_of_range,      "out of range argument exception"}, mse::LogLevel::invalid, true }),
+    std::make_shared<ToConstantMapper>                            (Definition{Status{StatusCode::internal,          "unknown exception"},               mse::LogLevel::warn,    false })
 };
 
-ExceptionHandlingRequestHook::Parameters::Parameters(const std::vector<ExceptionHandlingDefinition>& ehd)
-    : exception_handling_definitions(ehd)
+ExceptionHandlingRequestHook::Parameters::Parameters(const std::vector<std::shared_ptr<ExceptionHandling::Mapper>>& ehm)
+    : exception_handling_mappers(ehm)
 {
 }
 
@@ -57,31 +60,32 @@ Status ExceptionHandlingRequestHook::Process(Func func, Context& context)
     catch(...)
     {
         //check all exception types that shall be handled
-        for(const ExceptionHandlingDefinition& exception_handling_definition : _parameters.exception_handling_definitions)
+        for(std::shared_ptr<ExceptionHandling::Mapper> exception_handling_mapper : _parameters.exception_handling_mappers)
         {
-            if(exception_handling_definition.exception_predicate->Test(std::current_exception()))
+            std::optional<mse::ExceptionHandling::Definition> definition = exception_handling_mapper->Map(std::current_exception());
+            if(definition.has_value())
             {
                 
-                if(exception_handling_definition.log_level == mse::LogLevel::invalid
-                && !exception_handling_definition.forward_exception_details_to_caller)
+                if(definition->log_level == mse::LogLevel::invalid
+                && !definition->forward_exception_details_to_caller)
                 {
                     //exception details are not required => early exit
-                    return exception_handling_definition.status;
+                    return definition->status;
                 }
-                
-                mse::Status status = exception_handling_definition.status;
+                                
                 std::string exception_details = extract_exception_details(std::current_exception());
                 
-                if(exception_handling_definition.log_level != mse::LogLevel::invalid)
+                if(definition->log_level != mse::LogLevel::invalid)
                 {
                     mse::LogProvider::GetInstance().GetLogger().Write(
-                        exception_handling_definition.log_level,
+                        definition->log_level,
                         std::string("caught exception: ") + exception_details
                         );
                 }
                 
-                if(exception_handling_definition.forward_exception_details_to_caller)
+                if(definition->forward_exception_details_to_caller)
                 {
+                    mse::Status status = definition->status;
                     if(status.details.empty())
                     {
                         status.details = exception_details;
@@ -90,9 +94,12 @@ Status ExceptionHandlingRequestHook::Process(Func func, Context& context)
                     {
                         status.details += std::string(": ") + exception_details;
                     }
+                    return status;
                 }
-                
-                return status;
+                else
+                {
+                    return definition->status;
+                }
             }
         }
         //rethrow 

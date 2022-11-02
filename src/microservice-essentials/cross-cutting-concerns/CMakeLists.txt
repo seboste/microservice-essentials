@@ -1,9 +1,13 @@
 target_sources(microservice-essentials
     PUBLIC
-        exception-handling-request-hook.h
+        error-forwarding-request-hook.h
+        exception-handling-helpers.h
+        exception-handling-helpers.txx
+        exception-handling-request-hook.h        
         graceful-shutdown.h
     PRIVATE
-        exception-handling-request-hook.cpp
-        exception-handling-request-hook.txx
+        error-forwarding-request-hook.cpp
+        exception-handling-helpers.cpp
+        exception-handling-request-hook.cpp        
         graceful-shutdown.cpp        
 )

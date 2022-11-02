@@ -14,74 +14,70 @@ SCENARIO("Exception Handling Request Hook Creation", "[cross-cutting-concerns][e
     }
 }
 
-SCENARIO( "Exception Handling Predicate", "[cross-cutting-concerns][exception handling]" )
+SCENARIO( "Exception Handling Definition", "[cross-cutting-concerns][exception handling]" )
 {
-    GIVEN("Exception Type Predicate for specific type")
+    GIVEN("Exception Type Mapper for specific type")
     {
-        mse::ExceptionHandling::ExceptionOfType<std::runtime_error> runtime_error_predicate;
+        mse::ExceptionHandling::ExceptionOfTypeMapper<std::runtime_error> runtime_error_mapper(mse::ExceptionHandling::Definition{});
         WHEN("the specific type is tested")
         {
-            bool test_result = runtime_error_predicate.Test(std::make_exception_ptr(std::runtime_error("runtime error")));
-            THEN("test result is true")
+            std::optional<mse::ExceptionHandling::Definition> definition = runtime_error_mapper.Map(std::make_exception_ptr(std::runtime_error("runtime error")));
+            THEN("test result is not empty")
             {
-                REQUIRE(test_result == true);
+                REQUIRE(definition.has_value());
             }
         }
         WHEN("a derived type is tested")
         {
-            bool test_result = runtime_error_predicate.Test(std::make_exception_ptr(std::range_error("range error")));
-            THEN("test result is true")
+            std::optional<mse::ExceptionHandling::Definition> definition = runtime_error_mapper.Map(std::make_exception_ptr(std::range_error("range error")));
+            THEN("test result is not empty")
             {
-                REQUIRE(test_result == true);
+                REQUIRE(definition.has_value());
             }
         }
         WHEN("base exception type is tested")
         {
-            bool test_result = runtime_error_predicate.Test(std::make_exception_ptr(std::exception()));
-            THEN("test result is false")
+            std::optional<mse::ExceptionHandling::Definition> definition = runtime_error_mapper.Map(std::make_exception_ptr(std::exception()));            
+            THEN("test result is empty")
             {
-                REQUIRE(test_result == false);
+                REQUIRE(!definition.has_value());
             }
         }
         WHEN("a completely unrelated type is tested")
-        {
-            bool test_result = runtime_error_predicate.Test(std::make_exception_ptr(10));
-            THEN("test result is false")
+        {            
+            std::optional<mse::ExceptionHandling::Definition> definition = runtime_error_mapper.Map(std::make_exception_ptr(10));            
+            THEN("test result is empty")
             {
-                REQUIRE(test_result == false);
+                REQUIRE(!definition.has_value());
             }
         }
     }
-    GIVEN("AnyException Predicate")
+
+    GIVEN("Constant Mapper")
     {
-        mse::ExceptionHandling::AnyException any_exception_predicate;
+        mse::ExceptionHandling::ToConstantMapper to_constant_mapper(mse::ExceptionHandling::Definition{});
         WHEN("some random exception is tested")
         {
-            bool test_result = any_exception_predicate.Test(std::make_exception_ptr(std::bad_alloc()));
-            THEN("test result is true")
+            std::optional<mse::ExceptionHandling::Definition> definition = to_constant_mapper.Map(std::make_exception_ptr(10));
+            THEN("test result is not empty")
             {
-                REQUIRE(test_result == true);
+                REQUIRE(definition.has_value());
             }
-        }
-    }
-    WHEN("Factory Method is used to create Exception Type Predicate for specific type")
-    {
-        std::shared_ptr<mse::ExceptionHandling::ExceptionTypePredicate> predicate = mse::ExceptionHandling::Is<mse::ExceptionHandling::ExceptionOfType<std::string>>();
-        THEN("predicate is not null")
-        {
-            REQUIRE(predicate != nullptr);
         }
     }
 }
 
 SCENARIO( "Exception Handling Request Hook", "[cross-cutting-concerns][exception handling][request-hook]" )
 {
+    
     GIVEN("Exception Handling Request Hook with single exception handling definition")
     {
+        using namespace mse::ExceptionHandling;
         mse::ExceptionHandlingRequestHook request_hook(mse::ExceptionHandlingRequestHook::Parameters(
             {
-                { mse::ExceptionHandling::Is<mse::ExceptionHandling::ExceptionOfType<std::runtime_error>>(), mse::Status{mse::StatusCode::data_loss, "test"}, mse::LogLevel::invalid, false }
+                std::make_shared<ExceptionOfTypeMapper<std::runtime_error>>(Definition{ mse::Status{mse::StatusCode::data_loss, "test"}, mse::LogLevel::invalid, false })
             }));
+
         
         WHEN("the registered exception is thrown")
         {
@@ -177,7 +173,7 @@ SCENARIO( "Exception Handling Request Hook", "[cross-cutting-concerns][exception
             }
         }
     }
-
+    
     GIVEN("a history logger and an Exception Handling Request Hook with and without logging exception handling")
     {
         using namespace mse::ExceptionHandling;
@@ -185,9 +181,9 @@ SCENARIO( "Exception Handling Request Hook", "[cross-cutting-concerns][exception
         mse_test::HistoryLogger log;        
         mse::ExceptionHandlingRequestHook request_hook(mse::ExceptionHandlingRequestHook::Parameters(
             {
-                { Is<ExceptionOfType<std::logic_error>>()  , mse::Status::OK, mse::LogLevel::invalid, false },  //no logging
-                { Is<ExceptionOfType<std::runtime_error>>(), mse::Status::OK, mse::LogLevel::trace  , false }   //logging                
-            }));        
+                std::make_shared<ExceptionOfTypeMapper<std::logic_error>>  (Definition{ mse::Status::OK, mse::LogLevel::invalid, false }),  //no logging
+                std::make_shared<ExceptionOfTypeMapper<std::runtime_error>>(Definition{ mse::Status::OK, mse::LogLevel::trace  , false })   //logging                
+            }));
 
         WHEN("non logging exception is thrown")
         {            
@@ -220,15 +216,16 @@ SCENARIO( "Exception Handling Request Hook", "[cross-cutting-concerns][exception
         }
     }
 
+
     GIVEN("Exception Handling Request Hook with and without detail forwarding")
     {
         using namespace mse::ExceptionHandling;
-        mse::Context context;                
+        mse::Context context;
         mse::ExceptionHandlingRequestHook request_hook(mse::ExceptionHandlingRequestHook::Parameters(
             {
-                { Is<ExceptionOfType<std::logic_error>>()  , mse::Status::OK, mse::LogLevel::invalid, true },  //detail forwarding
-                { Is<ExceptionOfType<std::runtime_error>>(), mse::Status::OK, mse::LogLevel::invalid, false }  //no detail forwarding
-            }));        
+                std::make_shared<ExceptionOfTypeMapper<std::logic_error>>  (Definition{ mse::Status::OK, mse::LogLevel::invalid, true  }),  //detail forwarding
+                std::make_shared<ExceptionOfTypeMapper<std::runtime_error>>(Definition{ mse::Status::OK, mse::LogLevel::invalid, false })   //no detail forwarding
+            }));
 
         WHEN("non forwarding exception is thrown")
         {            
