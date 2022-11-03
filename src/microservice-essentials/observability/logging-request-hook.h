@@ -30,7 +30,7 @@ public:
 
 protected:
     virtual Status pre_process(Context& context) override;
-    virtual Status post_process(Context& context, Status status) override;    
+    virtual Status post_process(Context& context, Status status) override;
 
 private:
     std::string get_request_verb_pre() const;
