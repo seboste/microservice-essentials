@@ -22,16 +22,24 @@ std::optional<RetryBackoffStrategy::Duration> LinearRetryBackoff::GetDurationUnt
     }
 
     //timeout reached?
-    Duration retry_duration = _retry_interval * retry_count;
-    if(total_request_duration > retry_duration)
+    Duration max_total_request_duration = _retry_interval * _max_retry_count;    
+    if(total_request_duration > max_total_request_duration)
     {
         //don't try again
         return std::nullopt;
     }
 
-
     //compute the duration until next retry
-    return retry_duration - total_request_duration;
+    Duration retry_duration = _retry_interval * retry_count;
+    if(total_request_duration > retry_duration)
+    {
+        //timepoint has already passed => retry immediately
+        return 0ms;
+    }
+    else
+    {
+        return retry_duration - total_request_duration;
+    }    
 }
 
 
