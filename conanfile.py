@@ -45,4 +45,5 @@ class MicroserviceEssentials(ConanFile):
 
     def package_info(self):
         self.cpp_info.libs = ["microservice-essentials"]
+        self.cpp_info.system_libs = ["pthread"]
     
