@@ -8,7 +8,7 @@ int main()
     std::cout << "context created" << std::endl;
 
     //SignalHandler requires pthread. Check if it builds.
-    mse::SignalHandler signal_handler(mse::Signal::SIG_TERM, [](){});
+    mse::SignalHandler signal_handler(mse::Signal::SIG_SHUTDOWN, [](){});
     std::cout << "signal_handler created" << std::endl;
     return 0;    
 }
