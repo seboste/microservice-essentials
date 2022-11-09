@@ -12,7 +12,7 @@ target_include_directories(microservice-essentials PUBLIC ${CMAKE_CURRENT_LIST_D
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
-target_link_libraries(microservice-essentials PRIVATE Threads::Threads)
+target_link_libraries(microservice-essentials PUBLIC Threads::Threads)
 
 install(TARGETS microservice-essentials DESTINATION lib)
 
@@ -21,5 +21,7 @@ install(TARGETS microservice-essentials DESTINATION lib)
 install(DIRECTORY
     ${CMAKE_SOURCE_DIR}/src/microservice-essentials  
     DESTINATION include
-    FILES_MATCHING PATTERN "*.h"
+    FILES_MATCHING
+    PATTERN "*.h"
+    PATTERN "*.txx"
     )
