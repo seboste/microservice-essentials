@@ -22,7 +22,7 @@ strategy:
       imageName: 'macOS-latest'
       extraBuildArguments: ''
       extraConfigureArguments: ''
-      conanInstallCommand: 'brew update && brew link --overwrite python@3.11 && brew install conan'
+      conanInstallCommand: 'brew update && brew upgrade && brew install conan'
       extraInstallArguments: ''
     windows:
       imageName: 'windows-latest'
