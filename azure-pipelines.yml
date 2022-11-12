@@ -19,11 +19,11 @@ strategy:
       conanInstallCommand: 'pip install conan'
       extraInstallArguments: '-s compiler.libcxx=libstdc++11 -o build_examples=True'
     mac:
-      imageName: 'macOS-latest'
-      extraBuildArguments: ''
-      extraConfigureArguments: ''
-      conanInstallCommand: 'brew update && brew install conan'
-      extraInstallArguments: ''
+        imageName: 'macOS-latest'
+        extraBuildArguments: ''
+        extraConfigureArguments: ''
+        conanInstallCommand: 'brew install conan'
+        extraInstallArguments: ''
     windows:
       imageName: 'windows-latest'
       extraBuildArguments: '--config Release'
