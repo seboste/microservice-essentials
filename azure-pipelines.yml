@@ -38,7 +38,7 @@ steps:
   - script: |
       $(conanInstallCommand)
       conan profile detect
-      displayName: Install Conan
+    displayName: Install Conan
   - task: ArtifactoryConan@1
     displayName: Conan Install Dependencies
     inputs:
