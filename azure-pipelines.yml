@@ -43,15 +43,10 @@ steps:
       $(conanDefineDefaultProfile)
       conan profile show default     
     displayName: Install Conan
-  - task: ArtifactoryConan@1
+  - script: |
+      cd build
+      conan install -s build_type=Release -o build_testing=True $(extraInstallArguments) --build missing ..
     displayName: Conan Install Dependencies
-    inputs:
-      conanCommand: 'Install'
-      pathOrReference: '..'
-      extraArguments: '-s build_type=Release -o build_testing=True $(extraInstallArguments) --build missing'
-      buildName: '$(Build.DefinitionName)'
-      buildNumber: '$(Build.BuildNumber)'
-      workingDirectory: 'build'
   - task: CMake@1
     displayName: CMake Configure
     inputs:
