@@ -29,7 +29,7 @@ class MicroserviceEssentials(ConanFile):
             self.requires("openssl/1.1.1q")
             self.requires("grpc/1.48.0")
         if self.options.build_testing:
-            self.requires("catch2/3.1.0")
+            self.requires("catch2/3.3.1")
             self.requires("nlohmann_json/3.11.1")
 
     def build(self):
