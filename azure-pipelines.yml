@@ -36,7 +36,7 @@ pool:
   
 steps:
   - script: |
-      '$(conanInstallCommand)'
+      $(conanInstallCommand)
       conan profile detect
       displayName: Install Conan
   - task: ArtifactoryConan@1
