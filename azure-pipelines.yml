@@ -40,7 +40,8 @@ pool:
 steps:
   - script: |
       $(conanInstallCommand)
-      $(conanDefineDefaultProfile)      
+      $(conanDefineDefaultProfile)
+      conan profile show default     
     displayName: Install Conan
   - task: ArtifactoryConan@1
     displayName: Conan Install Dependencies
