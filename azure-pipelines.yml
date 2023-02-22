@@ -16,19 +16,19 @@ strategy:
       imageName: 'ubuntu-latest'
       extraBuildArguments: ''
       extraConfigureArguments: '-DBUILD_EXAMPLES=True'
-      conanInstallCommand: 'pip install conan'
+      conanInstallCommand: 'pip install conan==1.59.0'
       extraInstallArguments: '-o build_examples=True'
 #    mac:
 #        imageName: 'macOS-latest'
 #        extraBuildArguments: ''
 #        extraConfigureArguments: ''
-#        conanInstallCommand: 'brew install conan'
+#        conanInstallCommand: 'brew install conan@1.59.0'
 #        extraInstallArguments: ''
 #    windows:
 #      imageName: 'windows-latest'
 #      extraBuildArguments: '--config Release'
 #      extraConfigureArguments: ''
-#      conanInstallCommand: 'pip install conan'
+#      conanInstallCommand: 'pip install conan==1.59.0'
 #      extraInstallArguments: ''
   
 pool:
