@@ -16,39 +16,39 @@ strategy:
       imageName: 'ubuntu-latest'
       extraBuildArguments: ''
       extraConfigureArguments: '-DBUILD_EXAMPLES=True'
-      conanInstallCommand: 'pip install conan'
-      extraInstallArguments: '-s compiler.libcxx=libstdc++11 -o build_examples=True'
+      conanInstallCommand: 'pip install conan==1.59.0'
+      conanDefineDefaultProfile: 'conan profile new default --detect && conan profile update settings.compiler.libcxx=libstdc++11 default'
+      extraInstallArguments: '-o build_examples=True'
     mac:
-        imageName: 'macOS-latest'
-        extraBuildArguments: ''
-        extraConfigureArguments: ''
-        conanInstallCommand: 'brew install conan'
-        extraInstallArguments: ''
+      imageName: 'macOS-latest'
+      extraBuildArguments: ''
+      extraConfigureArguments: ''
+      conanInstallCommand: 'python3 -m ensurepip && pip3 install conan==1.59.0'
+      conanDefineDefaultProfile: 'conan profile new default --detect'
+      extraInstallArguments: ''
     windows:
       imageName: 'windows-latest'
       extraBuildArguments: '--config Release'
       extraConfigureArguments: ''
-      conanInstallCommand: 'pip install conan'
+      conanInstallCommand: 'pip install conan==1.59.0'
+      conanDefineDefaultProfile: 'conan profile new default --detect'
       extraInstallArguments: ''
   
 pool:
     vmImage: $(imageName)
-  
+
 steps:
-  - task: Bash@3
+  - script: |
+      $(conanInstallCommand)
+      $(conanDefineDefaultProfile)
+      conan profile show default     
     displayName: Install Conan
-    inputs:
-      targetType: 'inline'
-      script: '$(conanInstallCommand)'          
-  - task: ArtifactoryConan@1
+  - script: |
+      mkdir build
+      cd build
+      conan install -s build_type=Release -o build_testing=True $(extraInstallArguments) --build missing ..
+    workingDirectory: '.'
     displayName: Conan Install Dependencies
-    inputs:
-      conanCommand: 'Install'
-      pathOrReference: '..'
-      extraArguments: '-s build_type=Release -s cppstd=17 -o build_testing=True $(extraInstallArguments) --build missing'
-      buildName: '$(Build.DefinitionName)'
-      buildNumber: '$(Build.BuildNumber)'
-      workingDirectory: 'build'
   - task: CMake@1
     displayName: CMake Configure
     inputs:

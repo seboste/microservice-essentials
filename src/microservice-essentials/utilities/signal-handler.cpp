@@ -1,6 +1,7 @@
 #include "signal-handler.h"
 #include <chrono>
 #include <exception>
+#include <thread>
 
 using namespace mse;
 

@@ -1,5 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <microservice-essentials/cross-cutting-concerns/graceful-shutdown.h>
+#include <thread>
 
 using namespace std::chrono_literals;
 
