@@ -23,7 +23,7 @@ strategy:
       imageName: 'macOS-latest'
       extraBuildArguments: ''
       extraConfigureArguments: ''
-      conanInstallCommand: 'python3 -m ensurepip && pip --version && pip install conan==1.59.0'
+      conanInstallCommand: 'python3 -m ensurepip && pip3 --version && pip3 install conan==1.59.0'
       conanDefineDefaultProfile: 'conan profile new default --detect && conan profile update settings.compiler.libcxx=libstdc++11 default'
       extraInstallArguments: ''
     # windows:
