@@ -17,7 +17,7 @@ strategy:
       extraBuildArguments: ''
       extraConfigureArguments: '-DBUILD_EXAMPLES=True'
       conanInstallCommand: 'pip install conan'
-      extraInstallArguments: '-s compiler.libcxx=libstdc++11 -o build_examples=True'
+      extraInstallArguments: '-o build_examples=True'
     mac:
         imageName: 'macOS-latest'
         extraBuildArguments: ''
