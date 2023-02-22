@@ -35,11 +35,10 @@ pool:
     vmImage: $(imageName)
   
 steps:
-  - task: Bash@3
-    displayName: Install Conan
-    inputs:
-      targetType: 'inline'
-      script: '$(conanInstallCommand)'          
+  - script: |
+      '$(conanInstallCommand)'
+      conan profile detect
+      displayName: Install Conan
   - task: ArtifactoryConan@1
     displayName: Conan Install Dependencies
     inputs:
