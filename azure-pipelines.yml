@@ -44,7 +44,7 @@ steps:
     inputs:
       conanCommand: 'Install'
       pathOrReference: '..'
-      extraArguments: '-s build_type=Release -s cppstd=17 -o build_testing=True $(extraInstallArguments) --build missing'
+      extraArguments: '-s build_type=Release -o build_testing=True $(extraInstallArguments) --build missing'
       buildName: '$(Build.DefinitionName)'
       buildNumber: '$(Build.BuildNumber)'
       workingDirectory: 'build'
