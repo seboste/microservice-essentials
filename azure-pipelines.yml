@@ -37,7 +37,7 @@ pool:
 steps:
   - script: |
       $(conanInstallCommand)
-      conan profile detect
+      conan profile new default --detect
     displayName: Install Conan
   - task: ArtifactoryConan@1
     displayName: Conan Install Dependencies
