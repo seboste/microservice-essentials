@@ -17,27 +17,30 @@ strategy:
       extraBuildArguments: ''
       extraConfigureArguments: '-DBUILD_EXAMPLES=True'
       conanInstallCommand: 'pip install conan==1.59.0'
+      conanDefineDefaultProfile: 'conan profile new default --detect && conan profile update settings.compiler.libcxx=libstdc++11 default'
       extraInstallArguments: '-o build_examples=True'
     mac:
-        imageName: 'macOS-latest'
-        extraBuildArguments: ''
-        extraConfigureArguments: ''
-        conanInstallCommand: 'brew install conan@1.59.0'
-        extraInstallArguments: ''
+      imageName: 'macOS-latest'
+      extraBuildArguments: ''
+      extraConfigureArguments: ''
+      conanInstallCommand: 'brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/1fc9e09956a2aa5ee2f2f4f6c81e359c232dee0f/Formula/conan.rb'
+      conanDefineDefaultProfile: 'conan profile new default --detect && conan profile update settings.compiler.libcxx=libstdc++11 default'
+      extraInstallArguments: ''
     windows:
       imageName: 'windows-latest'
       extraBuildArguments: '--config Release'
       extraConfigureArguments: ''
       conanInstallCommand: 'pip install conan==1.59.0'
+      conanDefineDefaultProfile: 'conan profile new default --detect'
       extraInstallArguments: ''
   
 pool:
     vmImage: $(imageName)
-  
+
 steps:
   - script: |
       $(conanInstallCommand)
-      conan profile new default --detect
+      $(conanDefineDefaultProfile)      
     displayName: Install Conan
   - task: ArtifactoryConan@1
     displayName: Conan Install Dependencies
