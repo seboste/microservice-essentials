@@ -3,9 +3,10 @@
 
 using namespace mse;
 
-TokenAuthRequestHook::TokenAuthRequestHook(const std::string& name, const std::string& token_metadata_key)
+TokenAuthRequestHook::TokenAuthRequestHook(const std::string& name, const std::string& token_metadata_key, std::initializer_list<std::string> required_claims)
     : RequestHook(name)
     , _token_metadata_key(token_metadata_key)
+    , _required_claims(required_claims.begin(), required_claims.end())
 {
 }
     
@@ -15,11 +16,29 @@ Status TokenAuthRequestHook::pre_process(Context& context)
     {
         return Status { StatusCode::unauthenticated, std::string("metadata key '") + _token_metadata_key + ("' is missing") };
     }
+    const std::string token = context.At(_token_metadata_key);
 
-    std::string token = context.At(_token_metadata_key);
-    if(!is_valid(token))
+    std::any decoded_token;
+    std::string decoding_details;    
+    if(!decode_token(token, decoded_token, decoding_details))
     {
-        return Status { StatusCode::unauthenticated, "invalid token" };
+        return Status { StatusCode::unauthenticated, std::string("unable to decode token: '") + decoding_details };
+    }
+
+    std::string verification_details;
+    if(!verify_token(decoded_token, verification_details))
+    {
+        return Status { StatusCode::unauthenticated, std::string("token verification failed: '") + decoding_details };
+    }
+
+    for(const auto& claim : _required_claims)
+    {        
+        std::optional<std::string> claim_value = extract_claim(decoded_token, claim);
+        if(!claim_value.has_value())
+        {
+            return Status { StatusCode::unauthenticated, std::string("required claim not available: '") + claim };
+        }
+        context.Insert(claim, claim_value.value());
     }
 
     return Status::OK;

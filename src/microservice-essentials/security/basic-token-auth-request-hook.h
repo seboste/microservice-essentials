@@ -30,7 +30,10 @@ public:
     virtual ~BasicTokenAuthRequestHook() = default;
 
 protected:
-    virtual bool is_valid(const std::string& token) const override;
+
+    virtual bool decode_token(const std::string& token, std::any& decoded_token, std::string& decoding_details) const override;
+    virtual bool verify_token(const std::any& decoded_token, std::string& verification_details) const override;
+    virtual std::optional<std::string> extract_claim(const std::any& decoded_token, const std::string& claim) const override;
 
 private:
     std::string _required_token_value;

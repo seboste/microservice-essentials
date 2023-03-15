@@ -10,12 +10,35 @@ BasicTokenAuthRequestHook::Parameters::Parameters(const std::string& md_key, con
 }
 
 BasicTokenAuthRequestHook::BasicTokenAuthRequestHook(const Parameters& parameters)
-    : TokenAuthRequestHook("basic token authentication", parameters.metadata_key)
+    : TokenAuthRequestHook("basic token authentication", parameters.metadata_key, {})
     , _required_token_value(parameters.required_token_value)
 {
 }
 
-bool BasicTokenAuthRequestHook::is_valid(const std::string& token) const
+bool BasicTokenAuthRequestHook::decode_token(const std::string& token, std::any& decoded_token, std::string& decoding_details) const
 {
-    return token == _required_token_value;
+    decoding_details = "";
+    decoded_token = token;
+    return true;
 }
+
+bool BasicTokenAuthRequestHook::verify_token(const std::any& decoded_token, std::string& verification_details) const
+{
+    const std::string token = std::any_cast<std::string>(decoded_token);
+    if(token == _required_token_value)
+    {
+        verification_details = "";
+        return true;
+    }
+    else
+    {
+        verification_details = "invalid token";
+        return false;
+    }    
+}
+
+std::optional<std::string> BasicTokenAuthRequestHook::extract_claim(const std::any&, const std::string&) const
+{
+    return std::nullopt;
+}
+
