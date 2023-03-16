@@ -13,16 +13,17 @@ struct TokenData
     std::string scopes; //space separated string of scopess
 };
 
-std::string to_separated_string(const std::set<std::string> set, const std::string& delim)
+
+std::string to_separated_string(const std::vector<std::string>& data, const std::string& delim)
 {
-    if(set.empty())
+    if(data.empty())
     {
         return std::string();
     }
 
     std::ostringstream stream;
-    std::copy(set.begin(), --set.end(), std::ostream_iterator<std::string>(stream, delim.c_str()));
-    stream << *set.rbegin();
+    std::copy(data.begin(), --data.end(), std::ostream_iterator<std::string>(stream, delim.c_str()));
+    stream << *data.rbegin();
 
     return stream.str();
 }
@@ -31,32 +32,23 @@ std::string to_separated_string(const std::set<std::string> set, const std::stri
 
 BasicTokenAuthRequestHook::Parameters::Parameters(const std::string& md_key, const std::string& req_token_val)
     : metadata_key(md_key)
-    , valid_tokens({std::make_pair(std::string(), std::set<std::string>({ req_token_val }))})
+    , valid_tokens_with_scope({std::make_pair(req_token_val, std::vector<std::string>())})
 {
 }
 
-BasicTokenAuthRequestHook::Parameters::Parameters(const std::string& md_key, const TokensPerScope& tokensPerScope)
+BasicTokenAuthRequestHook::Parameters::Parameters(const std::string& md_key, const TokensWithScope& tokens_with_scope)
     : metadata_key(md_key)
-    , valid_tokens(tokensPerScope)
+    , valid_tokens_with_scope(tokens_with_scope)
 {
 }
 
 BasicTokenAuthRequestHook::BasicTokenAuthRequestHook(const Parameters& parameters)
-    : TokenAuthRequestHook("basic token authentication", parameters.metadata_key, {})    
+    : TokenAuthRequestHook("basic token authentication", parameters.metadata_key, { "scope" })    
 {
-
-    typedef std::map<std::string, std::set<std::string>> ScopeSetPerToken;
-    ScopeSetPerToken scopeSets;
-
-    for(const auto& tokensForScope : parameters.valid_tokens)
+    for(const auto& token_with_scope  : parameters.valid_tokens_with_scope)
     {        
-        _all_valid_tokens.insert(tokensForScope.second.begin(), tokensForScope.second.end());
-        scopeSets[tokensForScope.first].insert(tokensForScope.second.begin(), tokensForScope.second.end());        
-    }
-
-    for(const auto& scopeSet : scopeSets)
-    {
-        _scopes[scopeSet.first] = to_separated_string(scopeSet.second, " ");
+        _all_valid_tokens.insert(token_with_scope.first);
+        _scopes[token_with_scope.first] = to_separated_string(token_with_scope.second, " ");
     }
 }
 

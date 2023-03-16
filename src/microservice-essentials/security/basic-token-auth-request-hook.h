@@ -3,13 +3,16 @@
 #include <microservice-essentials/security/token-auth-request-hook.h>
 #include <microservice-essentials/request/request-hook-factory.h>
 #include <string>
+#include <map>
 
 namespace mse
 {
 
 /**
  * Request Hook for incoming request that checks if an incoming token in the context's 
- * metadata matches a predefined string.
+ * metadata is contained in a set of predefined strings.
+ * The claim "scope" is set to a space separated list of scopes that belong to the 
+ * respective token.
  * 
  * Beware: This class is just intended for demonstration/testing purposes. Consider implementing
  * a e.g. JWT (https://de.wikipedia.org/wiki/JSON_Web_Token) based mse::TokenAuthRequestHook instead.
@@ -19,12 +22,12 @@ class BasicTokenAuthRequestHook : public mse::TokenAuthRequestHook
 public:
     struct Parameters
     {
-        typedef std::map<std::string, std::set<std::string>> TokensPerScope;
+        typedef std::multimap<std::string, std::vector<std::string>> TokensWithScope;
         Parameters(const std::string& md_key = "authorization", const std::string& req_token_val = "secret-token");
-        Parameters(const std::string& md_key, const TokensPerScope& tokensPerScope);
+        Parameters(const std::string& md_key, const TokensWithScope& tokens_with_scope);
 
         std::string metadata_key;          
-        TokensPerScope valid_tokens; //maps a scope to a set of valid tokens; should not be stored in code
+        TokensWithScope valid_tokens_with_scope; //maps a token to set of scopes; should not be stored in code
         
         AutoRequestHookParameterRegistration<BasicTokenAuthRequestHook::Parameters, BasicTokenAuthRequestHook> auto_registration;
     };

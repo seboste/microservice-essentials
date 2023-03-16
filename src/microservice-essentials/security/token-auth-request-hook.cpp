@@ -12,6 +12,14 @@ TokenAuthRequestHook::TokenAuthRequestHook(const std::string& name, const std::s
     
 Status TokenAuthRequestHook::pre_process(Context& context)
 {
+    //security feature: required claims must always come from the token and not from e.g. the request metadata
+    //=> make sure that the claim is empty
+    for(const auto& claim : _required_claims)
+    {
+        context.Erase(claim);
+        context.Insert(claim, "");
+    }
+
     if(!context.Contains(_token_metadata_key))
     {
         return Status { StatusCode::unauthenticated, std::string("metadata key '") + _token_metadata_key + ("' is missing") };
@@ -32,7 +40,9 @@ Status TokenAuthRequestHook::pre_process(Context& context)
     }
 
     for(const auto& claim : _required_claims)
-    {        
+    {
+        context.Erase(claim); //first erase to avoid duplicates in multimap
+
         std::optional<std::string> claim_value = extract_claim(decoded_token, claim);
         if(!claim_value.has_value())
         {
