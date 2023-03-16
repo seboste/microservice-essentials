@@ -2,17 +2,24 @@
 
 #include "metadata-converter.h"
 #include <functional>
+#include <algorithm>
+#include <cctype>
 
 namespace mse
 {
 
 template<typename Container> 
-inline Context::Metadata ToContextMetadata(const Container& external_metadata)
+inline Context::Metadata ToContextMetadata(const Container& external_metadata, bool keys_to_lower)
 {
     Context::Metadata metadata;
     for(const auto& key_value_pair: external_metadata)
     {
-        const std::string key(std::begin(key_value_pair.first), std::end(key_value_pair.first));
+        std::string key(std::begin(key_value_pair.first), std::end(key_value_pair.first));
+        if(keys_to_lower)        
+        {
+            std::transform(key.begin(), key.end(), key.begin(), [](unsigned char c){ return std::tolower(c); });
+        }
+
         const std::string value(std::begin(key_value_pair.second), std::end(key_value_pair.second));
         metadata.insert({ key, value });
     }
