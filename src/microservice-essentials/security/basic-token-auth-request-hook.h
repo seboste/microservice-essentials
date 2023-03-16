@@ -19,9 +19,12 @@ class BasicTokenAuthRequestHook : public mse::TokenAuthRequestHook
 public:
     struct Parameters
     {
+        typedef std::map<std::string, std::set<std::string>> TokensPerScope;
         Parameters(const std::string& md_key = "authorization", const std::string& req_token_val = "secret-token");
-        std::string metadata_key;
-        std::string required_token_value;  //should not be stored in code
+        Parameters(const std::string& md_key, const TokensPerScope& tokensPerScope);
+
+        std::string metadata_key;          
+        TokensPerScope valid_tokens; //maps a scope to a set of valid tokens; should not be stored in code
         
         AutoRequestHookParameterRegistration<BasicTokenAuthRequestHook::Parameters, BasicTokenAuthRequestHook> auto_registration;
     };
@@ -35,8 +38,11 @@ protected:
     virtual bool verify_token(const std::any& decoded_token, std::string& verification_details) const override;
     virtual std::optional<std::string> extract_claim(const std::any& decoded_token, const std::string& claim) const override;
 
-private:
-    std::string _required_token_value;
+private:    
+
+    std::set<std::string> _all_valid_tokens;
+    typedef std::map<std::string, std::string> ScopesPerToken; //token -> scopes ; scopes is a list separated by space
+    ScopesPerToken _scopes;
 };
 
 }

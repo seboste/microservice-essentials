@@ -22,13 +22,13 @@ Status TokenAuthRequestHook::pre_process(Context& context)
     std::string decoding_details;    
     if(!decode_token(token, decoded_token, decoding_details))
     {
-        return Status { StatusCode::unauthenticated, std::string("unable to decode token: '") + decoding_details };
+        return Status { StatusCode::unauthenticated, std::string("unable to decode token: ") + decoding_details };
     }
 
     std::string verification_details;
     if(!verify_token(decoded_token, verification_details))
     {
-        return Status { StatusCode::unauthenticated, std::string("token verification failed: '") + decoding_details };
+        return Status { StatusCode::unauthenticated, std::string("token verification failed: ") + verification_details };
     }
 
     for(const auto& claim : _required_claims)
@@ -36,7 +36,7 @@ Status TokenAuthRequestHook::pre_process(Context& context)
         std::optional<std::string> claim_value = extract_claim(decoded_token, claim);
         if(!claim_value.has_value())
         {
-            return Status { StatusCode::unauthenticated, std::string("required claim not available: '") + claim };
+            return Status { StatusCode::unauthenticated, std::string("required claim not available: ") + claim };
         }
         context.Insert(claim, claim_value.value());
     }

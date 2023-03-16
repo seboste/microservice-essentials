@@ -42,7 +42,7 @@ SCENARIO("Token Authorization Request Hook", "[security][authentication][request
             }
             AND_THEN("status details equals 'invalid token'")
             {
-                REQUIRE(status.details == "invalid token");
+                REQUIRE(status.details == "token verification failed: invalid token");
             }
         }
     }
