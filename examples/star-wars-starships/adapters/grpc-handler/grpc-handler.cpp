@@ -5,6 +5,7 @@
 #include <microservice-essentials/context.h>
 #include <microservice-essentials/observability/logger.h>
 #include <microservice-essentials/request/request-processor.h>
+#include <microservice-essentials/security/claim-checker-request-hook.h>
 #include <microservice-essentials/utilities/metadata-converter.h>
 #include <microservice-essentials/utilities/status-converter.h>
 
@@ -83,6 +84,7 @@ public:
     {
         return mse::ToGrpcStatus<grpc::Status>(        
             mse::RequestHandler("listStarShips", mse::Context(mse::ToContextMetadata(context->client_metadata())))
+                .With(mse::ClaimCheckerRequestHook::ScopeContains("read"))
                 .Process([&](mse::Context& )
                 {
                     for(const ::Starship& starship : _api.ListStarShips())
@@ -97,6 +99,7 @@ public:
     {
         return mse::ToGrpcStatus<grpc::Status>(
             mse::RequestHandler("GetStarShip", mse::Context(mse::ToContextMetadata(context->client_metadata())))
+                .With(mse::ClaimCheckerRequestHook::ScopeContains("read"))
                 .Process([&](mse::Context&)
                 {                    
                     to_protobuf(
@@ -111,6 +114,7 @@ public:
     {
         return mse::ToGrpcStatus<grpc::Status>(
             mse::RequestHandler("UpdateStatus", mse::Context(mse::ToContextMetadata(context->client_metadata())))
+                .With(mse::ClaimCheckerRequestHook::ScopeContains("write"))
                 .Process([&](mse::Context&)
                 {                    
                     _api.UpdateStatus(request->id(), from_protobuf(request->status()) );

@@ -2,6 +2,7 @@
 #include <microservice-essentials/context.h>
 #include <microservice-essentials/observability/logger.h>
 #include <microservice-essentials/request/request-processor.h>
+#include <microservice-essentials/security/claim-checker-request-hook.h>
 #include <microservice-essentials/utilities/metadata-converter.h>
 #include <microservice-essentials/utilities/status-converter.h>
 #define CPPHTTPLIB_OPENSSL_SUPPORT //be consistent with other projects to prevent seg fault
@@ -122,6 +123,7 @@ void HttpHandler::listStarShips(const httplib::Request& request, httplib::Respon
 {
     response.status = mse::ToHttpStatusCode(
         mse::RequestHandler("listStarShips", mse::Context(mse::ToContextMetadata(request.headers)))
+            .With(mse::ClaimCheckerRequestHook::ScopeContains("read"))
             .Process([&](mse::Context&)
             {
                 response.set_content(
@@ -137,6 +139,7 @@ void HttpHandler::getStarShip(const httplib::Request& request, httplib::Response
 {
     response.status = mse::ToHttpStatusCode(
         mse::RequestHandler("getStarShip", mse::Context(mse::ToContextMetadata(request.headers)))
+            .With(mse::ClaimCheckerRequestHook::ScopeContains("read"))
             .Process([&](mse::Context&)
             {
                 response.set_content(
@@ -152,6 +155,7 @@ void HttpHandler::updateStatus(const httplib::Request& request, httplib::Respons
 {
     response.status = mse::ToHttpStatusCode(
         mse::RequestHandler("updateStatus", mse::Context(mse::ToContextMetadata(request.headers)))
+            .With(mse::ClaimCheckerRequestHook::ScopeContains("write"))
             .Process([&](mse::Context&)
             {
                 _api.UpdateStatus(
