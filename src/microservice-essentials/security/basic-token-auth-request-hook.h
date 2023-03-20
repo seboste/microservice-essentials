@@ -2,8 +2,9 @@
 
 #include <microservice-essentials/security/token-auth-request-hook.h>
 #include <microservice-essentials/request/request-hook-factory.h>
-#include <string>
 #include <map>
+#include <optional>
+#include <string>
 
 namespace mse
 {
