@@ -9,7 +9,7 @@ namespace mse
 {
 
 /**
- * Request Hook for checking claims by a predicate.
+ * Request Hook for checking claims by a predicate (Authorization).
  * A typical use case is to deny access if the caller does not have enough privilege to access a certain endpoint.
  * This can be achieved by adding a TokenAuthRequestHook globally, which extracts a claim (e.g. the scope) from a token
  * and adds it to the current context. ClaimCheckerRequestHooks with different predicates (e.g. one that checks if the 
