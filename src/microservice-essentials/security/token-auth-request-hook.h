@@ -4,6 +4,7 @@
 #include <any>
 #include <initializer_list>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
