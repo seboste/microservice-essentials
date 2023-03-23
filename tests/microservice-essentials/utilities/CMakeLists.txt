@@ -4,4 +4,5 @@ PUBLIC
     metadata-converter_test.cpp
     signal-handler_test.cpp
     status-converter_test.cpp
+    url_test.cpp
     )

@@ -25,6 +25,7 @@
 - Convenience for reading and converting **environment variables**.
 - Converting of **request status** and **context metadata**.
 - Handling of **system signals**.
+- Parsing of **urls**.
 
 ## Build
 ```
