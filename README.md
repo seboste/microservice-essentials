@@ -19,7 +19,7 @@
 - Global and local **hooks** that will be executed before and after handling/issuing a request.
 
 ### Security
-- Base functionality for token based authorization.
+- Base functionality for token based authentication and authorization.
 
 ### Utilities
 - Convenience for reading and converting **environment variables**.

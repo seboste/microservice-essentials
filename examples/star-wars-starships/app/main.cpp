@@ -22,7 +22,12 @@ int main()
     mse::StructuredLogger structured_logger(logger);
 
     mse::RequestHandler::GloballyWith(mse::LoggingRequestHook::Parameters{});    
-    mse::RequestHandler::GloballyWith(mse::BasicTokenAuthRequestHook::Parameters{});
+    mse::RequestHandler::GloballyWith(mse::BasicTokenAuthRequestHook::Parameters("authorization", 
+        { 
+            std::make_pair(std::string("secret-read-only-token"), std::vector<std::string>{"read"}),    //this token allows to read (!!token should not be in source code!!)
+            std::make_pair(std::string("secret-token"), std::vector<std::string>{"read","write"})       //this token allows to read and write (!!token should not be in source code!!)
+        }
+    ));
     mse::RequestHandler::GloballyWith(mse::ExceptionHandlingRequestHook::Parameters{});
     
     mse::RequestIssuer::GloballyWith(mse::LoggingRequestHook::Parameters{});
