@@ -22,7 +22,7 @@ namespace mse
 class TokenAuthRequestHook : public mse::RequestHook
 {
 public:    
-    TokenAuthRequestHook(const std::string& name, const std::string& token_metadata_key, std::initializer_list<std::string> required_claims);
+    TokenAuthRequestHook(const std::string& name, const std::string& token_metadata_key, const std::vector<std::string>& required_claims);
     virtual ~TokenAuthRequestHook() = default;
 
 protected:

@@ -3,7 +3,7 @@
 
 using namespace mse;
 
-TokenAuthRequestHook::TokenAuthRequestHook(const std::string& name, const std::string& token_metadata_key, std::initializer_list<std::string> required_claims)
+TokenAuthRequestHook::TokenAuthRequestHook(const std::string& name, const std::string& token_metadata_key, const std::vector<std::string>& required_claims)
     : RequestHook(name)
     , _token_metadata_key(token_metadata_key)
     , _required_claims(required_claims.begin(), required_claims.end())
