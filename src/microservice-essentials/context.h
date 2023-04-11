@@ -54,6 +54,7 @@ public:
     static Context& GetThreadLocalContext();
 
     void Clear();
+    size_t Erase(const std::string& key);
 
     const Metadata& GetMetadata() const { return _metadata; }
     Metadata& GetMetadata() { return _metadata; }
@@ -61,7 +62,7 @@ public:
     MetadataVector GetFilteredMetadata(const std::vector<std::string>& keys) const;
     
     void Insert(std::initializer_list<Metadata::value_type> metadata);
-    void Insert(const std::string& key, const std::string& value);        
+    void Insert(const std::string& key, const std::string& value);    
     const std::string& At(const std::string& key) const;
     const std::string& AtOr(const std::string& key, const std::string& default_value) const;
     bool Contains(const std::string& key) const;

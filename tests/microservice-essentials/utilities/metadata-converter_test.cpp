@@ -32,6 +32,42 @@ SCENARIO( "Metadata converter", "[metadata][context]" )
         }
     }
 
+    GIVEN("some container with data in MiXed CaSe")
+    {
+        const ExternalMetadata external_metadata = { { "AbCdE123!", "XyZ?"} };
+        WHEN("it is converted to context metadata with to lower conversion ON")
+        {
+            const mse::Context::Metadata metadata = mse::ToContextMetadata(external_metadata, true);
+            THEN("the key is converted to lower case")
+            {                
+                auto cit = metadata.begin();
+                REQUIRE(cit != metadata.end());
+                REQUIRE(cit->first == "abcde123!");
+
+                AND_THEN("the value case remains identical")
+                {
+                    REQUIRE(cit->second == "XyZ?");
+                }
+            }
+        }
+
+        WHEN("it is converted to context metadata with to lower conversion OFF")
+        {
+            const mse::Context::Metadata metadata = mse::ToContextMetadata(external_metadata, false);
+            THEN("the key case remains identical")
+            {                
+                auto cit = metadata.begin();
+                REQUIRE(cit != metadata.end());
+                REQUIRE(cit->first == "AbCdE123!");
+
+                AND_THEN("the value case remains identical")
+                {
+                    REQUIRE(cit->second == "XyZ?");
+                }
+            }
+        }
+    }
+
     GIVEN("some context metadata")
     {
         const mse::Context::Metadata metadata = { { "a", "x"}, {"b", "y"} };

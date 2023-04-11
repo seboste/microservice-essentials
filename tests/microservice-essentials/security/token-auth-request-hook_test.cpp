@@ -42,7 +42,62 @@ SCENARIO("Token Authorization Request Hook", "[security][authentication][request
             }
             AND_THEN("status details equals 'invalid token'")
             {
-                REQUIRE(status.details == "invalid token");
+                REQUIRE(status.details == "token verification failed: invalid token");
+            }
+        }
+    }
+
+    GIVEN("a basic token auth request hook with two tokens and two scopes")
+    {
+        typedef mse::BasicTokenAuthRequestHook::Parameters Params;
+        typedef Params::TokensWithScope TokensWithScope;
+        mse::BasicTokenAuthRequestHook hook(Params("auth", TokensWithScope{ 
+            std::make_pair(std::string("secret_read"), std::vector<std::string>({"read"})),
+            std::make_pair(std::string("secret_write"), std::vector<std::string>({"read", "write"})),            
+            }));
+
+        WHEN("the hook is executed with a read token")
+        {
+            mse::Context context({{"auth", "secret_read"}, { "scope", "bla"}});
+            mse::Status status = hook.Process([](mse::Context&){ return mse::Status::OK;}, context);
+            THEN("no error is present")
+            {
+                REQUIRE(status);
+            }
+            AND_THEN("read scope is defined")
+            {
+                REQUIRE(context.Contains("scope"));
+                REQUIRE(context.At("scope") == "read");
+            }
+        }
+
+        WHEN("the hook is executed with a write token")
+        {
+            mse::Context context({{"auth", "secret_write"}});
+            mse::Status status = hook.Process([](mse::Context&){ return mse::Status::OK;}, context);
+            THEN("no error is present")
+            {
+                REQUIRE(status);
+            }
+            AND_THEN("read and write scope are defined")
+            {
+                REQUIRE(context.Contains("scope"));
+                REQUIRE(context.At("scope") == "read write");
+            }
+        }
+
+        WHEN("the hook is executed with an invalid token")
+        {
+            mse::Context context({{"auth", "secret_invalid"}, { "scope", "bla"}});
+            mse::Status status = hook.Process([](mse::Context&){ return mse::Status::OK;}, context);
+            THEN("error is present")
+            {
+                REQUIRE(!status);
+            }
+            AND_THEN("the scope is cleared")
+            {
+                REQUIRE(context.Contains("scope"));
+                REQUIRE(context.At("scope") == "");
             }
         }
     }

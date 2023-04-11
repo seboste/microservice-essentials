@@ -62,6 +62,43 @@ SCENARIO("Context Metadata", "[context]")
                     REQUIRE(context.Contains("test") == false);
                 }
             }
+
+            AND_WHEN("some meta data is erased")
+            {
+                size_t erase_count = context.Erase("test");
+                THEN("1 entry has been erased")
+                {
+                    REQUIRE(erase_count == 1);
+                }
+                AND_THEN("the erased data is not there anymore")
+                {
+                    REQUIRE(context.Contains("test") == false);
+                }
+                AND_THEN("all other metadata is still there")
+                {
+                    REQUIRE(context.Contains("a") == true);
+                    REQUIRE(context.Contains("b") == true);
+                }
+            }
+
+            AND_WHEN("the same meta data is inserted again")
+            {
+                context.Insert("test", "some_other_value");
+                THEN("one of the values is returned")
+                {
+                    REQUIRE((context.At("test") == "some_other_value" || context.At("test") == "some_value"));
+                }
+
+                AND_WHEN("that duplicated data is erased")
+                {
+                    size_t erase_count = context.Erase("test");
+                    THEN("both entries are not there anymore")
+                    {
+                        REQUIRE(erase_count == 2);
+                        REQUIRE(context.Contains("test") == false);
+                    }                    
+                }
+            }
         }
     }
 
@@ -143,9 +180,60 @@ SCENARIO("Context with Parent", "[context]")
                         REQUIRE(another_context.Contains("test2") == false);
                     }
                 }
-            }
-            
-        }
+
+                AND_WHEN("the metadata from another_context is erased")
+                {
+                    size_t erased_count = another_context.Erase("test2");
+                    THEN("1 entry has been erased")
+                    {
+                        REQUIRE(erased_count == 1);
+                    }
+                    THEN("it only contains data from the parent")
+                    {
+                        REQUIRE(another_context.Contains("test") == true);
+                        REQUIRE(another_context.Contains("test2") == false);
+                    }
+                }
+
+                AND_WHEN("the parent metadata is attempted to be erased from anoterh_context")
+                {
+                    size_t erased_count = another_context.Erase("test");
+                    THEN("nothing has been erased")
+                    {
+                        REQUIRE(erased_count == 0);
+                    }
+                    THEN("both entries are still present")
+                    {
+                        REQUIRE(another_context.Contains("test") == true);
+                        REQUIRE(another_context.Contains("test2") == true);
+                    }
+                }
+
+                AND_WHEN("the parent metadata is erased from the parent context")
+                {
+                    size_t erased_count = context.Erase("test");
+                    THEN("1 entry has been erased")
+                    {
+                        REQUIRE(erased_count == 1);
+                    }
+                    THEN("it only contains data from another_context")
+                    {
+                        REQUIRE(another_context.Contains("test") == false);
+                        REQUIRE(another_context.Contains("test2") == true);
+                    }
+                }
+
+                AND_WHEN("the same meta data is inserted")
+                {
+                    another_context.Insert("test", "another_value");
+                    THEN("the current context takes precedence")
+                    {
+                        REQUIRE(context.At("test") == "value");
+                        REQUIRE(another_context.At("test") == "another_value");
+                    }
+                }
+            }            
+        }        
     }
 }
 

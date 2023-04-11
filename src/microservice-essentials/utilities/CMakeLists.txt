@@ -7,9 +7,11 @@ target_sources(microservice-essentials
         signal-handler.h
         status-converter.h
         status-converter.txx
+        url.h
     PRIVATE
-        environment.cpp        
-        metadata-converter.cpp        
+        environment.cpp
+        metadata-converter.cpp
         signal-handler.cpp
-        status-converter.cpp        
+        status-converter.cpp
+        url.cpp
 )

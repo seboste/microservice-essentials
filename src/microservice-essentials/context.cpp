@@ -130,6 +130,11 @@ void Context::Clear()
     _metadata.clear();
 }
 
+size_t Context::Erase(const std::string& key)
+{
+    return _metadata.erase(key);
+}
+
 Context::Metadata Context::GetAllMetadata() const
 {
     Context::Metadata metadata = _metadata;

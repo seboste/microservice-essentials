@@ -1,5 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <microservice-essentials/utilities/signal-handler.h>
+#include <thread>
 
 using namespace std::chrono_literals;
 

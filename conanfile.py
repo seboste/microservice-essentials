@@ -24,13 +24,13 @@ class MicroserviceEssentials(ConanFile):
 
     def requirements(self):
         if self.options.build_examples:
-            self.requires("cpp-httplib/0.11.0")
-            self.requires("nlohmann_json/3.11.1")
-            self.requires("openssl/1.1.1q")
-            self.requires("grpc/1.48.0")
+            self.requires("cpp-httplib/0.12.0")
+            self.requires("nlohmann_json/3.11.2")
+            self.requires("openssl/1.1.1t")
+            self.requires("grpc/1.50.1")
         if self.options.build_testing:
-            self.requires("catch2/3.1.0")
-            self.requires("nlohmann_json/3.11.1")
+            self.requires("catch2/3.3.1")
+            self.requires("nlohmann_json/3.11.2")
 
     def build(self):
         cmake = CMake(self)
@@ -45,4 +45,6 @@ class MicroserviceEssentials(ConanFile):
 
     def package_info(self):
         self.cpp_info.libs = ["microservice-essentials"]
+        if self.settings.os != "Windows":
+            self.cpp_info.system_libs = ["pthread"]
     
