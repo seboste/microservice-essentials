@@ -81,7 +81,7 @@ public:
     {
         Parameters(
             std::shared_ptr<RetryBackoffStrategy> strategy,
-            const std::set<mse::StatusCode>& retry_ec = { mse::StatusCode::unavailable, mse::StatusCode::resource_exhausted, mse::StatusCode::internal }
+            const std::set<mse::StatusCode>& retry_ec = { mse::StatusCode::unavailable, mse::StatusCode::resource_exhausted, mse::StatusCode::internal, mse::StatusCode::unknown }
             );
         
         std::shared_ptr<RetryBackoffStrategy> backoff_strategy;
