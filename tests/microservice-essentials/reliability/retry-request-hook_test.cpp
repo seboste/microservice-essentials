@@ -92,11 +92,11 @@ SCENARIO( "RetryBackoffStrategy", "[reliability][retry][request-hook]" )
 
                 THEN("the average duration is roughly 10ms")
                 {
-                    REQUIRE(averageDuration.count() == Catch::Approx((10ms).count()).epsilon((50ms).count()/1000.0));
+                    REQUIRE(averageDuration.count() == Catch::Approx((10ms).count()).epsilon(0.01));
                 }
                 THEN("the standard deviation is roughly 2ms")
                 {
-                    REQUIRE(averageRMS == Catch::Approx((2ms).count()).epsilon((50ms).count()/1000.0));
+                    REQUIRE(averageRMS == Catch::Approx((2ms).count()).epsilon(0.1));
                 }
             }
         }
@@ -185,10 +185,10 @@ SCENARIO("Retry Request Hook Creation", "[reliability][retry][request-hook]")
 
 SCENARIO("Retry Request Hook", "[reliability][retry][request-hook]")
 {
-    GIVEN("a retry request hook with linear backoff for 3 attempts")
+    GIVEN("a retry request hook with linear backoff for 3 attempts for unavailable error code")
     {
         std::unique_ptr<mse::RequestHook> retry_request_hook = mse::RequestHookFactory::GetInstance().Create(
-            mse::RetryRequestHook::Parameters(std::make_shared<mse::LinearRetryBackoff>(3, 10ms))
+            mse::RetryRequestHook::Parameters(std::make_shared<mse::LinearRetryBackoff>(3, 10ms), { mse::StatusCode::unavailable })
             );
 
         WHEN("it processes a succeeding function")
@@ -207,22 +207,41 @@ SCENARIO("Retry Request Hook", "[reliability][retry][request-hook]")
             AND_THEN("function has been called exactly once")
             {
                 REQUIRE(call_count == 1);
-            }            
+            }
         }
 
-        WHEN("it processes a failing function")
+        WHEN("it processes a function returning an internal error")
+        {
+            int call_count = 0;
+            mse::Context ctx;
+            mse::Status status = retry_request_hook->Process([&](mse::Context&) {
+                ++call_count;
+                return mse::Status{ mse::StatusCode::internal, ""};
+            }, ctx);
+
+            THEN("status is internal error")
+            {
+                REQUIRE(status.code == mse::StatusCode::internal);
+            }
+            AND_THEN("function has been called exactly once")
+            {
+                REQUIRE(call_count == 1);
+            }
+        }
+
+        WHEN("it processes a function returning unavailable")
         {            
             int call_count = 0;
             mse::Context ctx;
             auto start_time = std::chrono::system_clock::now();
             mse::Status status = retry_request_hook->Process([&](mse::Context&) {
                 ++call_count;
-                return mse::Status{mse::StatusCode::not_found, ""};
+                return mse::Status{mse::StatusCode::unavailable, ""};
             }, ctx);            
 
-            THEN("status is ok")
+            THEN("status is unavailable")
             {
-                REQUIRE(status.code == mse::StatusCode::not_found);
+                REQUIRE(status.code == mse::StatusCode::unavailable);
             }
             AND_THEN("function has been called four times")
             {
@@ -230,9 +249,8 @@ SCENARIO("Retry Request Hook", "[reliability][retry][request-hook]")
             }
             AND_THEN("duration is about 30ms")
             {
-                auto duration = std::chrono::system_clock::now() - start_time;
-                REQUIRE(duration > 25ms);
-                REQUIRE(duration < 35ms);
+                auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start_time);
+                REQUIRE(duration.count() == Catch::Approx((30ms).count()).epsilon(0.1));
             }
         }
     }

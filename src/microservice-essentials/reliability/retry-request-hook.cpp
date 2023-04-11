@@ -86,8 +86,9 @@ std::optional<Duration> BackoffGaussianJitterDecorator::GetDurationUntilNextRetr
     return Duration(distribution(generator));
 }
 
-RetryRequestHook::Parameters::Parameters(std::shared_ptr<RetryBackoffStrategy> strategy)
+RetryRequestHook::Parameters::Parameters(std::shared_ptr<RetryBackoffStrategy> strategy, const std::set<mse::StatusCode>& retry_ec)
     : backoff_strategy(strategy)
+    , retry_error_codes(retry_ec)
 {   
 }
 
@@ -106,10 +107,10 @@ Status RetryRequestHook::Process(Func func, Context& context)
 }
     
 Status RetryRequestHook::post_process(Context& context, Status status)
-{
-    if(status)
+{    
+    if(_parameters.retry_error_codes.find(status.code) == _parameters.retry_error_codes.end())
     {
-        //success => no retry
+        //return code not found in retry codes  => no retry
         return status;
     }
 

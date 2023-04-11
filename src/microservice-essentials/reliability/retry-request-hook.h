@@ -3,8 +3,9 @@
 #include <microservice-essentials/request/request-hook.h>
 #include <microservice-essentials/request/request-hook-factory.h>
 #include <chrono>
-#include <optional>
 #include <memory>
+#include <optional>
+#include <set>
 
 namespace mse
 {
@@ -59,9 +60,10 @@ public:
 
     struct Parameters
     {
-        Parameters(std::shared_ptr<RetryBackoffStrategy> strategy);
+        Parameters(std::shared_ptr<RetryBackoffStrategy> strategy, const std::set<mse::StatusCode>& retry_ec = { mse::StatusCode::unavailable, mse::StatusCode::internal });
         
         std::shared_ptr<RetryBackoffStrategy> backoff_strategy;
+        std::set<mse::StatusCode> retry_error_codes;
         AutoRequestHookParameterRegistration<RetryRequestHook::Parameters, RetryRequestHook> auto_registration;
     };
 
