@@ -1,11 +1,10 @@
 #include <catch2/catch_test_macros.hpp>
 #include <microservice-essentials/reliability/retry-request-hook.h>
 
+using namespace std::chrono_literals;
 
 SCENARIO( "RetryBackoffStrategy", "[reliability][retry][request-hook]" )
 {
-    using namespace std::chrono_literals;
-
     GIVEN("a linear retry backoff strategy with 3 retries and a 10ms retry interval")
     {
         mse::LinearRetryBackoff backoff(3, 10ms);
@@ -79,5 +78,32 @@ SCENARIO( "RetryBackoffStrategy", "[reliability][retry][request-hook]" )
                 REQUIRE(!duration.has_value());                
             }
         }
+    }
+}
+
+SCENARIO("Retry Request Hook Creation", "[reliability][retry][request-hook]")
+{
+    WHEN("a retry request hook is created based on the parameters")
+    {
+        std::unique_ptr<mse::RequestHook> retry_request_hook = mse::RequestHookFactory::GetInstance().Create(
+            mse::RetryRequestHook::Parameters(std::make_shared<mse::LinearRetryBackoff>(3, 10ms))
+            );
+        THEN("the request hook is not null")
+        {
+            REQUIRE(retry_request_hook != nullptr);
+        }
+    }
+}
+
+SCENARIO("Retry Request Hook", "[reliability][retry][request-hook]")
+{
+    GIVEN("a retry request hook with linear backoff for 3 attempts")
+    {
+/*        WHEN()
+        std::unique_ptr<mse::RequestHook> retry_request_hook = mse::RequestHookFactory::GetInstance().Create(
+            mse::RetryRequestHook::Parameters(std::make_shared<mse::LinearRetryBackoff>(3, 10ms))
+            );
+
+*/
     }
 }
