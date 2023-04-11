@@ -56,7 +56,7 @@ public:
 
     struct Parameters
     {
-        //Builder pattern like methods for convinient creation
+        //Builder pattern like methods for convenient creation
         Parameters& IncludeAllErrorCodes(const mse::Status& map_to = mse::Status{ mse::StatusCode::unavailable, "" });
         Parameters& Include(mse::StatusCode map_from, const mse::Status& map_to = mse::Status{ mse::StatusCode::unavailable, "" });
         Parameters& Exclude(mse::StatusCode map_from);

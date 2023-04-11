@@ -15,6 +15,9 @@
 ### Observability
 - A minimalistic customizeable **logging** framework including a structured logger.
 
+### Reliability
+- **retries** for failed outgoing requests.
+
 ### Request
 - Global and local **hooks** that will be executed before and after handling/issuing a request.
 

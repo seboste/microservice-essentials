@@ -2,6 +2,7 @@
 #include <microservice-essentials/context.h>
 #include <microservice-essentials/cross-cutting-concerns/error-forwarding-request-hook.h>
 #include <microservice-essentials/observability/logger.h>
+#include <microservice-essentials/reliability/retry-request-hook.h>
 #include <microservice-essentials/request/request-processor.h>
 #include <microservice-essentials/utilities/metadata-converter.h>
 #include <microservice-essentials/utilities/status-converter.h>
@@ -10,7 +11,9 @@
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include <regex>
+#include <chrono>
 
+using namespace std::literals::chrono_literals;
 using json = nlohmann::json;
 
 namespace
@@ -62,8 +65,10 @@ std::vector<StarshipProperties> HttpStarWarsClient::ListStarShipProperties() con
 {
     std::vector<StarshipProperties> starships;
 
-    mse::RequestIssuer("ListStarShipProperties", mse::Context())
+    mse::RequestIssuer("ListStarShipProperties", mse::Context())        
         .With(mse::ErrorForwardingRequestHook::Parameters().IncludeAllErrorCodes())
+        .With(mse::RetryRequestHook::Parameters(
+            std::make_shared<mse::BackoffGaussianJitterDecorator>(std::make_shared<mse::LinearRetryBackoff>(3, 10000ms), 1000ms)))        
         .Process([&](mse::Context& context)
         {
             for(std::string path = "/api/starships/?format=json"; path != "";)
@@ -101,6 +106,8 @@ std::optional<StarshipProperties> HttpStarWarsClient::GetStarShipProperties(cons
     
     mse::RequestIssuer("GetStarShipProperties", mse::Context())
         .With(mse::ErrorForwardingRequestHook::Parameters().IncludeAllErrorCodes().Exclude(mse::StatusCode::not_found))
+        .With(mse::RetryRequestHook::Parameters(
+            std::make_shared<mse::BackoffGaussianJitterDecorator>(std::make_shared<mse::LinearRetryBackoff>(3, 10000ms), 1000ms)))        
         .Process([&](mse::Context&)
         {            
             mse::Status status { mse::StatusCode::unknown ,""};
