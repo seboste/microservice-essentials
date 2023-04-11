@@ -67,7 +67,8 @@ std::vector<StarshipProperties> HttpStarWarsClient::ListStarShipProperties() con
 
     mse::RequestIssuer("ListStarShipProperties", mse::Context())        
         .With(mse::ErrorForwardingRequestHook::Parameters().IncludeAllErrorCodes())
-        .With(mse::RetryRequestHook::Parameters(std::make_shared<mse::LinearRetryBackoff>(3, 10000ms)))
+        .With(mse::RetryRequestHook::Parameters(
+            std::make_shared<mse::BackoffGaussianJitterDecorator>(std::make_shared<mse::LinearRetryBackoff>(3, 10000ms), 1000ms)))        
         .Process([&](mse::Context& context)
         {
             for(std::string path = "/api/starships/?format=json"; path != "";)
@@ -105,6 +106,8 @@ std::optional<StarshipProperties> HttpStarWarsClient::GetStarShipProperties(cons
     
     mse::RequestIssuer("GetStarShipProperties", mse::Context())
         .With(mse::ErrorForwardingRequestHook::Parameters().IncludeAllErrorCodes().Exclude(mse::StatusCode::not_found))
+        .With(mse::RetryRequestHook::Parameters(
+            std::make_shared<mse::BackoffGaussianJitterDecorator>(std::make_shared<mse::LinearRetryBackoff>(3, 10000ms), 1000ms)))        
         .Process([&](mse::Context&)
         {            
             mse::Status status { mse::StatusCode::unknown ,""};
