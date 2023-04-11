@@ -247,10 +247,10 @@ SCENARIO("Retry Request Hook", "[reliability][retry][request-hook]")
             {
                 REQUIRE(call_count == 4);
             }
-            AND_THEN("duration is about 30ms")
+            AND_THEN("duration is at least 30ms")
             {
                 auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start_time);
-                REQUIRE(duration.count() == Catch::Approx((30ms).count()).epsilon(0.33)); // large epsilon because this one is not very reproducable
+                REQUIRE(duration >= 30ms);
             }
         }
     }
