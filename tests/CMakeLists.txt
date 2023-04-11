@@ -1,5 +1,5 @@
 enable_testing()
-find_package(Catch2 3 CONFIG REQUIRED)
+find_package(Catch2 3 REQUIRED)
 find_package(nlohmann_json CONFIG)
 add_executable(tests)
 

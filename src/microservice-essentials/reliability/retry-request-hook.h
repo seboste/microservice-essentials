@@ -11,24 +11,36 @@ namespace mse
 
 class RetryBackoffStrategy
 {
-    public:
-        virtual ~RetryBackoffStrategy() = default;
+public:
+    virtual ~RetryBackoffStrategy() = default;
 
-        using Duration = std::chrono::duration<double, std::milli>;
-        virtual std::optional<Duration> GetDurationUntilNextRetry(uint32_t retry_count, Duration total_request_duration) const = 0;
+    using Duration = std::chrono::duration<double, std::milli>;
+    virtual std::optional<Duration> GetDurationUntilNextRetry(uint32_t retry_count, Duration total_request_duration) const = 0;
 };
 
 class LinearRetryBackoff : public RetryBackoffStrategy
 {
-    public:
-        LinearRetryBackoff(uint32_t max_retry_count, Duration retry_interval);
-        virtual std::optional<Duration> GetDurationUntilNextRetry(uint32_t retry_count, Duration total_request_duration) const override;
-    private:
-        uint32_t _max_retry_count;
-        Duration _retry_interval;
+public:
+    LinearRetryBackoff(uint32_t max_retry_count, Duration retry_interval);
+    virtual std::optional<Duration> GetDurationUntilNextRetry(uint32_t retry_count, Duration total_request_duration) const override;
+private:
+    uint32_t _max_retry_count;
+    Duration _retry_interval;
 };
 
-//prevents retry storm
+class ExponentialRetryBackoff : public RetryBackoffStrategy
+{
+public:
+    ExponentialRetryBackoff(uint32_t max_retry_count, Duration first_retry_interval, float base = 2.0f);
+    virtual std::optional<Duration> GetDurationUntilNextRetry(uint32_t retry_count, Duration total_request_duration) const override;
+
+private:
+    uint32_t _max_retry_count;
+    Duration _first_retry_interval;
+    float _base;
+};
+
+//prevents retry storm by adding gaussian distributed random jitter to a strategy's duration until next retry
 class BackoffGaussianJitterDecorator : public RetryBackoffStrategy
 {
     public:
