@@ -18,15 +18,13 @@ namespace mse
 
     /**
      * Converts Context::Metadata to some container
-     * can be used for all container types that have an insert-method for a key-value-pair of strings (e.g. std::set, std::multimap, std::map, ...)
-     * is restricted to keys in the fields set (fields must be lowercase, comparison is not case sensitive)
+     * can be used for all container types that have an import-method for a key-value-pair of strings (e.g. std::set, std::multimap, std::map, ...)
      * works for e.g. httplib::Headers
      */
-    template<typename Container> inline Container FromContextMetadata(const Context::Metadata& metadata, const std::set<std::string>& fields);
+    template<typename Container> inline Container FromContextMetadata(const Context::Metadata& metadata);
 
     /**
-     * Exports metadata by calling some function that takes two strings for each metadata item.
-     * is restricted to keys in the fields set (fields must be lowercase, comparison is not case sensitive)
+     * Exports metadata by calling some function that takes two strings for each metadata item
      * works for e.g. grpc::ClientContext::AddMetaData 
      * 
      * Code snippet:
@@ -34,8 +32,8 @@ namespace mse
      * grpc::ClientContext cc;
      * mse::ExportMetadata(ctx.GetMetadata(), &grpc::ClientContext::AddMetadata, cc);     
      */
-    template<typename ExportFunction> inline void ExportMetadata(const Context::Metadata& metadata, ExportFunction export_fn, const std::set<std::string>& fields);
-    template<typename ExportMemberFunction, typename ExportObjectType> inline void ExportMetadata(const Context::Metadata& metadata, ExportMemberFunction export_fn, ExportObjectType& export_obj, const std::set<std::string>& fields);
+    template<typename ExportFunction> inline void ExportMetadata(const Context::Metadata& metadata, ExportFunction export_fn);
+    template<typename ExportMemberFunction, typename ExportObjectType> inline void ExportMetadata(const Context::Metadata& metadata, ExportMemberFunction export_fn, ExportObjectType& export_obj);    
 }
 
 #include "metadata-converter.txx"
