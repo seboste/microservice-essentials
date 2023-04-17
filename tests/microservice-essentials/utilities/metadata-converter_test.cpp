@@ -68,28 +68,45 @@ SCENARIO( "Metadata converter", "[metadata][context]" )
         }
     }
 
-    GIVEN("some context metadata")
+    GIVEN("some context metadata with a MiXeD cAsE key")
     {
-        const mse::Context::Metadata metadata = { { "a", "x"}, {"b", "y"} };
-        WHEN("it is converted to some multimap similar to the one returned by grpc::ServerContext::client_metadata()")
+        const mse::Context::Metadata metadata = { { "a", "x"}, {"B-xYz123", "y"} };
+        WHEN("it is converted to some multimap similar to the one returned by grpc::ServerContext::client_metadata() and all fields are selected for propagation")
         {
-            const ExternalMetadata external_metadata = mse::FromContextMetadata<ExternalMetadata>(metadata);
+            const ExternalMetadata external_metadata = mse::FromContextMetadata<ExternalMetadata>(metadata, { "a", "b-xyz123" });
             THEN("the result contains the same elements as the original")
             {
-                REQUIRE(metadata.size() == external_metadata.size());                
+                REQUIRE(metadata.size() == external_metadata.size());
                 auto citA = external_metadata.find("a");
                 REQUIRE(citA != external_metadata.end());
                 if(citA != external_metadata.end())
                 {
                     REQUIRE(citA->second.compare("x") == 0);
                 }
-                auto citB = external_metadata.find("b");
+                auto citB = external_metadata.find("B-xYz123");
                 REQUIRE(citB != external_metadata.end());
                 if(citB != external_metadata.end())
                 {
                     REQUIRE(citB->second.compare("y") == 0);
                 }
             }
+        }
+
+        WHEN("it is converted to some multimap similar to the one returned by grpc::ServerContext::client_metadata() and only one of the fields is selected for propagation")
+        {            
+            const ExternalMetadata external_metadata = mse::FromContextMetadata<ExternalMetadata>(metadata, { "a" });
+            THEN("the result contains only the selected field but not the other one")
+            {
+                REQUIRE(external_metadata.size() == 1);
+                auto citA = external_metadata.find("a");
+                REQUIRE(citA != external_metadata.end());
+                if(citA != external_metadata.end())
+                {
+                    REQUIRE(citA->second.compare("x") == 0);
+                }
+                auto citB = external_metadata.find("B-xYz123");
+                REQUIRE(citB == external_metadata.end());
+            }                
         }
 
         AND_GIVEN("some struct with an AddMetaData function")
@@ -104,9 +121,9 @@ SCENARIO( "Metadata converter", "[metadata][context]" )
             };
 
             MyClientContext cc;
-            WHEN("the context metadata is exported")
+            WHEN("the context metadata is exported and all fields are selected for propagation")
             {
-                mse::ExportMetadata(metadata, &MyClientContext::AddMetadata, cc);
+                mse::ExportMetadata(metadata, &MyClientContext::AddMetadata, cc, { "a", "b-xyz123" });
                 THEN("the result contains the same elements as the original")
                 {
                     REQUIRE(metadata.size() == cc._metadata.size());                
@@ -116,13 +133,43 @@ SCENARIO( "Metadata converter", "[metadata][context]" )
                     {
                         REQUIRE(citA->second.compare("x") == 0);
                     }
-                    auto citB = cc._metadata.find("b");
+                    auto citB = cc._metadata.find("B-xYz123");
                     REQUIRE(citB != cc._metadata.end());
                     if(citB != cc._metadata.end())
                     {
                         REQUIRE(citB->second.compare("y") == 0);
                     }
                 }
+            }
+            WHEN("the context metadata is exported and only one field is selected for propagation")
+            {
+                mse::ExportMetadata(metadata, &MyClientContext::AddMetadata, cc, { "a" });
+                THEN("the result contains the selected element but not the other one")
+                {
+                    REQUIRE(cc._metadata.size() == 1);
+                    auto citA = cc._metadata.find("a");
+                    REQUIRE(citA != cc._metadata.end());
+                    if(citA != cc._metadata.end())
+                    {
+                        REQUIRE(citA->second.compare("x") == 0);
+                    }
+                    auto citB = cc._metadata.find("B-xYz123");
+                    REQUIRE(citB == cc._metadata.end());                    
+                }
+            }
+        }
+    }
+    
+    
+    GIVEN("some MiXeD CaSe string")
+    {
+        const std::string mixed_case_string = "aBcDe123-_?!:;()";
+        WHEN("it is converted to lower")
+        {
+            const std::string lower = mse::tolower(mixed_case_string);
+            THEN("no upper case letters are present and other characters are preserved")
+            {
+                REQUIRE(lower == "abcde123-_?!:;()");
             }
         }
     }
