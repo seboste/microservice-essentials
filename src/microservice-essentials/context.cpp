@@ -145,15 +145,15 @@ Context::Metadata Context::GetAllMetadata() const
     return metadata;
 }
 
-Context::MetadataVector Context::GetFilteredMetadata(const std::vector<std::string>& keys) const
+Context::Metadata Context::GetFilteredMetadata(const std::vector<std::string>& keys) const
 {
     const Metadata all_metadata = GetAllMetadata();
-    MetadataVector filtered_metadata;
+    Metadata filtered_metadata;
     for(const auto& key : keys)
     {
         if(auto cit = all_metadata.find(key); cit != all_metadata.end())
         {
-            filtered_metadata.push_back(*cit);
+            filtered_metadata.insert(*cit);
         }        
     }
     return filtered_metadata;

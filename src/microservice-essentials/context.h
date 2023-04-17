@@ -59,7 +59,7 @@ public:
     const Metadata& GetMetadata() const { return _metadata; }
     Metadata& GetMetadata() { return _metadata; }
     Metadata GetAllMetadata() const;
-    MetadataVector GetFilteredMetadata(const std::vector<std::string>& keys) const;
+    Metadata GetFilteredMetadata(const std::vector<std::string>& keys) const;
     
     void Insert(std::initializer_list<Metadata::value_type> metadata);
     void Insert(const std::string& key, const std::string& value);    
