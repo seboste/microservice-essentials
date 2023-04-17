@@ -192,19 +192,10 @@ std::ostream& operator<<(std::ostream& os, const mse::LogLevel& level)
 
 std::string StructuredLogger::to_json(const mse::Context& context, const std::vector<std::string>* fields)
 {
-    Context::MetadataVector metadata;
-    if(fields)
-    {
-        metadata = context.GetFilteredMetadata(*fields);
-    }
-    else
-    {
-        for(const auto& key_value_pair : context.GetAllMetadata())
-        {
-            metadata.push_back(key_value_pair);
-        }
-    }
-    
+    Context::Metadata metadata = fields != nullptr
+        ? context.GetFilteredMetadata(*fields)
+        : context.GetAllMetadata();
+        
     //TODO: escaping. See: https://stackoverflow.com/questions/19176024/how-to-escape-special-characters-in-building-a-json-string
     std::string json  = "{";
     bool is_first = true;

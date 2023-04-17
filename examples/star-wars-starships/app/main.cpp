@@ -32,7 +32,7 @@ int main()
     
     mse::RequestIssuer::GloballyWith(mse::LoggingRequestHook::Parameters{});
 
-    HttpStarWarsClient client;    
+    HttpStarWarsClient client("https://swapi.dev", {}); //nothing to propagate to this external service
     //DummyStarWarsClient client;
     InMemoryStatusDB db;
 

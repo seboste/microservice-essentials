@@ -18,7 +18,7 @@ namespace mse
 
     /**
      * Converts Context::Metadata to some container
-     * can be used for all container types that have an import-method for a key-value-pair of strings (e.g. std::set, std::multimap, std::map, ...)
+     * can be used for all container types that have an insert-method for a key-value-pair of strings (e.g. std::set, std::multimap, std::map, ...)
      * works for e.g. httplib::Headers
      */
     template<typename Container> inline Container FromContextMetadata(const Context::Metadata& metadata);

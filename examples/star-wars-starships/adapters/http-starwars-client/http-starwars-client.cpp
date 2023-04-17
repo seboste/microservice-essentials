@@ -52,8 +52,9 @@ StarshipProperties from_json(const json& node)
 } //end anon NS
 
 
-HttpStarWarsClient::HttpStarWarsClient(const std::string& url)
+HttpStarWarsClient::HttpStarWarsClient(const std::string& url, const std::vector<std::string>& headers_to_propagate)
     : _cli(std::make_unique<httplib::Client>(url))
+    , _headers_to_propagate(headers_to_propagate)
 {
 }
 
@@ -75,7 +76,7 @@ std::vector<StarshipProperties> HttpStarWarsClient::ListStarShipProperties() con
             {
                 auto resp = _cli->Get(
                     path,
-                    mse::FromContextMetadata<httplib::Headers>(context.GetMetadata())
+                    mse::FromContextMetadata<httplib::Headers>(context.GetFilteredMetadata(_headers_to_propagate))
                 );
                 if(!resp)
                 {
@@ -114,7 +115,7 @@ std::optional<StarshipProperties> HttpStarWarsClient::GetStarShipProperties(cons
             mse::Context client_context = mse::Context::GetThreadLocalContext();
             if(auto resp = _cli->Get(
                 std::string("/api/starships/") + starshipId + "/?format=json", 
-                mse::FromContextMetadata<httplib::Headers>(client_context.GetMetadata())
+                mse::FromContextMetadata<httplib::Headers>(client_context.GetFilteredMetadata(_headers_to_propagate))
                 ); resp)
             {
                 status.code = mse::FromHttpStatusCode(resp->status);

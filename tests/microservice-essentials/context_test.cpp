@@ -107,14 +107,14 @@ SCENARIO("Context Metadata", "[context]")
         mse::Context context({ { "a" , "x"}, {"b" , "y"}, {"c" , "z"} });
         WHEN("a filtered subset of the data is retrieved")
         {
-            mse::Context::MetadataVector filtered_metadata = context.GetFilteredMetadata({"a", "c"});
-            THEN("that subset is available in the given order")
+            mse::Context::Metadata filtered_metadata = context.GetFilteredMetadata({"a", "c"});
+            THEN("that subset is available")
             {                
                 REQUIRE(filtered_metadata.size() == 2);
-                REQUIRE(filtered_metadata[0].first ==  "a");
-                REQUIRE(filtered_metadata[0].second ==  "x");
-                REQUIRE(filtered_metadata[1].first ==  "c");
-                REQUIRE(filtered_metadata[1].second ==  "z");                
+                REQUIRE(filtered_metadata.find("a") != filtered_metadata.end());
+                REQUIRE(filtered_metadata.find("a")->second == "x");
+                REQUIRE(filtered_metadata.find("c") != filtered_metadata.end());
+                REQUIRE(filtered_metadata.find("c")->second == "z");                
             }
             AND_THEN("others are not available")
             {
@@ -122,20 +122,6 @@ SCENARIO("Context Metadata", "[context]")
                 REQUIRE(cit == filtered_metadata.end());
             }
         }
-
-        WHEN("a filtered subset of the data is retrieved in reverse order")
-        {
-            mse::Context::MetadataVector filtered_metadata = context.GetFilteredMetadata({"c", "a"});
-            THEN("that subset is available in the reverse order")
-            {                
-                REQUIRE(filtered_metadata.size() == 2);
-                REQUIRE(filtered_metadata[1].first ==  "a");
-                REQUIRE(filtered_metadata[1].second ==  "x");
-                REQUIRE(filtered_metadata[0].first ==  "c");
-                REQUIRE(filtered_metadata[0].second ==  "z");
-            }
-        }
-        
     }
 }
 
