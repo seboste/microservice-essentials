@@ -1,7 +1,7 @@
 from conans import ConanFile, CMake
 class MicroserviceEssentials(ConanFile):
     name = "microservice-essentials"
-    version = "0.0.1"
+    version = "0.1.0"
     url = "https://github.com/seboste/microservice-essentials"
     license = "MIT"
     author = "Sebastian Steger (Sebastian.Steger@gmail.com)"
