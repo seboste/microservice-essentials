@@ -3,13 +3,12 @@
 
 using namespace mse;
 
-Handler::Handler(const std::string& name)
-    : _name(name)
+Handler::Handler(const std::string& name) : _name(name)
 {
-    GracefulShutdown::GetInstance().Register(_name, [this]() { Stop(); });
+  GracefulShutdown::GetInstance().Register(_name, [this]() { Stop(); });
 }
 
 Handler::~Handler()
 {
-    GracefulShutdown::GetInstance().UnRegister(_name);
+  GracefulShutdown::GetInstance().UnRegister(_name);
 }

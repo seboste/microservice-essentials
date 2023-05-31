@@ -1,0 +1,8 @@
+﻿---
+BasedOnStyle: Microsoft
+IndentWidth: '2'
+PointerAlignment: Left
+Standard: Cpp11
+UseTab: Never
+
+...

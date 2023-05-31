@@ -3,62 +3,59 @@
 
 using namespace mse;
 
-
 LoggingRequestHook::Parameters::Parameters()
     : loglevel_success(mse::LogLevel::trace), loglevel_failure(mse::LogLevel::trace)
 {
 }
- 
+
 LoggingRequestHook::Parameters::Parameters(mse::LogLevel ll_success, mse::LogLevel ll_failure)
     : loglevel_success(ll_success), loglevel_failure(ll_failure)
 {
 }
 
-LoggingRequestHook::LoggingRequestHook(const Parameters& parameters)
-    : RequestHook("logging")
-    , _parameters(parameters)
-{    
+LoggingRequestHook::LoggingRequestHook(const Parameters& parameters) : RequestHook("logging"), _parameters(parameters)
+{
 }
 
 Status LoggingRequestHook::pre_process(Context& context)
 {
-    mse::LogProvider::GetLogger().Write(context, _parameters.loglevel_success, 
-        get_request_verb_pre() + " request " + context.AtOr("request", "unknown")
-    );
-    return Status::OK;
+  mse::LogProvider::GetLogger().Write(context, _parameters.loglevel_success,
+                                      get_request_verb_pre() + " request " + context.AtOr("request", "unknown"));
+  return Status::OK;
 }
- 
+
 Status LoggingRequestHook::post_process(Context& context, Status status)
 {
-    mse::LogProvider::GetLogger().Write(context, status ? _parameters.loglevel_success : _parameters.loglevel_failure, 
-        std::string("request ") + context.AtOr("request", "unknown") + " " + get_request_verb_post() 
-        + " with status " + mse::to_string(status.code) + (status.details.empty() ? std::string("") : (std::string(" (") + status.details + ")"))
-    );
-    return status;
+  mse::LogProvider::GetLogger().Write(
+      context, status ? _parameters.loglevel_success : _parameters.loglevel_failure,
+      std::string("request ") + context.AtOr("request", "unknown") + " " + get_request_verb_post() + " with status " +
+          mse::to_string(status.code) +
+          (status.details.empty() ? std::string("") : (std::string(" (") + status.details + ")")));
+  return status;
 }
 
 std::string LoggingRequestHook::get_request_verb_pre() const
 {
-    switch (GetRequestType())
-    {
-    case mse::RequestType::incoming:
-        return "handling";
-    case mse::RequestType::outgoing:
-        return "issuing";
-    default:
-        return "processing";
-    }
+  switch (GetRequestType())
+  {
+  case mse::RequestType::incoming:
+    return "handling";
+  case mse::RequestType::outgoing:
+    return "issuing";
+  default:
+    return "processing";
+  }
 }
 
 std::string LoggingRequestHook::get_request_verb_post() const
 {
-    switch (GetRequestType())
-    {
-    case mse::RequestType::incoming:
-        return "handled";
-    case mse::RequestType::outgoing:
-        return "issued";
-    default:
-        return "processed";
-    }
+  switch (GetRequestType())
+  {
+  case mse::RequestType::incoming:
+    return "handled";
+  case mse::RequestType::outgoing:
+    return "issued";
+  default:
+    return "processed";
+  }
 }
