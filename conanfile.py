@@ -1,7 +1,7 @@
 from conans import ConanFile, CMake
 class MicroserviceEssentials(ConanFile):
     name = "microservice-essentials"
-    version = "0.0.1"
+    version = "0.1.0"
     url = "https://github.com/seboste/microservice-essentials"
     license = "MIT"
     author = "Sebastian Steger (Sebastian.Steger@gmail.com)"
@@ -24,12 +24,12 @@ class MicroserviceEssentials(ConanFile):
 
     def requirements(self):
         if self.options.build_examples:
-            self.requires("cpp-httplib/0.12.0")
+            self.requires("cpp-httplib/0.12.4")
             self.requires("nlohmann_json/3.11.2")
-            self.requires("openssl/1.1.1t")
+            self.requires("openssl/3.1.0")
             self.requires("grpc/1.50.1")
         if self.options.build_testing:
-            self.requires("catch2/3.3.1")
+            self.requires("catch2/3.3.2")
             self.requires("nlohmann_json/3.11.2")
 
     def build(self):

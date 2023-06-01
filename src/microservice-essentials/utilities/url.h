@@ -13,26 +13,29 @@ namespace mse
  */
 struct Url
 {
-    std::string scheme;
-    std::string userinfo;
-    std::string host;
-    std::string port;
-    std::string path;
-    std::string query;
-    std::string fragment;
+  std::string scheme;
+  std::string userinfo;
+  std::string host;
+  std::string port;
+  std::string path;
+  std::string query;
+  std::string fragment;
 
-    std::string GetConnectionString() const; //returns "scheme://userinfo@host:port"
-    std::string GetWholePath() const; //returns "/path?query#fragment"
-    std::string GetString() const;
-    std::optional<uint32_t> GetPort() const;    
+  std::string GetConnectionString() const; // returns "scheme://userinfo@host:port"
+  std::string GetWholePath() const;        // returns "/path?query#fragment"
+  std::string GetString() const;
+  std::optional<uint32_t> GetPort() const;
 };
 
-bool ToUrl(const std::string& url_str, Url& url); //returns false and sets url to default in case url cannot be parsed
-Url ToUrl(const std::string& url_str); //throws std::invalid_argument in case url cannot be parsed
+bool ToUrl(const std::string& url_str, Url& url); // returns false and sets url to default in case url cannot be parsed
+Url ToUrl(const std::string& url_str);            // throws std::invalid_argument in case url cannot be parsed
 
-}
+} // namespace mse
 
 namespace std
 {
-    inline std::string to_string(const mse::Url& url) { return url.GetString(); }
+inline std::string to_string(const mse::Url& url)
+{
+  return url.GetString();
 }
+} // namespace std

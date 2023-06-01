@@ -2,8 +2,8 @@
 
 #include <microservice-essentials/cross-cutting-concerns/exception-handling-helpers.h>
 #include <microservice-essentials/observability/logger.h>
-#include <microservice-essentials/request/request-hook.h>
 #include <microservice-essentials/request/request-hook-factory.h>
+#include <microservice-essentials/request/request-hook.h>
 #include <microservice-essentials/status.h>
 #include <vector>
 
@@ -18,25 +18,28 @@ namespace mse
  * Note that exception details are only available for exceptions derived from std::exception.
  * The order of exception handling definitions defines the handling priority.
  * Any exception not matched by any of the exception handling definitions will be rethrown.
-*/
+ */
 class ExceptionHandlingRequestHook : public mse::RequestHook
 {
-public:        
-    struct Parameters
-    {
-        Parameters(const std::vector<std::shared_ptr<ExceptionHandling::Mapper>>& exception_handling_mappers = ExceptionHandlingRequestHook::_default_exception_handling_mappers);
-        std::vector<std::shared_ptr<ExceptionHandling::Mapper>> exception_handling_mappers = ExceptionHandlingRequestHook::_default_exception_handling_mappers;
-        AutoRequestHookParameterRegistration<ExceptionHandlingRequestHook::Parameters, ExceptionHandlingRequestHook> auto_registration;
-    };
+public:
+  struct Parameters
+  {
+    Parameters(const std::vector<std::shared_ptr<ExceptionHandling::Mapper>>& exception_handling_mappers =
+                   ExceptionHandlingRequestHook::_default_exception_handling_mappers);
+    std::vector<std::shared_ptr<ExceptionHandling::Mapper>> exception_handling_mappers =
+        ExceptionHandlingRequestHook::_default_exception_handling_mappers;
+    AutoRequestHookParameterRegistration<ExceptionHandlingRequestHook::Parameters, ExceptionHandlingRequestHook>
+        auto_registration;
+  };
 
-    ExceptionHandlingRequestHook(const Parameters& parameters);
-    virtual ~ExceptionHandlingRequestHook();    
+  ExceptionHandlingRequestHook(const Parameters& parameters);
+  virtual ~ExceptionHandlingRequestHook();
 
-    virtual Status Process(Func func, Context& context) override;
+  virtual Status Process(Func func, Context& context) override;
 
 private:
-    Parameters _parameters;    
-    static const std::vector<std::shared_ptr<ExceptionHandling::Mapper>> _default_exception_handling_mappers;
+  Parameters _parameters;
+  static const std::vector<std::shared_ptr<ExceptionHandling::Mapper>> _default_exception_handling_mappers;
 };
 
-}
+} // namespace mse

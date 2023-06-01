@@ -1,11 +1,11 @@
-#include <core/core.h>
-#include <adapters/in-memory-status-db/in-memory-status-db.h>
 #include <adapters/http-starwars-client/http-starwars-client.h>
-//#include <adapters/dummy-starwars-client/dummy-starwars-client.h>
-#include <adapters/http-handler/http-handler.h>
+#include <adapters/in-memory-status-db/in-memory-status-db.h>
+#include <core/core.h>
+// #include <adapters/dummy-starwars-client/dummy-starwars-client.h>
 #include <adapters/grpc-handler/grpc-handler.h>
-#include <microservice-essentials/cross-cutting-concerns/graceful-shutdown.h>
+#include <adapters/http-handler/http-handler.h>
 #include <microservice-essentials/cross-cutting-concerns/exception-handling-request-hook.h>
+#include <microservice-essentials/cross-cutting-concerns/graceful-shutdown.h>
 #include <microservice-essentials/observability/logger.h>
 #include <microservice-essentials/observability/logging-request-hook.h>
 #include <microservice-essentials/request/request-processor.h>
@@ -13,38 +13,40 @@
 
 int main()
 {
-    mse::Context::GetGlobalContext().Insert({ 
-            {"app", mse::getenv_or("APP", "star-wars-starships") },
-            {"version", mse::getenv_or("VERSION", "1.0.0") }
-        });
+  mse::Context::GetGlobalContext().Insert(
+      {{"app", mse::getenv_or("APP", "star-wars-starships")}, {"version", mse::getenv_or("VERSION", "1.0.0")}});
 
-    mse::ConsoleLogger logger;
-    mse::StructuredLogger structured_logger(logger);
+  mse::ConsoleLogger logger;
+  mse::StructuredLogger structured_logger(logger);
 
-    mse::RequestHandler::GloballyWith(mse::LoggingRequestHook::Parameters{});    
-    mse::RequestHandler::GloballyWith(mse::BasicTokenAuthRequestHook::Parameters("authorization", 
-        { 
-            std::make_pair(std::string("secret-read-only-token"), std::vector<std::string>{"read"}),    //this token allows to read (!!token should not be in source code!!)
-            std::make_pair(std::string("secret-token"), std::vector<std::string>{"read","write"})       //this token allows to read and write (!!token should not be in source code!!)
-        }
-    ));
-    mse::RequestHandler::GloballyWith(mse::ExceptionHandlingRequestHook::Parameters{});
-    
-    mse::RequestIssuer::GloballyWith(mse::LoggingRequestHook::Parameters{});
+  mse::RequestHandler::GloballyWith(mse::LoggingRequestHook::Parameters{});
+  mse::RequestHandler::GloballyWith(mse::BasicTokenAuthRequestHook::Parameters(
+      "authorization",
+      {
+          std::make_pair(
+              std::string("secret-read-only-token"),
+              std::vector<std::string>{"read"}), // this token allows to read (!!token should not be in source code!!)
+          std::make_pair(
+              std::string("secret-token"),
+              std::vector<std::string>{
+                  "read", "write"}) // this token allows to read and write (!!token should not be in source code!!)
+      }));
+  mse::RequestHandler::GloballyWith(mse::ExceptionHandlingRequestHook::Parameters{});
 
-    HttpStarWarsClient client("https://swapi.dev", {}); //nothing to propagate to this external service
-    //DummyStarWarsClient client;
-    InMemoryStatusDB db;
+  mse::RequestIssuer::GloballyWith(mse::LoggingRequestHook::Parameters{});
 
-    Core core(client, db);
+  HttpStarWarsClient client("https://swapi.dev", {}); // nothing to propagate to this external service
+  // DummyStarWarsClient client;
+  InMemoryStatusDB db;
 
-    //HttpHandler handler(core);
-    GrpcHandler handler(core);
+  Core core(client, db);
 
+  // HttpHandler handler(core);
+  GrpcHandler handler(core);
 
-    mse::GracefulShutdownOnSignal gracefulShutdown(mse::Signal::SIG_SHUTDOWN);
-    
-    handler.Handle();
+  mse::GracefulShutdownOnSignal gracefulShutdown(mse::Signal::SIG_SHUTDOWN);
 
-    return 0;
+  handler.Handle();
+
+  return 0;
 }

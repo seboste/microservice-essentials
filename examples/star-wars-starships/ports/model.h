@@ -4,23 +4,23 @@
 
 enum class StarshipStatus
 {
-    Unknown,
-    UnderConstruction,
-    OnStandby,
-    InAction,
-    Damaged,
-    Destroyed
+  Unknown,
+  UnderConstruction,
+  OnStandby,
+  InAction,
+  Damaged,
+  Destroyed
 };
 
 struct StarshipProperties
 {
-    std::string Id;
-    std::string Name;        
-    std::string Description; 
+  std::string Id;
+  std::string Name;
+  std::string Description;
 };
 
 struct Starship
 {
-    StarshipProperties Properties;
-    StarshipStatus Status;
+  StarshipProperties Properties;
+  StarshipStatus Status;
 };

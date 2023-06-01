@@ -6,15 +6,15 @@
 
 class Core : public Api
 {
-public:    
-    Core(const StarWarsClient& starwarsClient, StatusDB& statusDB);
-    virtual ~Core() = default;
+public:
+  Core(const StarWarsClient& starwarsClient, StatusDB& statusDB);
+  virtual ~Core() = default;
 
-    virtual std::vector<Starship> ListStarShips() const override;
-    virtual Starship GetStarShip(const std::string& Id) const override;
-    virtual void UpdateStatus(const std::string& StarShipId, StarshipStatus status) override;
-    
+  virtual std::vector<Starship> ListStarShips() const override;
+  virtual Starship GetStarShip(const std::string& Id) const override;
+  virtual void UpdateStatus(const std::string& StarShipId, StarshipStatus status) override;
+
 private:
-    const StarWarsClient& _starwarsClient;
-    StatusDB& _statusDB;
+  const StarWarsClient& _starwarsClient;
+  StatusDB& _statusDB;
 };
