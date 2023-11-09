@@ -63,7 +63,10 @@
         "streambuf": "cpp",
         "thread": "cpp",
         "typeindex": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "*.txx": "cpp",
+        "shared_mutex": "cpp",
+        "variant": "cpp"
     },
     "editor.formatOnPaste": true,
     "editor.formatOnSave": true
