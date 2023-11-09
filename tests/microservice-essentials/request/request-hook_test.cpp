@@ -170,7 +170,7 @@ SCENARIO("RequestHook", "[request]")
     }
   }
 
-  GIVEN("a test request hook that returns success")
+  GIVEN("a test request hook that returns an error")
   {
     TestRequestHook test_request_hook(mse::StatusCode::ok, mse::StatusCode::ok);
 
@@ -191,6 +191,49 @@ SCENARIO("RequestHook", "[request]")
           context);
 
       REQUIRE(status.code == mse::StatusCode::aborted);
+
+      THEN("pre process has been called")
+      {
+        REQUIRE(test_request_hook._call_history[0] == TestRequestHook::CallType::PRE_PROCESS);
+        AND_THEN("the function has been called")
+        {
+          REQUIRE(test_request_hook._call_history[1] == TestRequestHook::CallType::WRAPPED_FUNCTION);
+          AND_THEN("post process has been called")
+          {
+            REQUIRE(test_request_hook._call_history[2] == TestRequestHook::CallType::POST_PROCESS);
+          }
+        }
+      }
+      THEN("meta data is correct")
+      {
+        REQUIRE(context.Contains("test"));
+        REQUIRE(context.Contains("pre"));
+        REQUIRE(context.Contains("post"));
+        REQUIRE(context.Contains("func"));
+      }
+    }
+  }
+
+  GIVEN("a test request hook that throws an exception")
+  {
+    TestRequestHook test_request_hook(mse::StatusCode::ok, mse::StatusCode::ok);
+
+    WHEN("process is called on a function that throws an exception")
+    {
+      mse::Context context({{"test", "123"}});
+      REQUIRE_THROWS(test_request_hook.Process(
+          [&test_request_hook](mse::Context& context) {
+            REQUIRE(context.Contains("test"));
+            REQUIRE(context.Contains("pre"));
+            REQUIRE(!context.Contains("post"));
+
+            context.Insert({{"func", "xyz"}});
+
+            test_request_hook._call_history.push_back(TestRequestHook::CallType::WRAPPED_FUNCTION);
+            throw std::runtime_error("test");
+            return mse::Status{mse::StatusCode::aborted, ""};
+          },
+          context));
 
       THEN("pre process has been called")
       {
