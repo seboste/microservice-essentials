@@ -60,6 +60,7 @@ The following sections give a rough overview of the library's content:
 
 ### Reliability
 - **retries** for failed outgoing requests.
+- **circuit breaker** for outgoing requests.
 
 ### Request
 - Global and local **hooks** that will be executed before and after handling/issuing a request.

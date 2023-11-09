@@ -1,6 +1,8 @@
 target_sources(microservice-essentials
-    PUBLIC        
+    PUBLIC
+        circuit-breaker-request-hook.h
         retry-request-hook.h
-    PRIVATE        
+    PRIVATE
+        circuit-breaker-request-hook.cpp
         retry-request-hook.cpp
 )
