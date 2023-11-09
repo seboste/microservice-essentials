@@ -8,6 +8,7 @@
 #include <microservice-essentials/cross-cutting-concerns/graceful-shutdown.h>
 #include <microservice-essentials/observability/logger.h>
 #include <microservice-essentials/observability/logging-request-hook.h>
+#include <microservice-essentials/reliability/circuit-breaker-request-hook.h>
 #include <microservice-essentials/request/request-processor.h>
 #include <microservice-essentials/security/basic-token-auth-request-hook.h>
 
@@ -34,6 +35,8 @@ int main()
   mse::RequestHandler::GloballyWith(mse::ExceptionHandlingRequestHook::Parameters{});
 
   mse::RequestIssuer::GloballyWith(mse::LoggingRequestHook::Parameters{});
+  mse::RequestIssuer::GloballyWith(mse::CircuitBreakerRequestHook::Parameters(
+      std::make_shared<mse::MaxPendingRquestsExceededCircuitBreakerStrategy>(2)));
 
   HttpStarWarsClient client("https://swapi.dev", {}); // nothing to propagate to this external service
   // DummyStarWarsClient client;
