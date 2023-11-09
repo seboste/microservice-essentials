@@ -107,6 +107,39 @@ SCENARIO("RequestProcessor", "[request]")
         }
       }
     }
+
+    WHEN("two successful hooks are added in reverse order")
+    {
+      DummyRequestHook::CallHistory call_history;
+
+      processor
+          .BeginWith(std::make_unique<DummyRequestHook>("a", mse::StatusCode::ok, mse::StatusCode::ok, call_history))
+          .BeginWith(std::make_unique<DummyRequestHook>("b", mse::StatusCode::ok, mse::StatusCode::ok, call_history));
+
+      AND_WHEN("some function is processed")
+      {
+        mse::Status status = processor.Process([&call_history](mse::Context&) {
+          MSE_LOG_TRACE("function is executed");
+          call_history.push_back({"func", "func"});
+          return mse::Status::OK;
+        });
+
+        THEN("execution has been successful")
+        {
+          REQUIRE(status);
+        }
+        AND_THEN("the execution order is correct")
+        {
+          REQUIRE(call_history.size() == 5);
+          REQUIRE((call_history[0].first == "b" && call_history[0].second == "pre"));
+          REQUIRE((call_history[1].first == "a" && call_history[1].second == "pre"));
+          REQUIRE((call_history[2].first == "func" && call_history[2].second == "func"));
+          REQUIRE((call_history[3].first == "a" && call_history[3].second == "post"));
+          REQUIRE((call_history[4].first == "b" && call_history[4].second == "post"));
+        }
+      }
+    }
+
     AND_GIVEN("a factory registration for the DummyRequestHook")
     {
       mse::RequestHookFactory::GetInstance().Register<DummyRequestHook::Parameters>(DummyRequestHook::Create);

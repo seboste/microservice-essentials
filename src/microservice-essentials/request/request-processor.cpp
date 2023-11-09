@@ -22,6 +22,18 @@ RequestProcessor& RequestProcessor::With(const std::any& hook_construction_param
   return With(RequestHookFactory::GetInstance().Create(hook_construction_params));
 }
 
+RequestProcessor& RequestProcessor::BeginWith(std::unique_ptr<RequestHook>&& hook)
+{
+  hook->SetRequestType(_request_type);
+  _hooks.emplace_front(std::move(hook));
+  return *this;
+}
+
+RequestProcessor& RequestProcessor::BeginWith(const std::any& hook_construction_params)
+{
+  return BeginWith(RequestHookFactory::GetInstance().Create(hook_construction_params));
+}
+
 Status RequestProcessor::Process(RequestHook::Func func)
 {
   // 1. create nested wrapper

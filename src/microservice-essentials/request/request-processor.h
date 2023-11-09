@@ -1,6 +1,7 @@
 #pragma once
 
 #include <any>
+#include <deque>
 #include <memory>
 #include <microservice-essentials/context.h>
 #include <microservice-essentials/request/request-hook.h>
@@ -16,14 +17,15 @@ namespace mse
  * the request handling. do not use this class directly, instead use RequestHandler for incoming and RequestIssuer for
  * outgoing requests.
  *
- * Example: Assume you have two hooks A and B with corresponding A::Params and B::Params parameter classes from with the
- * hooks can be constructed:
+ * Example: Assume you have three hooks A, B, and C with corresponding A::Params, B::Params, and C::Params parameter
+ * classes from with the hooks can be constructed:
  *
  * //somewhere in main
  * RequestHandler::GloballyWith(A::Params({}));     //makes sure that hook a is used for all incoming requests
  *
  * //in the handler method for the specific call "myRequest"
  * RequestHandler("myRequest", mse::Context())
+ *          .BeginWith(C::Params({}))
  *          .With(B::Params({}))
  *          .Process([&](mse::Context& context)
  *          {
@@ -33,11 +35,13 @@ namespace mse
  *     );
  *
  *  In the Process-Method, the following functions will called in the following order:
- *  1. A::pre_process()
- *  2. B::pre_process()
- *  3. The lambda
- *  4. B::post_process()
- *  5. A::post_process()
+ *  1. C::pre_process()
+ *  2. A::pre_process()
+ *  3. B::pre_process()
+ *  4. The lambda
+ *  5. B::post_process()
+ *  6. A::post_process()
+ *  7. C::post_process()
  *
  *  If pre_process fails, the following functions are typically not executed.
  *  Hooks are allowed to change the context object.
@@ -51,10 +55,13 @@ public:
   RequestProcessor& With(std::unique_ptr<RequestHook>&& hook);
   RequestProcessor& With(const std::any& hook_construction_params);
 
+  RequestProcessor& BeginWith(std::unique_ptr<RequestHook>&& hook);
+  RequestProcessor& BeginWith(const std::any& hook_construction_params);
+
   virtual Status Process(RequestHook::Func func);
 
 protected:
-  std::vector<std::unique_ptr<RequestHook>> _hooks;
+  std::deque<std::unique_ptr<RequestHook>> _hooks;
   std::string _request_name;
   mse::RequestType _request_type;
   mse::Context _context;

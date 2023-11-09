@@ -9,7 +9,6 @@
 #define CPPHTTPLIB_OPENSSL_SUPPORT // be consistent with other projects to prevent seg fault
 #include <chrono>
 #include <httplib.h>
-#include <iostream>
 #include <nlohmann/json.hpp>
 #include <regex>
 
@@ -57,7 +56,7 @@ std::vector<StarshipProperties> HttpStarWarsClient::ListStarShipProperties() con
   std::vector<StarshipProperties> starships;
 
   mse::RequestIssuer("ListStarShipProperties", mse::Context())
-      .With(mse::ErrorForwardingRequestHook::Parameters().IncludeAllErrorCodes())
+      .BeginWith(mse::ErrorForwardingRequestHook::Parameters().IncludeAllErrorCodes())
       .With(mse::RetryRequestHook::Parameters(std::make_shared<mse::BackoffGaussianJitterDecorator>(
           std::make_shared<mse::LinearRetryBackoff>(3, 10000ms), 1000ms)))
       .Process([&](mse::Context& context) {
@@ -93,7 +92,8 @@ std::optional<StarshipProperties> HttpStarWarsClient::GetStarShipProperties(cons
   std::optional<StarshipProperties> starshipProperties = std::nullopt;
 
   mse::RequestIssuer("GetStarShipProperties", mse::Context())
-      .With(mse::ErrorForwardingRequestHook::Parameters().IncludeAllErrorCodes().Exclude(mse::StatusCode::not_found))
+      .BeginWith(
+          mse::ErrorForwardingRequestHook::Parameters().IncludeAllErrorCodes().Exclude(mse::StatusCode::not_found))
       .With(mse::RetryRequestHook::Parameters(std::make_shared<mse::BackoffGaussianJitterDecorator>(
           std::make_shared<mse::LinearRetryBackoff>(3, 10000ms), 1000ms)))
       .Process([&](mse::Context&) {
