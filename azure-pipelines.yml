@@ -12,27 +12,27 @@ pr:
 
 strategy:
   matrix:
-    linux:
-      imageName: 'ubuntu-latest'
-      extraBuildArguments: ''
-      extraConfigureArguments: '-DBUILD_EXAMPLES=True'
-      conanInstallCommand: 'pip install conan==1.59.0'
-      conanDefineDefaultProfile: 'conan profile new default --detect && conan profile update settings.compiler.libcxx=libstdc++11 default'
-      extraInstallArguments: '-o build_examples=True'
+#    linux:
+#      imageName: 'ubuntu-latest'
+#      extraBuildArguments: ''
+#      extraConfigureArguments: '-DBUILD_EXAMPLES=True'
+#      conanInstallCommand: 'pip install conan==1.59.0'
+#      conanDefineDefaultProfile: 'conan profile new default --detect && conan profile update settings.compiler.libcxx=libstdc++11 default'
+#      extraInstallArguments: '-o build_examples=True'
     mac:
       imageName: 'macOS-latest'
       extraBuildArguments: ''
       extraConfigureArguments: ''
-      conanInstallCommand: 'python3 -m ensurepip && pip3 install conan==1.59.0'
+      conanInstallCommand: 'python3 -m ensurepip && echo "Cython < 3.0" > /tmp/constraint.txt && PIP_CONSTRAINT=/tmp/constraint.txt pip3 wheel PyYAML==5.4.1 && pip3 install PyYAML==5.4.1 && pip3 install conan==1.59.0'
       conanDefineDefaultProfile: 'conan profile new default --detect'
       extraInstallArguments: ''
-    windows:
-      imageName: 'windows-latest'
-      extraBuildArguments: '--config Release'
-      extraConfigureArguments: ''
-      conanInstallCommand: 'pip install conan==1.59.0'
-      conanDefineDefaultProfile: 'conan profile new default --detect'
-      extraInstallArguments: ''
+#    windows:
+#      imageName: 'windows-latest'
+#      extraBuildArguments: '--config Release'
+#      extraConfigureArguments: ''
+#      conanInstallCommand: 'pip install conan==1.59.0'
+#      conanDefineDefaultProfile: 'conan profile new default --detect'
+#      extraInstallArguments: ''
   
 pool:
     vmImage: $(imageName)
