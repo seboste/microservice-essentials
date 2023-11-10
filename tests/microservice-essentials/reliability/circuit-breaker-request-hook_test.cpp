@@ -14,13 +14,13 @@ SCENARIO("MaxPendingRquestsExceededCircuitBreakerStrategy", "[reliability][circu
   public:
     using MaxPendingRquestsExceededCircuitBreakerStrategy::MaxPendingRquestsExceededCircuitBreakerStrategy;
 
-    void pre_process(mse::Context& ctx)
+    void PreProcess(mse::Context& ctx)
     {
-      MaxPendingRquestsExceededCircuitBreakerStrategy::pre_process(ctx);
+      pre_process(ctx);
     }
-    void post_process(mse::Context& ctx, mse::Status status)
+    void PostProcess(mse::Context& ctx, mse::Status status)
     {
-      MaxPendingRquestsExceededCircuitBreakerStrategy::post_process(ctx, status);
+      post_process(ctx, status);
     }
   };
 
@@ -42,7 +42,7 @@ SCENARIO("MaxPendingRquestsExceededCircuitBreakerStrategy", "[reliability][circu
         {
           for (uint32_t i = 0; i < tc.pending_request_count; ++i)
           {
-            strategy.pre_process(ctx);
+            strategy.PreProcess(ctx);
           }
           THEN(
               (tc.expected_status == mse::CircuitBreakerStatus::CLOSED ? "the status is CLOSED" : "the status is OPEN"))
@@ -51,7 +51,7 @@ SCENARIO("MaxPendingRquestsExceededCircuitBreakerStrategy", "[reliability][circu
           }
           for (uint32_t i = 0; i < tc.pending_request_count; ++i)
           {
-            strategy.post_process(ctx, mse::Status::OK);
+            strategy.PostProcess(ctx, mse::Status::OK);
           }
           REQUIRE(strategy.GetStatus(ctx) == mse::CircuitBreakerStatus::CLOSED);
         }
@@ -73,7 +73,7 @@ SCENARIO("MaxPendingRquestsExceededCircuitBreakerStrategy", "[reliability][circu
         {
           for (uint32_t i = 0; i < tc.pending_request_count; ++i)
           {
-            strategy.pre_process(ctx);
+            strategy.PreProcess(ctx);
           }
           THEN(
               (tc.expected_status == mse::CircuitBreakerStatus::CLOSED ? "the status is CLOSED" : "the status is OPEN"))
@@ -90,7 +90,7 @@ SCENARIO("MaxPendingRquestsExceededCircuitBreakerStrategy", "[reliability][circu
           }
           for (uint32_t i = 0; i < tc.pending_request_count; ++i)
           {
-            strategy.post_process(ctx, mse::Status::OK);
+            strategy.PostProcess(ctx, mse::Status::OK);
           }
           REQUIRE(strategy.GetStatus(ctx) == mse::CircuitBreakerStatus::CLOSED);
         }
