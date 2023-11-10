@@ -82,7 +82,7 @@ Status CircuitBreakerRequestHook::pre_process(Context& context)
     // make sure that post_process is called even if circuit breaker is open and
     // the call to the actual function is not made
     _parameters.strategy->post_process(context, _parameters.errorStatus);
-    return _parameters.errorStatus;
+    break;
   }
   return _parameters.errorStatus;
 }
