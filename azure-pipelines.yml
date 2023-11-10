@@ -39,8 +39,9 @@ pool:
 
 steps:
   - task: UsePythonVersion@0
+    displayName: Downgrade Python (FIX)
     inputs:
-    versionSpec: '3.11'
+      versionSpec: '3.11'
   - script: |
       $(conanInstallCommand)
       $(conanDefineDefaultProfile)
