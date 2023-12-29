@@ -104,7 +104,8 @@ std::optional<StarshipProperties> HttpStarWarsClient::GetStarShipProperties(cons
       .With(mse::CachingRequestHook::Parameters(_getStarShipPropertiesCache)
                 .WithStdHasher(starshipId)
                 .WithCachedObject(starshipProperties)
-                .NeverExpire())
+                .NeverExpire()
+                .Include(mse::StatusCode::not_found))
       .With(mse::RetryRequestHook::Parameters(std::make_shared<mse::BackoffGaussianJitterDecorator>(
           std::make_shared<mse::LinearRetryBackoff>(3, 10000ms), 1000ms)))
       .Process([&](mse::Context&) {
