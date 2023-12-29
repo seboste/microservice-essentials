@@ -7,6 +7,7 @@
 #include <microservice-essentials/request/request-hook.h>
 #include <shared_mutex>
 #include <unordered_map>
+#include <unordered_set>
 
 namespace mse
 {
@@ -20,12 +21,13 @@ public:
   struct Element
   {
     std::any data;
+    Status status;
     TimePoint insertion_time;
   };
   static const Element InvalidElement;
   static bool IsValid(const Element& element);
 
-  virtual void Insert(const Hash& hash, const std::any& element) = 0;
+  virtual void Insert(const Hash& hash, const Status& status, const std::any& element) = 0;
   virtual Element Get(const Hash& hash) const = 0;
   virtual void Remove(const Hash& hash) = 0;
 };
@@ -57,11 +59,18 @@ public:
     Parameters& WithMaxAge(const Duration& max_age_);
     Parameters& NeverExpire(); // same as WithMaxAge(std::chrono::duration<double>::max())
 
+    Parameters& IncludeAllStatusCodes();
+    Parameters& Include(const StatusCode& status_code_);
+    Parameters& Include(const std::initializer_list<StatusCode>& status_codes_);
+    Parameters& Exclude(const StatusCode& status_code_);
+    Parameters& Exclude(const std::initializer_list<StatusCode>& status_codes_);
+
     std::shared_ptr<Cache> cache;
     CacheHasher hasher;
     CacheReader cache_reader;
     CacheWriter cache_writer;
     Duration max_age = std::chrono::minutes(10);
+    std::unordered_set<StatusCode> status_codes_to_cache = {StatusCode::ok};
 
     AutoRequestHookParameterRegistration<CachingRequestHook::Parameters, CachingRequestHook> auto_registration;
   };
@@ -79,7 +88,7 @@ private:
 class UnorderedMapCache : public Cache
 {
 public:
-  virtual void Insert(const Hash& hash, const std::any& element) override;
+  virtual void Insert(const Hash& hash, const Status& status, const std::any& element) override;
   virtual Element Get(const Hash& hash) const override;
   virtual void Remove(const Hash& hash) override;
 

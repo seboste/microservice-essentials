@@ -4,7 +4,8 @@
 
 using namespace mse;
 
-const Cache::Element Cache::InvalidElement{std::any(), Cache::TimePoint::min()};
+const Cache::Element Cache::InvalidElement{std::any(), Status{StatusCode::unknown, "invalid cached element"},
+                                           Cache::TimePoint::min()};
 bool Cache::IsValid(const Element& element)
 {
   return element.data.has_value();
@@ -49,6 +50,48 @@ CachingRequestHook::Parameters& CachingRequestHook::Parameters::NeverExpire()
   return WithMaxAge(Duration::max());
 }
 
+CachingRequestHook::Parameters& CachingRequestHook::Parameters::IncludeAllStatusCodes()
+{
+  for (int status_code_as_int = static_cast<int>(mse::StatusCode::lowest);
+       status_code_as_int <= static_cast<int>(mse::StatusCode::highest); ++status_code_as_int)
+  {
+    status_codes_to_cache.insert(static_cast<mse::StatusCode>(status_code_as_int));
+  }
+  return *this;
+}
+
+CachingRequestHook::Parameters& CachingRequestHook::Parameters::Include(const StatusCode& status_code_)
+{
+  status_codes_to_cache.insert(status_code_);
+  return *this;
+}
+
+CachingRequestHook::Parameters& CachingRequestHook::Parameters::Include(
+    const std::initializer_list<StatusCode>& status_codes_)
+{
+  for (const StatusCode& status_code : status_codes_)
+  {
+    status_codes_to_cache.insert(status_code);
+  }
+  return *this;
+}
+
+CachingRequestHook::Parameters& CachingRequestHook::Parameters::Exclude(const StatusCode& status_code_)
+{
+  status_codes_to_cache.erase(status_code_);
+  return *this;
+}
+
+CachingRequestHook::Parameters& CachingRequestHook::Parameters::Exclude(
+    const std::initializer_list<StatusCode>& status_codes_)
+{
+  for (const StatusCode& status_code : status_codes_)
+  {
+    status_codes_to_cache.erase(status_code);
+  }
+  return *this;
+}
+
 CachingRequestHook::CachingRequestHook(const Parameters& parameters)
     : mse::RequestHook("caching"), _parameters(parameters)
 {
@@ -62,31 +105,34 @@ Status CachingRequestHook::Process(Func func, Context& context)
 {
   Cache::Hash hash = _parameters.hasher();
 
-  if (Cache::Element element = _parameters.cache->Get(hash);
-      Cache::IsValid(element) && (Cache::Clock::now() - element.insertion_time) <= _parameters.max_age)
+  if (Cache::Element element = _parameters.cache->Get(hash); Cache::IsValid(element))
   {
-    // cache hit
-    MSE_LOG_DEBUG("cache hit");
-    _parameters.cache_reader(element.data);
-    return Status::OK;
-  }
-  else
-  {
-    // cache miss
-    MSE_LOG_DEBUG("cache miss");
-    Status status = func(context);
-    if (status)
+    if ((Cache::Clock::now() - element.insertion_time) <= _parameters.max_age)
     {
-      _parameters.cache->Insert(hash, _parameters.cache_writer());
+      // cache hit
+      _parameters.cache_reader(element.data);
+      return element.status;
     }
-    return status;
+    else
+    {
+      // cache expired
+      _parameters.cache->Remove(hash);
+    }
   }
+
+  // cache miss
+  Status status = func(context);
+  if (_parameters.status_codes_to_cache.find(status.code) != _parameters.status_codes_to_cache.end())
+  {
+    _parameters.cache->Insert(hash, status, _parameters.cache_writer());
+  }
+  return status;
 }
 
-void UnorderedMapCache::Insert(const Hash& hash, const std::any& element)
+void UnorderedMapCache::Insert(const Hash& hash, const Status& status, const std::any& element)
 {
   std::unique_lock lock(_mutex);
-  _data[hash] = Element{element, Clock::now()};
+  _data[hash] = Element{element, status, Clock::now()};
 }
 
 Cache::Element UnorderedMapCache::Get(const Hash& hash) const
