@@ -1,6 +1,7 @@
 #include "http-handler.h"
 #include <microservice-essentials/context.h>
 #include <microservice-essentials/observability/logger.h>
+#include <microservice-essentials/performance/caching-request-hook.h>
 #include <microservice-essentials/request/request-processor.h>
 #include <microservice-essentials/security/claim-checker-request-hook.h>
 #include <microservice-essentials/utilities/metadata-converter.h>
@@ -87,7 +88,8 @@ std::string extractId(const std::string& path)
 } // namespace
 
 HttpHandler::HttpHandler(Api& api, const std::string& host, int port)
-    : _api(api), _svr(std::make_unique<httplib::Server>()), _host(host), _port(port)
+    : _api(api), _svr(std::make_unique<httplib::Server>()), _host(host), _port(port),
+      _cache(std::make_shared<mse::UnorderedMapCache>())
 {
   _svr->Get("/StarShips", std::bind(&HttpHandler::listStarShips, this, std::placeholders::_1, std::placeholders::_2));
   _svr->Get("/StarShip/(.*)", std::bind(&HttpHandler::getStarShip, this, std::placeholders::_1, std::placeholders::_2));
@@ -113,12 +115,21 @@ void HttpHandler::Stop()
 
 void HttpHandler::listStarShips(const httplib::Request& request, httplib::Response& response)
 {
+  std::string content;
   response.status =
       mse::ToHttpStatusCode(mse::RequestHandler("listStarShips", mse::Context(mse::ToContextMetadata(request.headers)))
                                 .With(mse::ClaimCheckerRequestHook::ScopeContains("read"))
+                                .With(mse::CachingRequestHook::Parameters(_cache)
+                                          .WithConstantResponse()
+                                          .WithCacheReader([&response](const std::any& data) {
+                                            response.set_content(std::any_cast<std::string>(data), "text/json");
+                                          })
+                                          .WithCacheWriter([&content]() -> std::any { return content; })
+                                          .NeverExpire())
                                 .Process([&](mse::Context&) {
-                                  response.set_content(to_json(_api.ListStarShips()).dump(), "text/json");
-                                  return mse::Status();
+                                  content = to_json(_api.ListStarShips()).dump();
+                                  response.set_content(content, "text/json");
+                                  return mse::Status::OK;
                                 })
                                 .code);
 }

@@ -44,12 +44,24 @@ int main()
 
   Core core(client, db);
 
-  // HttpHandler handler(core);
-  GrpcHandler handler(core);
+  std::unique_ptr<mse::Handler> handler;
+  const std::string handlerType = mse::getenv_or("HANDLER_TYPE", "HTTP");
+  if (handlerType == "HTTP")
+  {
+    handler = std::make_unique<HttpHandler>(core);
+  }
+  else if (handlerType == "GRPC")
+  {
+    handler = std::make_unique<GrpcHandler>(core);
+  }
+  else
+  {
+    throw std::invalid_argument("invalid handler type");
+  }
 
   mse::GracefulShutdownOnSignal gracefulShutdown(mse::Signal::SIG_SHUTDOWN);
 
-  handler.Handle();
+  handler->Handle();
 
   return 0;
 }

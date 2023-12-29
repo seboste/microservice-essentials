@@ -13,6 +13,11 @@ class Request;
 class Response;
 } // namespace httplib
 
+namespace mse
+{
+class Cache;
+} //  namespace mse
+
 class HttpHandler : public mse::Handler
 {
 public:
@@ -32,4 +37,5 @@ private:
   std::unique_ptr<httplib::Server> _svr;
   const std::string _host;
   const int _port;
+  std::shared_ptr<mse::Cache> _cache;
 };

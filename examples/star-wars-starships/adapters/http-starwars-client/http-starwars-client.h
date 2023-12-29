@@ -31,6 +31,5 @@ public:
 private:
   std::unique_ptr<httplib::Client> _cli;
   std::vector<std::string> _headers_to_propagate;
-  std::shared_ptr<mse::Cache> _listStarShipsCache;
-  std::shared_ptr<mse::Cache> _getStarShipPropertiesCache;
+  std::shared_ptr<mse::Cache> _cache;
 };

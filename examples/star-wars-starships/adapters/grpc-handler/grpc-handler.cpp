@@ -4,6 +4,7 @@
 #include <microservice-essentials/context.h>
 #include <microservice-essentials/handler.h>
 #include <microservice-essentials/observability/logger.h>
+#include <microservice-essentials/performance/caching-request-hook.h>
 #include <microservice-essentials/request/request-processor.h>
 #include <microservice-essentials/security/claim-checker-request-hook.h>
 #include <microservice-essentials/utilities/metadata-converter.h>
@@ -70,7 +71,7 @@ void to_protobuf(const Starship& starship, StarShips::StarShip& protobuf_starshi
 
 } // namespace
 
-class GrpcHandler::Impl : public StarShips::StarShipService::Service, mse::Handler
+class GrpcHandler::Impl : public StarShips::StarShipService::Service
 {
 public:
   Impl(Api& api, const std::string& host, int port) : _api(api)
@@ -80,14 +81,14 @@ public:
     _serverBuilder.RegisterService(this);
   }
 
-  virtual void Handle() override
+  void Handle()
   {
     MSE_LOG_INFO("serving");
     _server = _serverBuilder.BuildAndStart();
     _server->Wait();
   }
 
-  virtual void Stop() override
+  void Stop()
   {
     MSE_LOG_INFO("stop requested");
     _server->Shutdown();
@@ -99,6 +100,13 @@ public:
     return mse::ToGrpcStatus<grpc::Status>(
         mse::RequestHandler("listStarShips", mse::Context(mse::ToContextMetadata(context->client_metadata())))
             .With(mse::ClaimCheckerRequestHook::ScopeContains("read"))
+            .With(mse::CachingRequestHook::Parameters(_cache)
+                      .WithConstantResponse()
+                      .WithCacheReader([response](const std::any& data) {
+                        response->ParseFromString(std::any_cast<std::string>(data));
+                      })
+                      .WithCacheWriter([response]() -> std::any { return response->SerializeAsString(); })
+                      .NeverExpire())
             .Process([&](mse::Context&) {
               for (const ::Starship& starship : _api.ListStarShips())
               {
@@ -134,6 +142,7 @@ private:
   Api& _api;
   std::unique_ptr<Server> _server;
   ServerBuilder _serverBuilder;
+  std::shared_ptr<mse::Cache> _cache = std::make_shared<mse::UnorderedMapCache>();
 };
 
 GrpcHandler::GrpcHandler(Api& api, const std::string& host, int port) : _impl(std::make_unique<Impl>(api, host, port))
@@ -147,4 +156,9 @@ GrpcHandler::~GrpcHandler()
 void GrpcHandler::Handle()
 {
   _impl->Handle();
+}
+
+void GrpcHandler::Stop()
+{
+  _impl->Stop();
 }
