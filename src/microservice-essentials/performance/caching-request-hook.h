@@ -12,6 +12,9 @@
 namespace mse
 {
 
+/**
+ * Cache interface with insert, get and remove operations.
+ */
 class Cache
 {
 public:
@@ -27,7 +30,9 @@ public:
   static const Element InvalidElement;
   static bool IsValid(const Element& element);
 
-  virtual void Insert(const Hash& hash, const Status& status, const std::any& element) = 0;
+  virtual ~Cache() = default;
+
+  virtual void Insert(const Hash& hash, const Element& element) = 0;
   virtual Element Get(const Hash& hash) const = 0;
   virtual void Remove(const Hash& hash) = 0;
 };
@@ -85,10 +90,13 @@ private:
   Parameters _parameters;
 };
 
+/**
+ * Cache implementation based on a std::unordered_map.
+ */
 class UnorderedMapCache : public Cache
 {
 public:
-  virtual void Insert(const Hash& hash, const Status& status, const std::any& element) override;
+  virtual void Insert(const Hash& hash, const Element& element) override;
   virtual Element Get(const Hash& hash) const override;
   virtual void Remove(const Hash& hash) override;
 
@@ -97,17 +105,6 @@ private:
   std::unordered_map<Hash, Element> _data;
 };
 
-template <typename T> CachingRequestHook::Parameters& CachingRequestHook::Parameters::WithCachedObject(T& object)
-{
-  cache_reader = [&object](const std::any& data) { object = std::any_cast<T>(data); };
-  cache_writer = [&object]() -> std::any { return T(object); };
-  return *this;
-}
-
-template <typename T> CachingRequestHook::Parameters& CachingRequestHook::Parameters::WithStdHasher(const T& object)
-{
-  hasher = [&object]() -> Cache::Hash { return std::hash<T>{}(object); };
-  return *this;
-}
-
 } // namespace mse
+
+#include <microservice-essentials/performance/caching-request-hook.txx>

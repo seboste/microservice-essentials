@@ -124,15 +124,15 @@ Status CachingRequestHook::Process(Func func, Context& context)
   Status status = func(context);
   if (_parameters.status_codes_to_cache.find(status.code) != _parameters.status_codes_to_cache.end())
   {
-    _parameters.cache->Insert(hash, status, _parameters.cache_writer());
+    _parameters.cache->Insert(hash, Cache::Element{_parameters.cache_writer(), status, Cache::Clock::now()});
   }
   return status;
 }
 
-void UnorderedMapCache::Insert(const Hash& hash, const Status& status, const std::any& element)
+void UnorderedMapCache::Insert(const Hash& hash, const Element& element)
 {
   std::unique_lock lock(_mutex);
-  _data[hash] = Element{element, status, Clock::now()};
+  _data[hash] = element;
 }
 
 Cache::Element UnorderedMapCache::Get(const Hash& hash) const
