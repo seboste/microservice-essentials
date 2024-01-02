@@ -58,6 +58,9 @@ The following sections give a rough overview of the library's content:
 ### Observability
 - A minimalistic customizeable **logging** framework including a structured logger.
 
+### Performance
+- **caching** for server and client responses.
+
 ### Reliability
 - **retries** for failed outgoing requests.
 - **circuit breaker** for outgoing requests.

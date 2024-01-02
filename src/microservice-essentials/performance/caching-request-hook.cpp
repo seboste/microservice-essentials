@@ -150,3 +150,68 @@ void UnorderedMapCache::Remove(const Hash& hash)
   std::unique_lock lock(_mutex);
   _data.erase(hash);
 }
+
+LRUCache::LRUCache(std::shared_ptr<Cache> realCache, std::size_t maxSize) : _realCache(realCache), _maxSize(maxSize)
+{
+}
+
+void LRUCache::Insert(const Hash& hash, const Element& element)
+{
+  if (_realCache == nullptr)
+  {
+    return;
+  }
+
+  std::unique_lock lock(_mutex);
+
+  // 1. ensure that there is enought space in the cache
+  while (_lru.size() >= _maxSize)
+  {
+    _realCache->Remove(_lru.back());
+    _lru.pop_back();
+  }
+
+  // 2. insert element into the cache
+  _lru.push_front(hash);
+  _realCache->Insert(hash, Element{LRUElement{_lru.begin(), element.data}, element.status, element.insertion_time});
+}
+
+Cache::Element LRUCache::Get(const Hash& hash) const
+{
+  if (_realCache == nullptr)
+  {
+    return Cache::InvalidElement;
+  }
+
+  // 1. move element to the very front of the list
+  std::unique_lock lock(_mutex);
+  Cache::Element element = _realCache->Get(hash);
+  if (!Cache::IsValid(element))
+  {
+    return Cache::InvalidElement;
+  }
+  LRUElement lruElement = std::any_cast<LRUElement>(element.data);
+  _lru.splice(_lru.begin(), _lru, lruElement.first);
+
+  // 2. return element
+  return Element{lruElement.second, element.status, element.insertion_time};
+}
+
+void LRUCache::Remove(const Hash& hash)
+{
+  if (_realCache == nullptr)
+  {
+    return;
+  }
+  std::unique_lock lock(_mutex);
+  mse::Cache::Element element = _realCache->Get(hash);
+  if (!mse::Cache::IsValid(element))
+  {
+    return;
+  }
+  if (auto it = std::any_cast<LRUElement>(element.data).first; it != _lru.end())
+  {
+    _lru.erase(it);
+  }
+  _realCache->Remove(hash);
+}

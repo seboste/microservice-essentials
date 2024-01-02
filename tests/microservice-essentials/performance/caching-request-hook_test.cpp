@@ -207,3 +207,55 @@ SCENARIO("Unorded Map Cache", "[performance][caching]")
     }
   }
 }
+
+SCENARIO("LRU Cache", "[performance][caching]")
+{
+  GIVEN("a LRU cache with an unordered map cache as the backend")
+  {
+    std::shared_ptr<mse::UnorderedMapCache> realCache = std::make_shared<mse::UnorderedMapCache>();
+    mse::LRUCache cache(realCache, 2);
+    WHEN("an element is inserted")
+    {
+      cache.Insert(1, mse::Cache::Element{1, mse::Status::OK, mse::Cache::Clock::now()});
+      THEN("the element can be retrieved")
+      {
+        auto element = cache.Get(1);
+        REQUIRE(mse::Cache::IsValid(element) == true);
+        REQUIRE(element.status == mse::Status::OK);
+        REQUIRE(std::any_cast<int>(element.data) == 1);
+      }
+
+      AND_WHEN("an element is removed")
+      {
+        cache.Remove(1);
+        THEN("the element cannot be retrieved")
+        {
+          auto element = cache.Get(1);
+          REQUIRE(mse::Cache::IsValid(element) == false);
+        }
+      }
+    }
+    WHEN("a non existing element is removed")
+    {
+      cache.Remove(1);
+      THEN("the element cannot be retrieved")
+      {
+        auto element = cache.Get(1);
+        REQUIRE(mse::Cache::IsValid(element) == false);
+      }
+    }
+    WHEN("the cache is full")
+    {
+      cache.Insert(1, mse::Cache::Element{1, mse::Status::OK, mse::Cache::Clock::now()});
+      cache.Insert(2, mse::Cache::Element{2, mse::Status::OK, mse::Cache::Clock::now()});
+      cache.Get(1); // 1 is now the most recently used element, 2 the least recently used
+      cache.Insert(3, mse::Cache::Element{3, mse::Status::OK, mse::Cache::Clock::now()});
+      THEN("the least recently used element is removed")
+      {
+        REQUIRE(mse::Cache::IsValid(cache.Get(1)) == true);
+        REQUIRE(mse::Cache::IsValid(cache.Get(2)) == false);
+        REQUIRE(mse::Cache::IsValid(cache.Get(3)) == true);
+      }
+    }
+  }
+}

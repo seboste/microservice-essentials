@@ -2,6 +2,7 @@
 
 #include <any>
 #include <chrono>
+#include <list>
 #include <memory>
 #include <microservice-essentials/request/request-hook-factory.h>
 #include <microservice-essentials/request/request-hook.h>
@@ -96,6 +97,9 @@ private:
 class UnorderedMapCache : public Cache
 {
 public:
+  UnorderedMapCache() = default;
+  virtual ~UnorderedMapCache() = default;
+
   virtual void Insert(const Hash& hash, const Element& element) override;
   virtual Element Get(const Hash& hash) const override;
   virtual void Remove(const Hash& hash) override;
@@ -103,6 +107,27 @@ public:
 private:
   mutable std::shared_mutex _mutex;
   std::unordered_map<Hash, Element> _data;
+};
+
+/**
+ * Cache decorator that implements a Least Recently Used (LRU) cache.
+ */
+class LRUCache : public Cache
+{
+public:
+  LRUCache(std::shared_ptr<Cache> realCache, std::size_t maxSize = 1000);
+  virtual ~LRUCache() = default;
+
+  virtual void Insert(const Hash& hash, const Element& element) override;
+  virtual Element Get(const Hash& hash) const override;
+  virtual void Remove(const Hash& hash) override;
+
+private:
+  typedef std::pair<std::list<Hash>::iterator, std::any> LRUElement;
+  std::shared_ptr<Cache> _realCache;
+  mutable std::shared_mutex _mutex;
+  mutable std::list<Hash> _lru;
+  std::size_t _maxSize = 1000;
 };
 
 } // namespace mse
