@@ -18,7 +18,7 @@ public:
     elementToBeInserted = element;
   }
 
-  virtual void Remove(const mse::Cache::Hash& hash)
+  virtual void Remove(const mse::Cache::Hash& hash) override
   {
     hashToBeRemoved = hash;
   }
