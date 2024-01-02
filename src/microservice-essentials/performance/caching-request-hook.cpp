@@ -1,5 +1,4 @@
 #include "caching-request-hook.h"
-#include <microservice-essentials/observability/logger.h>
 #include <mutex>
 
 using namespace mse;

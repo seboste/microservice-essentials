@@ -45,7 +45,8 @@ StarshipProperties from_json(const json& node)
 
 HttpStarWarsClient::HttpStarWarsClient(const std::string& url, const std::vector<std::string>& headers_to_propagate)
     : _cli(std::make_unique<httplib::Client>(url)), _headers_to_propagate(headers_to_propagate),
-      _cache(std::make_shared<mse::UnorderedMapCache>())
+      _cache(std::make_shared<mse::LRUCache>(std::make_shared<mse::UnorderedMapCache>(),
+                                             5)) // LRU cache with capacity for 5 entries
 {
 }
 
