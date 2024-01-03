@@ -12,10 +12,10 @@ public:
   DummyCache() = default;
   virtual ~DummyCache() = default;
 
-  virtual void Insert(const mse::Cache::Hash& hash, const Element& element) override
+  virtual void Insert(const mse::Cache::Hash& hash, const Element& e) override
   {
     hashToBeInserted = hash;
-    elementToBeInserted = element;
+    elementToBeInserted = e;
   }
 
   virtual void Remove(const mse::Cache::Hash& hash) override
