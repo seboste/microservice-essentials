@@ -1,8 +1,10 @@
 target_sources(microservice-essentials
     PUBLIC
+        health-manager.h
         logger.h
         logging-request-hook.h
     PRIVATE
+        health-manager.cpp
         logger.cpp
         logging-request-hook.cpp
 )
