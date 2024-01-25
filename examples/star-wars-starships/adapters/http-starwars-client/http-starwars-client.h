@@ -10,6 +10,11 @@ namespace httplib
 class Client;
 }
 
+namespace mse
+{
+class Cache;
+}
+
 class HttpStarWarsClient : public StarWarsClient
 {
 public:
@@ -26,4 +31,5 @@ public:
 private:
   std::unique_ptr<httplib::Client> _cli;
   std::vector<std::string> _headers_to_propagate;
+  std::shared_ptr<mse::Cache> _cache;
 };

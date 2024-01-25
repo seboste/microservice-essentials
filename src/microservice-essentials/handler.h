@@ -19,7 +19,7 @@ class Handler
 {
 public:
   Handler(const std::string& name = "handler");
-  ~Handler();
+  virtual ~Handler();
 
   const std::string& GetName() const
   {

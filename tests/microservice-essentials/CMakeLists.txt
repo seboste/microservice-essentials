@@ -2,6 +2,7 @@ add_subdirectory(cross-cutting-concerns)
 add_subdirectory(observability)
 add_subdirectory(reliability)
 add_subdirectory(request)
+add_subdirectory(performance)
 add_subdirectory(security)
 add_subdirectory(utilities)
 target_sources(tests

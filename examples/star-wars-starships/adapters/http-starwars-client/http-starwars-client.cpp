@@ -2,6 +2,7 @@
 #include <microservice-essentials/context.h>
 #include <microservice-essentials/cross-cutting-concerns/error-forwarding-request-hook.h>
 #include <microservice-essentials/observability/logger.h>
+#include <microservice-essentials/performance/caching-request-hook.h>
 #include <microservice-essentials/reliability/retry-request-hook.h>
 #include <microservice-essentials/request/request-processor.h>
 #include <microservice-essentials/utilities/metadata-converter.h>
@@ -43,7 +44,9 @@ StarshipProperties from_json(const json& node)
 } // namespace
 
 HttpStarWarsClient::HttpStarWarsClient(const std::string& url, const std::vector<std::string>& headers_to_propagate)
-    : _cli(std::make_unique<httplib::Client>(url)), _headers_to_propagate(headers_to_propagate)
+    : _cli(std::make_unique<httplib::Client>(url)), _headers_to_propagate(headers_to_propagate),
+      _cache(std::make_shared<mse::LRUCache>(std::make_shared<mse::UnorderedMapCache>(),
+                                             5)) // LRU cache with capacity for 5 entries
 {
 }
 
@@ -94,6 +97,11 @@ std::optional<StarshipProperties> HttpStarWarsClient::GetStarShipProperties(cons
   mse::RequestIssuer("GetStarShipProperties", mse::Context())
       .BeginWith(
           mse::ErrorForwardingRequestHook::Parameters().IncludeAllErrorCodes().Exclude(mse::StatusCode::not_found))
+      .With(mse::CachingRequestHook::Parameters(_cache)
+                .WithKey(starshipId)
+                .WithCachedObject(starshipProperties)
+                .NeverExpire()
+                .Include(mse::StatusCode::not_found))
       .With(mse::RetryRequestHook::Parameters(std::make_shared<mse::BackoffGaussianJitterDecorator>(
           std::make_shared<mse::LinearRetryBackoff>(3, 10000ms), 1000ms)))
       .Process([&](mse::Context&) {
