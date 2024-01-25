@@ -12,26 +12,26 @@ public:
   DummyCache() = default;
   virtual ~DummyCache() = default;
 
-  virtual void Insert(const mse::Cache::Hash& hash, const Element& e) override
+  virtual void Insert(const std::string& key, const Element& e) override
   {
-    hashToBeInserted = hash;
+    keyToBeInserted = key;
     elementToBeInserted = e;
   }
 
-  virtual void Remove(const mse::Cache::Hash& hash) override
+  virtual void Remove(const std::string& key) override
   {
-    hashToBeRemoved = hash;
+    keyToBeRemoved = key;
   }
 
-  virtual mse::Cache::Element Get(const mse::Cache::Hash&) const override
+  virtual mse::Cache::Element Get(const std::string&) const override
   {
     return element;
   }
 
-  mse::Cache::Hash hashToBeInserted;
+  std::string keyToBeInserted;
   mse::Cache::Element elementToBeInserted;
 
-  mse::Cache::Hash hashToBeRemoved;
+  std::string keyToBeRemoved;
   mse::Cache::Element element;
 };
 } // namespace
@@ -44,7 +44,7 @@ SCENARIO("Caching Request Hook", "[performance][caching][request-hook]")
     std::shared_ptr<DummyCache> cache = std::make_shared<DummyCache>();
     mse::CachingRequestHook hook(mse::CachingRequestHook::Parameters(cache)
                                      .Include(mse::StatusCode::cancelled)
-                                     .WithHasher([]() { return 1; })
+                                     .WithKeyGenerator([]() -> std::string { return "1"; })
                                      .WithCachedObject(object)
                                      .WithMaxAge(std::chrono::milliseconds(5)));
 
@@ -70,7 +70,7 @@ SCENARIO("Caching Request Hook", "[performance][caching][request-hook]")
 
         THEN("the cache contains the element")
         {
-          REQUIRE(cache->hashToBeInserted == 1);
+          REQUIRE(cache->keyToBeInserted == "1");
           REQUIRE(cache->elementToBeInserted.status == mse::Status::OK);
           REQUIRE(cache->elementToBeInserted.insertion_time <= mse::Cache::Clock::now());
           REQUIRE(cache->elementToBeInserted.insertion_time >= before);
@@ -84,7 +84,7 @@ SCENARIO("Caching Request Hook", "[performance][caching][request-hook]")
 
         THEN("the cache does not contain the element")
         {
-          REQUIRE(cache->hashToBeInserted == mse::Cache::Hash{});
+          REQUIRE(cache->keyToBeInserted == std::string{});
           REQUIRE(mse::Cache::IsValid(cache->elementToBeInserted) == false);
         }
       }
@@ -95,7 +95,7 @@ SCENARIO("Caching Request Hook", "[performance][caching][request-hook]")
 
         THEN("the cache contains the element")
         {
-          REQUIRE(cache->hashToBeInserted == 1);
+          REQUIRE(cache->keyToBeInserted == "1");
           REQUIRE(cache->elementToBeInserted.status.code == mse::StatusCode::cancelled);
         }
       }
@@ -154,7 +154,7 @@ SCENARIO("Caching Request Hook", "[performance][caching][request-hook]")
 
         THEN("the new value has been inserted into the cache")
         {
-          REQUIRE(cache->hashToBeInserted == 1);
+          REQUIRE(cache->keyToBeInserted == "1");
           REQUIRE(cache->elementToBeInserted.status == mse::Status::OK);
           REQUIRE(cache->elementToBeInserted.insertion_time <= mse::Cache::Clock::now());
           REQUIRE(cache->elementToBeInserted.insertion_time >= before);
@@ -163,7 +163,7 @@ SCENARIO("Caching Request Hook", "[performance][caching][request-hook]")
 
         THEN("the old value has been removed from the cache")
         {
-          REQUIRE(cache->hashToBeRemoved == 1);
+          REQUIRE(cache->keyToBeRemoved == "1");
         }
       }
     }
@@ -177,10 +177,10 @@ SCENARIO("Unorded Map Cache", "[performance][caching]")
     mse::UnorderedMapCache cache;
     WHEN("a an element is inserted")
     {
-      cache.Insert(1, mse::Cache::Element{1, mse::Status::OK, mse::Cache::Clock::now()});
+      cache.Insert("1", mse::Cache::Element{1, mse::Status::OK, mse::Cache::Clock::now()});
       THEN("the element can be retrieved")
       {
-        auto element = cache.Get(1);
+        auto element = cache.Get("1");
         REQUIRE(mse::Cache::IsValid(element) == true);
         REQUIRE(element.status == mse::Status::OK);
         REQUIRE(std::any_cast<int>(element.data) == 1);
@@ -188,20 +188,20 @@ SCENARIO("Unorded Map Cache", "[performance][caching]")
 
       AND_WHEN("an element is removed")
       {
-        cache.Remove(1);
+        cache.Remove("1");
         THEN("the element cannot be retrieved")
         {
-          auto element = cache.Get(1);
+          auto element = cache.Get("1");
           REQUIRE(mse::Cache::IsValid(element) == false);
         }
       }
     }
     WHEN("a non existing element is removed")
     {
-      cache.Remove(1);
+      cache.Remove("1");
       THEN("the element cannot be retrieved")
       {
-        auto element = cache.Get(1);
+        auto element = cache.Get("1");
         REQUIRE(mse::Cache::IsValid(element) == false);
       }
     }
@@ -216,10 +216,10 @@ SCENARIO("LRU Cache", "[performance][caching]")
     mse::LRUCache cache(realCache, 2);
     WHEN("an element is inserted")
     {
-      cache.Insert(1, mse::Cache::Element{1, mse::Status::OK, mse::Cache::Clock::now()});
+      cache.Insert("1", mse::Cache::Element{1, mse::Status::OK, mse::Cache::Clock::now()});
       THEN("the element can be retrieved")
       {
-        auto element = cache.Get(1);
+        auto element = cache.Get("1");
         REQUIRE(mse::Cache::IsValid(element) == true);
         REQUIRE(element.status == mse::Status::OK);
         REQUIRE(std::any_cast<int>(element.data) == 1);
@@ -227,34 +227,34 @@ SCENARIO("LRU Cache", "[performance][caching]")
 
       AND_WHEN("an element is removed")
       {
-        cache.Remove(1);
+        cache.Remove("1");
         THEN("the element cannot be retrieved")
         {
-          auto element = cache.Get(1);
+          auto element = cache.Get("1");
           REQUIRE(mse::Cache::IsValid(element) == false);
         }
       }
     }
     WHEN("a non existing element is removed")
     {
-      cache.Remove(1);
+      cache.Remove("1");
       THEN("the element cannot be retrieved")
       {
-        auto element = cache.Get(1);
+        auto element = cache.Get("1");
         REQUIRE(mse::Cache::IsValid(element) == false);
       }
     }
     WHEN("the cache is full")
     {
-      cache.Insert(1, mse::Cache::Element{1, mse::Status::OK, mse::Cache::Clock::now()});
-      cache.Insert(2, mse::Cache::Element{2, mse::Status::OK, mse::Cache::Clock::now()});
-      cache.Get(1); // 1 is now the most recently used element, 2 the least recently used
-      cache.Insert(3, mse::Cache::Element{3, mse::Status::OK, mse::Cache::Clock::now()});
+      cache.Insert("1", mse::Cache::Element{1, mse::Status::OK, mse::Cache::Clock::now()});
+      cache.Insert("2", mse::Cache::Element{2, mse::Status::OK, mse::Cache::Clock::now()});
+      cache.Get("1"); // 1 is now the most recently used element, 2 the least recently used
+      cache.Insert("3", mse::Cache::Element{3, mse::Status::OK, mse::Cache::Clock::now()});
       THEN("the least recently used element is removed")
       {
-        REQUIRE(mse::Cache::IsValid(cache.Get(1)) == true);
-        REQUIRE(mse::Cache::IsValid(cache.Get(2)) == false);
-        REQUIRE(mse::Cache::IsValid(cache.Get(3)) == true);
+        REQUIRE(mse::Cache::IsValid(cache.Get("1")) == true);
+        REQUIRE(mse::Cache::IsValid(cache.Get("2")) == false);
+        REQUIRE(mse::Cache::IsValid(cache.Get("3")) == true);
       }
     }
   }

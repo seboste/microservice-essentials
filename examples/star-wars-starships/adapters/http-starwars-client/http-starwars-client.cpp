@@ -98,7 +98,7 @@ std::optional<StarshipProperties> HttpStarWarsClient::GetStarShipProperties(cons
       .BeginWith(
           mse::ErrorForwardingRequestHook::Parameters().IncludeAllErrorCodes().Exclude(mse::StatusCode::not_found))
       .With(mse::CachingRequestHook::Parameters(_cache)
-                .WithStdHasher(starshipId)
+                .WithKey(starshipId)
                 .WithCachedObject(starshipProperties)
                 .NeverExpire()
                 .Include(mse::StatusCode::not_found))

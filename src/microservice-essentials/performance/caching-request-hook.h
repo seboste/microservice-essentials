@@ -21,7 +21,6 @@ class Cache
 public:
   using Clock = std::chrono::steady_clock;
   using TimePoint = std::chrono::time_point<Clock>;
-  using Hash = std::size_t;
   struct Element
   {
     std::any data;
@@ -33,12 +32,12 @@ public:
 
   virtual ~Cache() = default;
 
-  virtual void Insert(const Hash& hash, const Element& element) = 0;
-  virtual Element Get(const Hash& hash) const = 0;
-  virtual void Remove(const Hash& hash) = 0;
+  virtual void Insert(const std::string& key, const Element& element) = 0;
+  virtual Element Get(const std::string& key) const = 0;
+  virtual void Remove(const std::string& key) = 0;
 };
 
-using CacheHasher = std::function<Cache::Hash()>;         // generates a hash for the request
+using CacheKeyGen = std::function<std::string()>;         // generates a key for the request
 using CacheReader = std::function<void(const std::any&)>; // restores the object from the cache
 using CacheWriter = std::function<std::any()>;            // returns the data to be cached
 
@@ -55,8 +54,10 @@ public:
     Parameters(std::shared_ptr<Cache> cache_);
 
     Parameters& WithConstantResponse();
-    Parameters& WithHasher(const CacheHasher& hasher_);
-    template <typename T> Parameters& WithStdHasher(const T& object); // uses std::hash<T> to generate the hash
+    Parameters& WithKeyGenerator(const CacheKeyGen& key_generator_);
+    Parameters& WithKey(const std::string& key_);
+    template <typename T>
+    Parameters& WithStdToStringKeyGenerator(const T& object); // uses std::to_string<T> to generate the key
 
     Parameters& WithCacheReader(CacheReader reader_);
     Parameters& WithCacheWriter(CacheWriter writer_);
@@ -72,7 +73,7 @@ public:
     Parameters& Exclude(const std::initializer_list<StatusCode>& status_codes_);
 
     std::shared_ptr<Cache> cache;
-    CacheHasher hasher;
+    CacheKeyGen key_generator;
     CacheReader cache_reader;
     CacheWriter cache_writer;
     Duration max_age = std::chrono::minutes(10);
@@ -100,13 +101,13 @@ public:
   UnorderedMapCache() = default;
   virtual ~UnorderedMapCache() = default;
 
-  virtual void Insert(const Hash& hash, const Element& element) override;
-  virtual Element Get(const Hash& hash) const override;
-  virtual void Remove(const Hash& hash) override;
+  virtual void Insert(const std::string& key, const Element& element) override;
+  virtual Element Get(const std::string& key) const override;
+  virtual void Remove(const std::string& key) override;
 
 private:
   mutable std::shared_mutex _mutex;
-  std::unordered_map<Hash, Element> _data;
+  std::unordered_map<std::string, Element> _data;
 };
 
 /**
@@ -118,15 +119,15 @@ public:
   LRUCache(std::shared_ptr<Cache> realCache, std::size_t maxSize = 1000);
   virtual ~LRUCache() = default;
 
-  virtual void Insert(const Hash& hash, const Element& element) override;
-  virtual Element Get(const Hash& hash) const override;
-  virtual void Remove(const Hash& hash) override;
+  virtual void Insert(const std::string& key, const Element& element) override;
+  virtual Element Get(const std::string& key) const override;
+  virtual void Remove(const std::string& key) override;
 
 private:
-  typedef std::pair<std::list<Hash>::iterator, std::any> LRUElement;
+  typedef std::pair<std::list<std::string>::iterator, std::any> LRUElement;
   std::shared_ptr<Cache> _realCache;
   mutable std::shared_mutex _mutex;
-  mutable std::list<Hash> _lru;
+  mutable std::list<std::string> _lru;
   std::size_t _maxSize = 1000;
 };
 

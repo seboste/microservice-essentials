@@ -10,10 +10,11 @@ template <typename T> CachingRequestHook::Parameters& CachingRequestHook::Parame
   return *this;
 }
 
-template <typename T> CachingRequestHook::Parameters& CachingRequestHook::Parameters::WithStdHasher(const T& object)
+template <typename T>
+CachingRequestHook::Parameters& CachingRequestHook::Parameters::WithStdToStringKeyGenerator(const T& object)
 {
-  hasher = [&object]() -> Cache::Hash { return std::hash<T>{}(object); };
+  key_generator = [&object]() -> std::string { return std::to_string(object); };
   return *this;
 }
 
-}
+} // namespace mse
